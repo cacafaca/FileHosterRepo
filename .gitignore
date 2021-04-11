@@ -2,4 +2,10 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
+*.suo
+bin
+obj
+packages
+.vs
 /FileHosterRepo/ProCode.FileHosterRepo.Dal/DataAccess/ConnectionStringDevelopment.json
+/FileHosterRepo/ProCode.FileHosterRepo.Dal/DataAccess/ConnectionStringProduction.json
