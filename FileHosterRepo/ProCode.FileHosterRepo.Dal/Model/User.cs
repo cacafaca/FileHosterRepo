@@ -17,10 +17,19 @@ namespace ProCode.FileHosterRepo.Dal.Model
         [StringLength(200)]
         public string Email { get; set; }
         [Required]
-        [StringLength(30)]        
+        [StringLength(100)]        
         public string Password { get; set; }
         [StringLength(50)]
         public string Nickname { get; set; }
         public DateTime? Created { get; set; }
+        public UserRole Role { get; set; }
+    }
+
+    public enum UserRole
+    {
+        SuperAdmin = 0,
+        Moderator = 10,
+        TrustedUser = 20,
+        PlainUser = 30
     }
 }

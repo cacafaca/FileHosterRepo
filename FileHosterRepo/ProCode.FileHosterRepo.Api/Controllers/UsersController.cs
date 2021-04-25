@@ -3,53 +3,196 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using ProCode.FileHosterRepo.Api.Models;
+using ProCode.FileHosterRepo.Api.Model;
+using System.Security.Cryptography;
+using System.Text;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ProCode.FileHosterRepo.Api.Controllers
 {
+    [Authorize]
     [ApiController]
-    [Route("[controller]")]
+    [Route("[controller]")] // Adds "/Users" to link. Instead "/Login" we get "/Users/Login".
     public class UsersController : Controller
     {
-        private readonly Dal.DataAccess.FileHosterContext _context;
+        #region Fields
+        private readonly Dal.DataAccess.FileHosterContext context;
+        private readonly IJwtAuthenticationManager authenticationManager;
+        #endregion
 
-        public UsersController(Dal.DataAccess.FileHosterContext context)
+        #region Constructor
+        public UsersController(Dal.DataAccess.FileHosterContext context, IJwtAuthenticationManager authenticationManager)
         {
-            _context = context;
+            this.context = context;
+            this.authenticationManager = authenticationManager;
         }
+        #endregion
 
+        #region Actions
+        [AllowAnonymous]
         [HttpPost("Login")]
-        public async Task<ActionResult<UserWithToken>> Login([FromForm] Dal.Model.User user)
+        public async Task<ActionResult<string>> Login([FromForm] Model.Request.User loginUser)
         {
-            user = await _context.Users.Where(u => u.Email == user.Email && u.Password == user.Password).FirstOrDefaultAsync();
-            if (user != null)
+            var usersFound = await context.Users.Where(u => u.Email == loginUser.Email).ToListAsync();
+            switch (usersFound.Count)
             {
-                return new UserWithToken(user);
-            }
-            else
-            {
-                return NotFound();
+                case 0:
+                    return NotFound();
+                case 1:
+                    if (usersFound[0].Password == EncryptPassword(loginUser.Password))
+                    {
+                        var tokenDescriptor = new SecurityTokenDescriptor
+                        {
+                            Subject = new ClaimsIdentity(new Claim[]
+                            {
+                                new Claim(ClaimTypes.Sid, usersFound[0].Id.ToString()),
+                                new Claim(ClaimTypes.Email, usersFound[0].Email)
+                            }),
+                            Expires = DateTime.UtcNow.AddMinutes(1),
+                            SigningCredentials = new SigningCredentials(
+                                authenticationManager.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256)
+                        };
+                        var tokenHandler = new JwtSecurityTokenHandler();
+                        return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
+                    }
+                    else
+                    {
+                        return Unauthorized();
+                    }
+                default:
+                    return Conflict();
             }
         }
 
+        [AllowAnonymous]
         [HttpPost("Register")]
-        public async Task<ActionResult<UserWithToken>> Register([FromForm] Dal.Model.User newUser)
+        public async Task<ActionResult<Model.Response.User>> Register([FromForm] Model.Request.UserRegister newUser)
         {
             // Check if user exists.
-            var existingUser = await _context.Users.Where(u => u.Email == newUser.Email).FirstOrDefaultAsync();
-            if(existingUser==null)
+            var usersFound = await context.Users.Where(u => u.Email == newUser.Email).ToListAsync();
+            switch (usersFound.Count)
             {
-                newUser.Id = int.MinValue;
-                newUser.Created = DateTime.Now;
-                _context.Users.Add(newUser);
-                await _context.SaveChangesAsync();
-                return new UserWithToken(newUser);
+                case 0:
+                    var allUsers = await context.Users.ToListAsync();
+                    int maxId;
+                    if (allUsers.Count > 0)
+                        maxId = allUsers.Max(u => u.Id) + 1;
+                    else
+                        maxId = 1;
+                    var newUserDb = new Dal.Model.User()
+                    {
+                        Id = maxId,
+                        Email = newUser.Email,
+                        Password = EncryptPassword(newUser.Password),
+                        Nickname = newUser.Nickname,
+                        Created = DateTime.Now
+                    };
+                    context.Users.Add(newUserDb);
+                    await context.SaveChangesAsync();
+                    return new Model.Response.User()
+                    {
+                        Id = newUserDb.Id,
+                        Nickname = newUserDb.Nickname,
+                        Created = newUserDb.Created
+                    };
+                case 1:
+                    return Conflict();
+                default:
+                    return Conflict();
+            }
+        }
+
+        [HttpGet("Info")]
+        public async Task<ActionResult<Model.Response.User>> Info(int userId)
+        {
+            var userFound = await context.Users.Where(u => u.Id == userId).FirstOrDefaultAsync();
+            if (userFound != null)
+            {
+                return new Model.Response.User()
+                {
+                    Id = userFound.Id,
+                    Nickname = userFound.Nickname,
+                    Created = userFound.Created
+                };
             }
             else
             {
                 return Conflict();
             }
         }
+
+        [HttpDelete("Delete")]
+        public async Task<ActionResult<Model.Response.User>> Delete()
+        {
+            var identity = ClaimsPrincipal.Current?.Identities.FirstOrDefault();
+            if (identity != null)
+            {
+                var claim = identity.Claims.Where(c=>c.Type == ClaimTypes.Sid).FirstOrDefault();
+                if (claim != null)
+                {
+                    var userFound = await context.Users.Where(u => u.Id.ToString() == claim.Value).FirstOrDefaultAsync();
+                    if (userFound != null)
+                    {
+                        return new Model.Response.User()
+                        {
+                            Id = userFound.Id,
+                            Nickname = userFound.Nickname,
+                            Created = userFound.Created
+                        };
+                    }
+                    else
+                    {
+                        return Conflict();
+                    }
+                }
+                else
+                {
+                    return Conflict();
+                }
+            }
+            else
+            {
+                return Conflict();
+            }
+        }
+        #endregion
+
+        #region Methods
+        private static string GetPasswordHash(string password)
+        {
+            using var sha1 = new SHA1Managed();
+            var hash = Encoding.UTF8.GetBytes(password);
+            var generatedHash = sha1.ComputeHash(hash);
+            var generatedHashString = Convert.ToBase64String(generatedHash);
+            return generatedHashString;
+        }
+        private static string EncryptPassword(string password)
+        {
+            byte[] data = Encoding.ASCII.GetBytes(password);
+            data = new SHA256Managed().ComputeHash(data);
+            String hash;
+            hash = Convert.ToBase64String(data);
+            //hash = Encoding.ASCII.GetString(data);
+            return hash;
+        }
+
+        private string GenerateToken(string email)
+        {
+            var token = new JwtSecurityToken(
+                claims: new Claim[]
+                {
+                    new Claim(ClaimTypes.Email, email)
+                },
+                notBefore: new DateTimeOffset(DateTime.Now).DateTime,
+                expires: new DateTimeOffset(DateTime.Now.AddMinutes(60)).DateTime,
+                signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes("secret_key!replace!")), SecurityAlgorithms.HmacSha256)
+            );
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+        #endregion
     }
 
 }

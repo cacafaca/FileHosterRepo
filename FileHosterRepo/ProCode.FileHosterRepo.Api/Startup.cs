@@ -43,17 +43,24 @@ namespace ProCode.FileHosterRepo.Api
                 //options.UseMySQL("server=localhost;user id=filehoster_app;password=development;persistsecurityinfo=True;database=filehoster;")
             );
 
+            var authManager = new JwtAuthenticationManager(Configuration["Jwt:Key"]);
+            services.AddSingleton<IJwtAuthenticationManager>(authManager);
+
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
                 options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = Configuration["Jwt:Issuer"],
-                    ValidAudience = Configuration["Jwt:Issuer"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
+                    IssuerSigningKey = authManager.GetSymmetricSecurityKey(),
+
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                    //ValidateLifetime = true,
+                    //ValidIssuer = Configuration["Jwt:Issuer"],
+                    //ValidAudience = Configuration["Jwt:Issuer"],
+                    //ClockSkew = TimeSpan.FromMinutes(5)
                 };
             });
 
@@ -77,6 +84,7 @@ namespace ProCode.FileHosterRepo.Api
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
