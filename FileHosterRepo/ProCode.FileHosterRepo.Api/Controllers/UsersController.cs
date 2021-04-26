@@ -127,35 +127,56 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         [HttpDelete("Delete")]
         public async Task<ActionResult<Model.Response.User>> Delete()
         {
-            var identity = ClaimsPrincipal.Current?.Identities.FirstOrDefault();
-            if (identity != null)
+            if (HttpContext.User != null)
             {
-                var claim = identity.Claims.Where(c=>c.Type == ClaimTypes.Sid).FirstOrDefault();
+                var claim = HttpContext.User.Claims.Where(c => c.Type == ClaimTypes.Sid).FirstOrDefault();
                 if (claim != null)
                 {
                     var userFound = await context.Users.Where(u => u.Id.ToString() == claim.Value).FirstOrDefaultAsync();
                     if (userFound != null)
                     {
-                        return new Model.Response.User()
+                        try
                         {
-                            Id = userFound.Id,
-                            Nickname = userFound.Nickname,
-                            Created = userFound.Created
-                        };
+                            context.Users.Remove(userFound);
+                            await context.SaveChangesAsync();
+                            return new Model.Response.User()
+                            {
+                                Id = userFound.Id,
+                                Nickname = userFound.Nickname,
+                                Created = userFound.Created
+                            };
+                        }
+                        catch (Exception ex)
+                        {
+                            return Conflict(ex);
+                        }
                     }
                     else
                     {
-                        return Conflict();
+                        return Conflict("User not found.");
                     }
                 }
                 else
                 {
-                    return Conflict();
+                    return Conflict("Claim not found");
                 }
             }
             else
             {
-                return Conflict();
+                return Conflict("HTTP context not found.");
+            }
+        }
+
+        [HttpGet("Logout")]
+        public async Task<ActionResult<Model.Response.User>> Logout()
+        {
+            if (HttpContext.User != null)
+            {
+                HttpContext.
+            }
+            else
+            {
+                return Conflict("HTTP context not found.");
             }
         }
         #endregion

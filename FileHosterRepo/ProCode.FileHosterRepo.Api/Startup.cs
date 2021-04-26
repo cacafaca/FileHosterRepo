@@ -53,7 +53,7 @@ namespace ProCode.FileHosterRepo.Api
                 options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = authManager.GetSymmetricSecurityKey(),
+                    IssuerSigningKey = (services.Where(x=>x.Lifetime==ServiceLifetime.Singleton && x.ServiceType.Name == nameof(IJwtAuthenticationManager)).FirstOrDefault().ImplementationInstance as JwtAuthenticationManager).GetSymmetricSecurityKey(), //authManager.GetSymmetricSecurityKey(),                    
 
                     ValidateIssuer = false,
                     ValidateAudience = false
