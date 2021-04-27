@@ -18,6 +18,10 @@ namespace ProCode.FileHosterRepo.Api.Controllers
     [Route("[controller]")] // Adds "/Users" to link. Instead "/Login" we get "/Users/Login".
     public class UsersController : Controller
     {
+        #region Constants
+        const string claimTypeNameUserId = "userId";
+        #endregion
+
         #region Fields
         private readonly Dal.DataAccess.FileHosterContext context;
         private readonly IJwtAuthenticationManager authenticationManager;
@@ -40,75 +44,61 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             switch (usersFound.Count)
             {
                 case 0:
-                    return NotFound();
+                    return NotFound($"Can't find user with email: {loginUser.Email}.");
                 case 1:
                     if (usersFound[0].Password == EncryptPassword(loginUser.Password))
                     {
-                        var tokenDescriptor = new SecurityTokenDescriptor
-                        {
-                            Subject = new ClaimsIdentity(new Claim[]
-                            {
-                                new Claim(ClaimTypes.Sid, usersFound[0].Id.ToString()),
-                                new Claim(ClaimTypes.Email, usersFound[0].Email)
-                            }),
-                            Expires = DateTime.UtcNow.AddMinutes(1),
-                            SigningCredentials = new SigningCredentials(
-                                authenticationManager.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256)
-                        };
-                        var tokenHandler = new JwtSecurityTokenHandler();
-                        return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
+
+                        return GenerateToken(usersFound[0].Id, usersFound[0].Email);
                     }
                     else
                     {
                         return Unauthorized();
                     }
                 default:
-                    return Conflict();
+                    return Conflict($"Multiple accounts error for email {loginUser.Email}. Please report this.");
             }
         }
 
         [AllowAnonymous]
         [HttpPost("Register")]
-        public async Task<ActionResult<Model.Response.User>> Register([FromForm] Model.Request.UserRegister newUser)
+        public async Task<ActionResult<string>> Register([FromForm] Model.Request.UserRegister newUser)
         {
             // Check if user exists.
-            var usersFound = await context.Users.Where(u => u.Email == newUser.Email).ToListAsync();
-            switch (usersFound.Count)
+            var usersFound = await context.Users.Where(u => u.Email == newUser.Email || u.Nickname == newUser.Nickname).ToListAsync();
+
+            if (usersFound.Count == 0)
             {
-                case 0:
-                    var allUsers = await context.Users.ToListAsync();
-                    int maxId;
-                    if (allUsers.Count > 0)
-                        maxId = allUsers.Max(u => u.Id) + 1;
-                    else
-                        maxId = 1;
-                    var newUserDb = new Dal.Model.User()
-                    {
-                        Id = maxId,
-                        Email = newUser.Email,
-                        Password = EncryptPassword(newUser.Password),
-                        Nickname = newUser.Nickname,
-                        Created = DateTime.Now
-                    };
-                    context.Users.Add(newUserDb);
-                    await context.SaveChangesAsync();
-                    return new Model.Response.User()
-                    {
-                        Id = newUserDb.Id,
-                        Nickname = newUserDb.Nickname,
-                        Created = newUserDb.Created
-                    };
-                case 1:
-                    return Conflict();
-                default:
-                    return Conflict();
+                var allUsers = await context.Users.ToListAsync();
+                int maxId;
+                if (allUsers.Count > 0)
+                    maxId = allUsers.Max(u => u.Id) + 1;
+                else
+                    maxId = 1;
+                var newUserDb = new Dal.Model.User()
+                {
+                    Id = maxId,
+                    Email = newUser.Email,
+                    Password = EncryptPassword(newUser.Password),
+                    Nickname = newUser.Nickname,
+                    Created = DateTime.Now
+                };
+                context.Users.Add(newUserDb);
+                await context.SaveChangesAsync();
+                return GenerateToken(newUserDb.Id, newUserDb.Email);
+            }
+            else
+            {
+                return Conflict($"There is already user with email {newUser.Email}, or with nickname {newUser.Nickname}.");
             }
         }
 
         [HttpGet("Info")]
-        public async Task<ActionResult<Model.Response.User>> Info(int userId)
+        public async Task<ActionResult<Model.Response.User>> Info(int? userId)
         {
-            var userFound = await context.Users.Where(u => u.Id == userId).FirstOrDefaultAsync();
+            int userIdSearch = userId == null ? GetLoggedUserId() : (int)userId;
+
+            var userFound = await context.Users.Where(u => u.Id == userIdSearch).FirstOrDefaultAsync();
             if (userFound != null)
             {
                 return new Model.Response.User()
@@ -120,16 +110,16 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             }
             else
             {
-                return Conflict();
+                return NotFound($"User id '{userIdSearch}' not found.");
             }
         }
 
         [HttpDelete("Delete")]
-        public async Task<ActionResult<Model.Response.User>> Delete()
+        public async Task<ActionResult> Delete()
         {
-            if (HttpContext.User != null)
+            if (User != null)
             {
-                var claim = HttpContext.User.Claims.Where(c => c.Type == ClaimTypes.Sid).FirstOrDefault();
+                var claim = User.Claims.Where(c => c.Type == claimTypeNameUserId).FirstOrDefault();
                 if (claim != null)
                 {
                     var userFound = await context.Users.Where(u => u.Id.ToString() == claim.Value).FirstOrDefaultAsync();
@@ -139,12 +129,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                         {
                             context.Users.Remove(userFound);
                             await context.SaveChangesAsync();
-                            return new Model.Response.User()
-                            {
-                                Id = userFound.Id,
-                                Nickname = userFound.Nickname,
-                                Created = userFound.Created
-                            };
+                            return Ok($"User {userFound} deleted.");
                         }
                         catch (Exception ex)
                         {
@@ -168,15 +153,32 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpGet("Logout")]
-        public async Task<ActionResult<Model.Response.User>> Logout()
+        public ActionResult<string> Logout()
         {
-            if (HttpContext.User != null)
+            return ExpireToken();
+        }
+
+        [HttpPatch("Update")]
+        public async Task<ActionResult> Update([FromForm] Model.Request.UserRegister updateUser)
+        {
+            if (string.IsNullOrWhiteSpace(updateUser.Nickname))
+                return Conflict("Nickname is empty.");
+
+            var loggedUserId = GetLoggedUserId();
+            var userFound = await context.Users.Where(user => user.Id == loggedUserId).FirstOrDefaultAsync();
+            if (userFound != null)
             {
-                HttpContext.
+                userFound.Nickname = updateUser.Nickname;
+
+                if (!string.IsNullOrWhiteSpace(updateUser.Password))
+                    userFound.Password = EncryptPassword(updateUser.Password);
+
+                await context.SaveChangesAsync();
+                return Ok("Updated.");
             }
             else
             {
-                return Conflict("HTTP context not found.");
+                return NotFound($"Can't find logged user id {loggedUserId}.");
             }
         }
         #endregion
@@ -200,20 +202,58 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             return hash;
         }
 
-        private string GenerateToken(string email)
+        private string GenerateToken(int userId, string email)
         {
-            var token = new JwtSecurityToken(
-                claims: new Claim[]
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
                 {
+                    new Claim(claimTypeNameUserId, userId.ToString()),
                     new Claim(ClaimTypes.Email, email)
-                },
-                notBefore: new DateTimeOffset(DateTime.Now).DateTime,
-                expires: new DateTimeOffset(DateTime.Now.AddMinutes(60)).DateTime,
-                signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes("secret_key!replace!")), SecurityAlgorithms.HmacSha256)
-            );
-            return new JwtSecurityTokenHandler().WriteToken(token);
+                }),
+                Expires = DateTime.UtcNow.AddHours(1),
+                NotBefore = DateTime.UtcNow,
+                SigningCredentials = new SigningCredentials(
+                    authenticationManager.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256)
+            };
+            var tokenHandler = new JwtSecurityTokenHandler();
+            return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
         }
-        #endregion
-    }
 
+        private string ExpireToken()
+        {
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(User.Claims),
+                Expires = DateTime.UtcNow.AddYears(-1),
+                NotBefore = DateTime.MinValue,
+                SigningCredentials = new SigningCredentials(
+                    authenticationManager.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256)
+            };
+            var tokenHandler = new JwtSecurityTokenHandler();
+            return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
+        }
+
+        private int GetLoggedUserId()
+        {
+            var claim = User.Claims.Where(c => c.Type == claimTypeNameUserId).FirstOrDefault();
+            if (claim != null)
+            {
+                int userId;
+                if (int.TryParse(claim.Value, out userId))
+                {
+                    return userId;
+                }
+                else
+                {
+                    throw new Exception("Claim not valid.");
+                }
+            }
+            else
+            {
+                throw new Exception("Claim not found.");
+            }
+        }
+    }
+    #endregion
 }
