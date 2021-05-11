@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ProCode.FileHosterRepo.ApiTests": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "Environment": "Value"
+      }
+    }
+  }
+}

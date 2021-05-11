@@ -9,15 +9,15 @@ using ProCode.FileHosterRepo.Dal.DataAccess;
 namespace ProCode.FileHosterRepo.Dal.Migrations
 {
     [DbContext(typeof(FileHosterContext))]
-    [Migration("20210103103256_Initial")]
+    [Migration("20210511050940_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.10")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("Relational:MaxIdentifierLength", 64)
+                .HasAnnotation("ProductVersion", "5.0.0");
 
             modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.Media", b =>
                 {
@@ -30,10 +30,10 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("varchar(500)")
-                        .HasMaxLength(500);
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -54,13 +54,13 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
 
                     b.Property<string>("Link")
                         .IsRequired()
-                        .HasColumnType("varchar(2000)")
-                        .HasMaxLength(2000);
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
 
                     b.Property<int>("LinkOrder")
                         .HasColumnType("int");
 
-                    b.Property<int>("MediaVersionId")
+                    b.Property<int?>("MediaVersionId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -79,14 +79,14 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime");
 
-                    b.Property<int>("MediaId")
+                    b.Property<int?>("MediaId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
-                        .HasColumnType("varchar(200)")
-                        .HasMaxLength(200);
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -104,59 +104,88 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("Created")
+                    b.Property<DateTime?>("Created")
                         .HasColumnType("datetime");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("varchar(200)")
-                        .HasMaxLength(200);
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
 
                     b.Property<string>("Nickname")
-                        .HasColumnType("varchar(50)")
-                        .HasMaxLength(50);
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasColumnType("varchar(30)")
-                        .HasMaxLength(30);
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.UserToken", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("UserTokens");
+                });
+
             modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.Media", b =>
                 {
                     b.HasOne("ProCode.FileHosterRepo.Dal.Model.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaLink", b =>
                 {
                     b.HasOne("ProCode.FileHosterRepo.Dal.Model.MediaVersion", "MediaVersion")
                         .WithMany()
-                        .HasForeignKey("MediaVersionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("MediaVersionId");
+
+                    b.Navigation("MediaVersion");
                 });
 
             modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaVersion", b =>
                 {
                     b.HasOne("ProCode.FileHosterRepo.Dal.Model.Media", "Media")
                         .WithMany()
-                        .HasForeignKey("MediaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("MediaId");
 
+                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Media");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.UserToken", b =>
+                {
                     b.HasOne("ProCode.FileHosterRepo.Dal.Model.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

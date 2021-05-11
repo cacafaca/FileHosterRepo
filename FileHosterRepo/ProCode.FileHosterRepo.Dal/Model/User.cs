@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProCode.FileHosterRepo.Dal.Model
 {
@@ -23,13 +19,5 @@ namespace ProCode.FileHosterRepo.Dal.Model
         public string Nickname { get; set; }
         public DateTime? Created { get; set; }
         public UserRole Role { get; set; }
-    }
-
-    public enum UserRole
-    {
-        SuperAdmin = 0,
-        Moderator = 10,
-        TrustedUser = 20,
-        PlainUser = 30
     }
 }

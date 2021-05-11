@@ -12,12 +12,13 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    Email = table.Column<string>(maxLength: 200, nullable: false),
-                    Password = table.Column<string>(maxLength: 30, nullable: false),
-                    Nickname = table.Column<string>(maxLength: 50, nullable: true),
-                    Created = table.Column<DateTime>(nullable: false)
+                    Email = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false),
+                    Password = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false),
+                    Nickname = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: true),
+                    Role = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -28,17 +29,35 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                 name: "Medias",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(maxLength: 500, nullable: false),
-                    UserId = table.Column<int>(nullable: false),
-                    Created = table.Column<DateTime>(nullable: false)
+                    Name = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Medias", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Medias_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserTokens",
+                columns: table => new
+                {
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Token = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserTokens", x => x.UserId);
+                    table.ForeignKey(
+                        name: "FK_UserTokens_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -49,12 +68,12 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                 name: "MediaVersions",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    MediaId = table.Column<int>(nullable: false),
-                    Name = table.Column<string>(maxLength: 200, nullable: true),
-                    UserId = table.Column<int>(nullable: false),
-                    Created = table.Column<DateTime>(nullable: false)
+                    MediaId = table.Column<int>(type: "int", nullable: true),
+                    Name = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: true),
+                    UserId = table.Column<int>(type: "int", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -64,25 +83,25 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                         column: x => x.MediaId,
                         principalTable: "Medias",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_MediaVersions_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
                 name: "MediaLinks",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    MediaVersionId = table.Column<int>(nullable: false),
-                    LinkOrder = table.Column<int>(nullable: false),
-                    Link = table.Column<string>(maxLength: 2000, nullable: false),
-                    Created = table.Column<DateTime>(nullable: false)
+                    MediaVersionId = table.Column<int>(type: "int", nullable: true),
+                    LinkOrder = table.Column<int>(type: "int", nullable: false),
+                    Link = table.Column<string>(type: "varchar(2000)", maxLength: 2000, nullable: false),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -92,7 +111,7 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                         column: x => x.MediaVersionId,
                         principalTable: "MediaVersions",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -120,6 +139,9 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
         {
             migrationBuilder.DropTable(
                 name: "MediaLinks");
+
+            migrationBuilder.DropTable(
+                name: "UserTokens");
 
             migrationBuilder.DropTable(
                 name: "MediaVersions");

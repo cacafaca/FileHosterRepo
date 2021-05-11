@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 {
-    public class UsersControllerTests
+    public class UserControllerTests
     {
         [TestMethod()]
         public void LoginTest()

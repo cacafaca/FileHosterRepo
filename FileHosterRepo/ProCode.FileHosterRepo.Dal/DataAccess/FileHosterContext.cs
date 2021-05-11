@@ -9,5 +9,6 @@ namespace ProCode.FileHosterRepo.Dal.DataAccess
         public DbSet<Model.Media> Medias { get; set; }
         public DbSet<Model.MediaVersion> MediaVersions { get; set; }
         public DbSet<Model.MediaLink> MediaLinks { get; set; }
+        public DbSet<Model.UserToken> UserTokens { get; set; }
     }
 }

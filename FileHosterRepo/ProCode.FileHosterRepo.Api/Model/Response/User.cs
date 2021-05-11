@@ -13,6 +13,7 @@ namespace ProCode.FileHosterRepo.Api.Model.Response
         //public string Email { get; set; }
         public string Nickname { get; set; }
         public DateTime? Created { get; set; }
+        public Dal.Model.UserRole Role { get; set; }
         #endregion
     }
 }

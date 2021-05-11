@@ -16,7 +16,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
     [Authorize]
     [ApiController]
     [Route("[controller]")] // Adds "/Users" to link. Instead "/Login" we get "/Users/Login".
-    public class UsersController : Controller
+    public class AdminController : Controller
     {
         #region Constants
         const string claimTypeNameUserId = "userId";
@@ -28,7 +28,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         #endregion
 
         #region Constructor
-        public UsersController(Dal.DataAccess.FileHosterContext context, IJwtAuthenticationManager authenticationManager)
+        public AdminController(Dal.DataAccess.FileHosterContext context, IJwtAuthenticationManager authenticationManager)
         {
             this.context = context;
             this.authenticationManager = authenticationManager;
@@ -40,7 +40,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         [HttpPost("Login")]
         public async Task<ActionResult<string>> Login([FromForm] Model.Request.User loginUser)
         {
-            var usersFound = await context.Users.Where(u => u.Email == loginUser.Email).ToListAsync();
+            var usersFound = await context.Users.Where(u => u.Email == loginUser.Email && u.Role == Dal.Model.UserRole.Admin).ToListAsync();
             switch (usersFound.Count)
             {
                 case 0:
@@ -48,8 +48,14 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 case 1:
                     if (usersFound[0].Password == EncryptPassword(loginUser.Password))
                     {
-
-                        return GenerateToken(usersFound[0].Id, usersFound[0].Email);
+                        if (usersFound[0].Role == Dal.Model.UserRole.Admin)
+                        {
+                            return GenerateToken(usersFound[0].Id, usersFound[0].Email);
+                        }
+                        else
+                        {
+                            return Unauthorized("You are not Administrator.");
+                        }
                     }
                     else
                     {
@@ -64,34 +70,22 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         [HttpPost("Register")]
         public async Task<ActionResult<string>> Register([FromForm] Model.Request.UserRegister newUser)
         {
-            // Check if there is an administrator first. Can't allow user to register before Administrator.
-            var adminUser = await context.Users.Where(u => u.Role == Dal.Model.UserRole.Admin).ToListAsync();
-            if (adminUser.Count == 0)
-                return Conflict("System is not working yet.");
+            // Check if administrator exists. At this point it can be only one administrator.
+            var adminsFound = await context.Users.Where(u => u.Role == Dal.Model.UserRole.Admin).ToListAsync();
 
-            // Check if user exists.
-            var usersFound = await context.Users.Where(u => u.Email == newUser.Email || u.Nickname == newUser.Nickname).ToListAsync();
-
-            if (usersFound.Count == 0)
+            if (adminsFound.Count == 0)
             {
-                //var allUsers = await context.Users.ToListAsync();
-                //int maxId;
-                //if (allUsers.Count > 0)
-                //    maxId = allUsers.Max(u => u.Id) + 1;
-                //else
-                //    maxId = 1;
-                var newUserDb = new Dal.Model.User()
+                var newAdminDb = new Dal.Model.User()
                 {
-                    //Id = maxId,
                     Email = newUser.Email,
                     Password = EncryptPassword(newUser.Password),
                     Nickname = newUser.Nickname,
                     Created = DateTime.Now,
-                    Role = Dal.Model.UserRole.PlainUser
+                    Role = Dal.Model.UserRole.Admin
                 };
-                context.Users.Add(newUserDb);
+                context.Users.Add(newAdminDb);
                 await context.SaveChangesAsync();
-                return GenerateToken(newUserDb.Id, newUserDb.Email);
+                return GenerateToken(newAdminDb.Id, newAdminDb.Email);
             }
             else
             {
@@ -111,8 +105,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 {
                     Id = userFound.Id,
                     Nickname = userFound.Nickname,
-                    Created = userFound.Created,
-                    Role = userFound.Role
+                    Created = userFound.Created
                 };
             }
             else

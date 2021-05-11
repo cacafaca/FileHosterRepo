@@ -127,6 +127,21 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.UserToken", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("UserTokens");
+                });
+
             modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.Media", b =>
                 {
                     b.HasOne("ProCode.FileHosterRepo.Dal.Model.User", "User")
@@ -156,6 +171,17 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                         .HasForeignKey("UserId");
 
                     b.Navigation("Media");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.UserToken", b =>
+                {
+                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

@@ -24,6 +24,10 @@ namespace ProCode.FileHosterRepo.Api
         public const string _connectionStringName = "FileHosterRepoConnectionString";
         #endregion
 
+        #region Fields
+        public IConfiguration Configuration { get; }
+        #endregion
+
         #region Constructors
         public Startup(IConfiguration configuration)
         {
@@ -31,7 +35,6 @@ namespace ProCode.FileHosterRepo.Api
         }
         #endregion
 
-        public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
