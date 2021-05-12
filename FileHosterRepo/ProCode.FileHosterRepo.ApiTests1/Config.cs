@@ -1,25 +1,58 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using ProCode.FileHosterRepo.Api;
 using ProCode.FileHosterRepo.Dal.DataAccess;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace ProCode.FileHosterRepo.ApiTests
 {
     static class Config
     {
         #region Fields
-        static IConfigurationRoot configurationRoot;
+        private static IConfigurationRoot configurationRoot;
+        private static readonly FileHosterContext fileHosterContext;
+        private static readonly WebApplicationFactory<Startup> webAppFactory;
+        private static readonly HttpClient client;
         #endregion
 
         #region Constructor
         static Config()
         {
             using IHost host = CreateHostBuilder(null).Build();
+
+            DbContextOptionsBuilder optionsBuilder = new DbContextOptionsBuilder();
+            optionsBuilder.UseMySQL(configurationRoot.GetConnectionString("FileHosterRepoConnectionString"));
+            fileHosterContext = new FileHosterContext(optionsBuilder.Options);
+
+            webAppFactory = new WebApplicationFactory<Startup>();
+            client = webAppFactory.CreateClient();
         }
         #endregion
 
-        static IHostBuilder CreateHostBuilder(string[] args) =>
+        #region Properties
+        public static FileHosterContext DbContext { get { return fileHosterContext; } }
+
+        public static HttpClient Client { get { return client; } }
+        #endregion
+
+        #region Methods
+        public static async Task RecreateDatabaseAsync()
+        {
+            await DbContext.Database.EnsureDeletedAsync();
+            await DbContext.Database.EnsureCreatedAsync();
+        }
+
+        public static void SetToken(this HttpClient client, string token = null)
+        {
+            client.DefaultRequestHeaders.Remove("Authorization");
+            if (token != null)
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+        }
+
+        private static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostingContext, configuration) =>
                 {
@@ -27,42 +60,14 @@ namespace ProCode.FileHosterRepo.ApiTests
 
                     IHostEnvironment env = hostingContext.HostingEnvironment;
 
-                    env.EnvironmentName = "Developemnt"; // Check how this value can be set, outside of code.
+                    env.EnvironmentName = "Development"; // Check how this value can be set, outside of code.
 
                     configuration
                         .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true);
 
                     configurationRoot = configuration.Build();
-
-                    //TransientFaultHandlingOptions options = new();
-                    //configurationRoot.GetSection(nameof(TransientFaultHandlingOptions))
-                    //                 .Bind(options);
-
-                    //Console.WriteLine($"TransientFaultHandlingOptions.Enabled={options.Enabled}");
-                    //Console.WriteLine($"TransientFaultHandlingOptions.AutoRetryDelay={options.AutoRetryDelay}");
                 });
-        public static string GetSecretKey()
-        {
-            return configurationRoot.GetSection("Jwt:Key").Value;
-        }
-
-        public static string GetConnectionString()
-        {
-            return configurationRoot.GetConnectionString("FileHosterRepoConnectionString");
-        }
-
-        public static FileHosterContext GetDbContext()
-        {
-            DbContextOptionsBuilder optionsBuilder = new DbContextOptionsBuilder();
-            optionsBuilder.UseMySQL(ApiTests.Config.GetConnectionString());
-            var context = new FileHosterContext(optionsBuilder.Options);
-            return context;
-        }
-
-        public static JwtAuthenticationManager GetJwtAuthenticationManager()
-        {
-            return new JwtAuthenticationManager(GetSecretKey());
-        }
+        #endregion
     }
 }

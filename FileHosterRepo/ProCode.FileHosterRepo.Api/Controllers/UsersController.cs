@@ -40,7 +40,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         [HttpPost("Login")]
         public async Task<ActionResult<string>> Login([FromForm] Model.Request.User loginUser)
         {
-            var usersFound = await context.Users.Where(u => u.Email == loginUser.Email).ToListAsync();
+            var usersFound = await context.Users.Where(u => u.Email == loginUser.Email && u.Role != Dal.Model.UserRole.Admin).ToListAsync();
             switch (usersFound.Count)
             {
                 case 0:
@@ -49,7 +49,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                     if (usersFound[0].Password == EncryptPassword(loginUser.Password))
                     {
 
-                        return GenerateToken(usersFound[0].Id, usersFound[0].Email);
+                        return Ok(GenerateToken(usersFound[0].Id, usersFound[0].Email));
                     }
                     else
                     {
@@ -67,22 +67,15 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             // Check if there is an administrator first. Can't allow user to register before Administrator.
             var adminUser = await context.Users.Where(u => u.Role == Dal.Model.UserRole.Admin).ToListAsync();
             if (adminUser.Count == 0)
-                return Conflict("System is not working yet.");
+                return Conflict("There is no administrator. System needs administrator in order to work.");
 
             // Check if user exists.
             var usersFound = await context.Users.Where(u => u.Email == newUser.Email || u.Nickname == newUser.Nickname).ToListAsync();
 
             if (usersFound.Count == 0)
             {
-                //var allUsers = await context.Users.ToListAsync();
-                //int maxId;
-                //if (allUsers.Count > 0)
-                //    maxId = allUsers.Max(u => u.Id) + 1;
-                //else
-                //    maxId = 1;
                 var newUserDb = new Dal.Model.User()
                 {
-                    //Id = maxId,
                     Email = newUser.Email,
                     Password = EncryptPassword(newUser.Password),
                     Nickname = newUser.Nickname,
@@ -91,7 +84,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 };
                 context.Users.Add(newUserDb);
                 await context.SaveChangesAsync();
-                return GenerateToken(newUserDb.Id, newUserDb.Email);
+                return Ok(GenerateToken(newUserDb.Id, newUserDb.Email));
             }
             else
             {
