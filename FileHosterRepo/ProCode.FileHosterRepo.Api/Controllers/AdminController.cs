@@ -20,6 +20,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
     {
         #region Constants
         const string claimTypeNameUserId = "userId";
+        const string adminNickname = "Admin";
         #endregion
 
         #region Fields
@@ -48,18 +49,11 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 case 1:
                     if (usersFound[0].Password == EncryptPassword(loginUser.Password))
                     {
-                        if (usersFound[0].Role == Dal.Model.UserRole.Admin)
-                        {
-                            return GenerateToken(usersFound[0].Id, usersFound[0].Email);
-                        }
-                        else
-                        {
-                            return Unauthorized("You are not Administrator.");
-                        }
+                        return Ok(GenerateToken(usersFound[0].Id, usersFound[0].Email));
                     }
                     else
                     {
-                        return Unauthorized();
+                        return Unauthorized("Wrong email and password.");
                     }
                 default:
                     return Conflict($"Multiple accounts error for email {loginUser.Email}. Please report this.");
@@ -70,6 +64,14 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         [HttpPost("Register")]
         public async Task<ActionResult<string>> Register([FromForm] Model.Request.UserRegister newUser)
         {
+            //Validate new user data.
+            if (newUser == null)
+                return Conflict("Please send data for a new user.");
+            if (string.IsNullOrWhiteSpace(newUser.Email))
+                return Conflict("Please send email.");
+            if (string.IsNullOrWhiteSpace(newUser.Password))
+                return Conflict("Please send password.");
+
             // Check if administrator exists. At this point it can be only one administrator.
             var adminsFound = await context.Users.Where(u => u.Role == Dal.Model.UserRole.Admin).ToListAsync();
 
@@ -79,17 +81,17 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 {
                     Email = newUser.Email,
                     Password = EncryptPassword(newUser.Password),
-                    Nickname = newUser.Nickname,
+                    Nickname = adminNickname,   // Administrator has fixed nickname.
                     Created = DateTime.Now,
                     Role = Dal.Model.UserRole.Admin
                 };
                 context.Users.Add(newAdminDb);
                 await context.SaveChangesAsync();
-                return GenerateToken(newAdminDb.Id, newAdminDb.Email);
+                return Ok(GenerateToken(newAdminDb.Id, newAdminDb.Email));
             }
             else
             {
-                return Conflict($"There is already user with email {newUser.Email}, or with nickname {newUser.Nickname}.");
+                return Conflict($"There is already administrator with email {adminsFound.FirstOrDefault()?.Email}.");
             }
         }
 
@@ -98,57 +100,19 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         {
             int userIdSearch = userId == null ? GetLoggedUserId() : (int)userId;
 
-            var userFound = await context.Users.Where(u => u.Id == userIdSearch).FirstOrDefaultAsync();
+            var userFound = await context.Users.Where(u => u.Id == userIdSearch && u.Role == Dal.Model.UserRole.Admin).FirstOrDefaultAsync();
             if (userFound != null)
             {
-                return new Model.Response.User()
+                return Ok(new Model.Response.User()
                 {
                     Id = userFound.Id,
                     Nickname = userFound.Nickname,
                     Created = userFound.Created
-                };
+                });
             }
             else
             {
                 return NotFound($"User id '{userIdSearch}' not found.");
-            }
-        }
-
-        [HttpDelete("Delete")]
-        public async Task<ActionResult> Delete()
-        {
-            if (User != null)
-            {
-                var claim = User.Claims.Where(c => c.Type == claimTypeNameUserId).FirstOrDefault();
-                if (claim != null)
-                {
-                    var userFound = await context.Users.Where(u => u.Id.ToString() == claim.Value).FirstOrDefaultAsync();
-                    if (userFound != null)
-                    {
-                        try
-                        {
-                            context.Users.Remove(userFound);
-                            await context.SaveChangesAsync();
-                            return Ok($"User {userFound} deleted.");
-                        }
-                        catch (Exception ex)
-                        {
-                            return Conflict(ex);
-                        }
-                    }
-                    else
-                    {
-                        return Conflict("User not found.");
-                    }
-                }
-                else
-                {
-                    return Conflict("Claim not found");
-                }
-            }
-            else
-            {
-                return Conflict("HTTP context not found.");
             }
         }
 
@@ -236,7 +200,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         private int GetLoggedUserId()
         {
-            var claim = User.Claims.Where(c => c.Type == claimTypeNameUserId).FirstOrDefault();
+            var claim = User?.Claims.Where(c => c.Type == claimTypeNameUserId).FirstOrDefault();
             if (claim != null)
             {
                 int userId;

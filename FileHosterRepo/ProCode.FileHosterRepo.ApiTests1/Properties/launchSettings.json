@@ -3,7 +3,7 @@
     "ProCode.FileHosterRepo.ApiTests": {
       "commandName": "Project",
       "environmentVariables": {
-        "Environment": "Value"
+        "EnvironmentName": "Development"
       }
     }
   }
