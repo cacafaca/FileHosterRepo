@@ -7,7 +7,7 @@ using ProCode.FileHosterRepo.Dal.DataAccess;
 
 namespace ProCode.FileHosterRepo.Dal.Migrations
 {
-    [DbContext(typeof(FileHosterContext))]
+    [DbContext(typeof(FileHosterRepoContext))]
     partial class FileHosterContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
@@ -110,6 +110,9 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
 
+                    b.Property<bool>("Logged")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("Nickname")
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
@@ -124,22 +127,13 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Nickname")
+                        .IsUnique();
+
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.UserToken", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("UserTokens");
                 });
 
             modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.Media", b =>
@@ -171,17 +165,6 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                         .HasForeignKey("UserId");
 
                     b.Navigation("Media");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.UserToken", b =>
-                {
-                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("User");
                 });

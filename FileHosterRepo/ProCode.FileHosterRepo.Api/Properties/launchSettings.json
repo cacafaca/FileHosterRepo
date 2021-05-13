@@ -26,6 +26,13 @@
       },
       "dotnetRunMessages": "true",
       "applicationUrl": "https://localhost:5001;http://localhost:5000"
+    },
+    "ProCode.FileHosterRepo.Api.Production": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production"
+      },
+      "applicationUrl": "https://api.filehosterrepo.in.rs;http://api.filehosterrepo.in.rs"
     }
   }
 }

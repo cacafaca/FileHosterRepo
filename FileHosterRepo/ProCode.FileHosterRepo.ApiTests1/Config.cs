@@ -12,8 +12,9 @@ namespace ProCode.FileHosterRepo.ApiTests
     static class Config
     {
         #region Fields
+        public const string HttpPostMediaType = "application/x-www-form-urlencoded";
         private static IConfigurationRoot configurationRoot;
-        private static readonly FileHosterContext fileHosterContext;
+        private static readonly FileHosterRepoContext fileHosterContext;
         private static readonly WebApplicationFactory<Startup> webAppFactory;
         private static readonly HttpClient client;
         #endregion
@@ -25,7 +26,7 @@ namespace ProCode.FileHosterRepo.ApiTests
 
             DbContextOptionsBuilder optionsBuilder = new DbContextOptionsBuilder();
             optionsBuilder.UseMySQL(configurationRoot.GetConnectionString("FileHosterRepoConnectionString"));
-            fileHosterContext = new FileHosterContext(optionsBuilder.Options);
+            fileHosterContext = new FileHosterRepoContext(optionsBuilder.Options);
 
             webAppFactory = new WebApplicationFactory<Startup>();
             client = webAppFactory.CreateClient();
@@ -33,7 +34,7 @@ namespace ProCode.FileHosterRepo.ApiTests
         #endregion
 
         #region Properties
-        public static FileHosterContext DbContext { get { return fileHosterContext; } }
+        public static FileHosterRepoContext DbContext { get { return fileHosterContext; } }
 
         public static HttpClient Client { get { return client; } }
         #endregion

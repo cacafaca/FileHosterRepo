@@ -26,12 +26,14 @@ namespace ProCode.FileHosterRepo.Api
 
         #region Fields
         public IConfiguration Configuration { get; }
+        private readonly IWebHostEnvironment Environment;
         #endregion
 
         #region Constructors
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
+            Environment = env;
         }
         #endregion
 
@@ -41,7 +43,7 @@ namespace ProCode.FileHosterRepo.Api
         {
             services.AddControllers();
 
-            services.AddDbContext<Dal.DataAccess.FileHosterContext>(options =>
+            services.AddDbContext<Dal.DataAccess.FileHosterRepoContext>(options =>
                 options.UseMySQL(Configuration.GetConnectionString(_connectionStringName))
                 //options.UseMySQL("server=localhost;user id=filehoster_app;password=development;persistsecurityinfo=True;database=filehoster;")
             );

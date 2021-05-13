@@ -14,7 +14,7 @@ namespace ProCode.FileHosterRepo.Dal.DataAccess.Tests
         [TestMethod()]
         public void CreateDbContextTest()
         {
-            FileHosterContextFactory contextFactory = new();
+            FileHosterRepoContextFactory contextFactory = new();
             var context = contextFactory.CreateDbContext(null); ; ;
             Assert.IsNotNull(context);
         }

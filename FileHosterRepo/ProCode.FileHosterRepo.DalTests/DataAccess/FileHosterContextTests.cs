@@ -13,7 +13,7 @@ namespace ProCode.FileHosterRepo.Dal.DataAccess.Tests
         [TestMethod()]
         public void FileHosterContextTest()
         {
-            FileHosterContextFactory contextFactory = new();
+            FileHosterRepoContextFactory contextFactory = new();
             var context = contextFactory.CreateDbContext(null); ; ;
             Assert.IsNotNull(context);
             Assert.IsTrue(context.Database.CanConnect());

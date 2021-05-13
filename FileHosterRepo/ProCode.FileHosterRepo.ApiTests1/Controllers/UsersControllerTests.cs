@@ -108,5 +108,38 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.IsNotNull(userInfo);
             Assert.AreEqual("InfoUser", userInfo.Nickname);
         }
+        [TestMethod()]
+        public async Task Login_And_Logout()
+        {
+            // Register user.
+            HttpContent httpContent = new StringContent(string.Join("&", new string[]
+            {
+                "Email=" + Uri.EscapeDataString("logout@user.com"),
+                "Password=" + Uri.EscapeDataString("logout"),
+                "Nickname=" + Uri.EscapeDataString("Logout")
+            }), Encoding.UTF8, "application/x-www-form-urlencoded");
+            HttpResponseMessage response = await ApiTests.Config.Client.PostAsync("/Users/Register", httpContent);
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+
+            // Login user.
+            httpContent = new StringContent(string.Join("&", new string[]
+            {
+                "Email=" + Uri.EscapeDataString("logout@user.com"),
+                "Password=" + Uri.EscapeDataString("logout")
+            }), Encoding.UTF8, "application/x-www-form-urlencoded");
+            response = await ApiTests.Config.Client.PostAsync("/Users/Login", httpContent);
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            var token = await response.Content.ReadAsStringAsync();
+            Assert.IsTrue(!string.IsNullOrWhiteSpace(token));
+
+            // Logout.
+            Config.Client.SetToken(token);
+            response = await Config.Client.GetAsync("/Users/Logout");
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+
+            // Get info. Expect to fail.
+            response = await Config.Client.GetAsync("/Users/Info");
+            Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
     }
 }

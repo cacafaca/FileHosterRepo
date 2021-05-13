@@ -24,12 +24,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         #endregion
 
         #region Fields
-        private readonly Dal.DataAccess.FileHosterContext context;
+        private readonly Dal.DataAccess.FileHosterRepoContext context;
         private readonly IJwtAuthenticationManager authenticationManager;
         #endregion
 
         #region Constructor
-        public AdminController(Dal.DataAccess.FileHosterContext context, IJwtAuthenticationManager authenticationManager)
+        public AdminController(Dal.DataAccess.FileHosterRepoContext context, IJwtAuthenticationManager authenticationManager)
         {
             this.context = context;
             this.authenticationManager = authenticationManager;
@@ -37,29 +37,6 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         #endregion
 
         #region Actions
-        [AllowAnonymous]
-        [HttpPost("Login")]
-        public async Task<ActionResult<string>> Login([FromForm] Model.Request.User loginUser)
-        {
-            var usersFound = await context.Users.Where(u => u.Email == loginUser.Email && u.Role == Dal.Model.UserRole.Admin).ToListAsync();
-            switch (usersFound.Count)
-            {
-                case 0:
-                    return NotFound($"Can't find user with email: {loginUser.Email}.");
-                case 1:
-                    if (usersFound[0].Password == EncryptPassword(loginUser.Password))
-                    {
-                        return Ok(GenerateToken(usersFound[0].Id, usersFound[0].Email));
-                    }
-                    else
-                    {
-                        return Unauthorized("Wrong email and password.");
-                    }
-                default:
-                    return Conflict($"Multiple accounts error for email {loginUser.Email}. Please report this.");
-            }
-        }
-
         [AllowAnonymous]
         [HttpPost("Register")]
         public async Task<ActionResult<string>> Register([FromForm] Model.Request.UserRegister newUser)
@@ -83,7 +60,8 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                     Password = EncryptPassword(newUser.Password),
                     Nickname = adminNickname,   // Administrator has fixed nickname.
                     Created = DateTime.Now,
-                    Role = Dal.Model.UserRole.Admin
+                    Role = Dal.Model.UserRole.Admin,
+                    Logged = true
                 };
                 context.Users.Add(newAdminDb);
                 await context.SaveChangesAsync();
@@ -95,19 +73,64 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             }
         }
 
+        [AllowAnonymous]
+        [HttpPost("Login")]
+        public async Task<ActionResult<string>> Login([FromForm] Model.Request.User loginUser)
+        {
+            var usersFound = await context.Users.Where(u => u.Email == loginUser.Email && u.Role == Dal.Model.UserRole.Admin).ToListAsync();
+            switch (usersFound.Count)
+            {
+                case 0:
+                    return NotFound($"Can't find user with email: {loginUser.Email}.");
+                case 1:
+                    if (usersFound.First().Password == EncryptPassword(loginUser.Password))
+                    {
+                        usersFound.First().Logged = true;
+                        await context.SaveChangesAsync();
+                        return Ok(GenerateToken(usersFound.First().Id, usersFound.First().Email));
+                    }
+                    else
+                    {
+                        return Unauthorized("Wrong email and password.");
+                    }
+                default:
+                    return Conflict($"Multiple accounts error for email {loginUser.Email}. Please report this.");
+            }
+        }
+
+        [HttpGet("Logout")]
+        public async Task<ActionResult<string>> Logout()
+        {
+            var loggedUser = await context.Users.SingleOrDefaultAsync(u => u.Id == User.GetUserId() && u.Role == Dal.Model.UserRole.Admin);
+            if (loggedUser != null)
+            {
+                loggedUser.Logged = false;
+                await context.SaveChangesAsync();
+                return Ok($"Administrator {User.Claims.Where(c => c.Type == ClaimTypes.Email).FirstOrDefault()?.Value} logged out.");
+            }
+            else
+            {
+                return Conflict("Administrator is not logged in.");
+            }
+        }
+
         [HttpGet("Info")]
         public async Task<ActionResult<Model.Response.User>> Info(int? userId)
         {
-            int userIdSearch = userId == null ? GetLoggedUserId() : (int)userId;
+            // Always check at beginning!
+            if (!await IsAdminLoggedAsync()) return GetUnauthorizedLoginResponse();
 
-            var userFound = await context.Users.Where(u => u.Id == userIdSearch && u.Role == Dal.Model.UserRole.Admin).FirstOrDefaultAsync();
-            if (userFound != null)
+            int userIdSearch = userId == null ? User.GetUserId() : (int)userId;
+
+            var admin = await context.Users.SingleOrDefaultAsync(u => u.Id == userIdSearch && u.Role == Dal.Model.UserRole.Admin);
+            if (admin != null)
             {
                 return Ok(new Model.Response.User()
                 {
-                    Id = userFound.Id,
-                    Nickname = userFound.Nickname,
-                    Created = userFound.Created
+                    Id = admin.Id,
+                    Nickname = admin.Nickname,
+                    Created = admin.Created,
+                    Role = admin.Role
                 });
             }
             else
@@ -116,33 +139,26 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             }
         }
 
-        [HttpGet("Logout")]
-        public ActionResult<string> Logout()
-        {
-            return ExpireToken();
-        }
-
         [HttpPatch("Update")]
         public async Task<ActionResult> Update([FromForm] Model.Request.UserRegister updateUser)
         {
-            if (string.IsNullOrWhiteSpace(updateUser.Nickname))
-                return Conflict("Nickname is empty.");
+            Dal.Model.User loggedAdmin;
 
-            var loggedUserId = GetLoggedUserId();
-            var userFound = await context.Users.Where(user => user.Id == loggedUserId).FirstOrDefaultAsync();
-            if (userFound != null)
+            // Always check at beginning!
+            if (!await IsAdminLoggedAsync(loggedAdmin = await GetLoggedAdminAsync())) return GetUnauthorizedLoginResponse();
+
+            if (loggedAdmin != null)
             {
-                userFound.Nickname = updateUser.Nickname;
+                if (string.IsNullOrWhiteSpace(updateUser.Password))
+                    return Conflict("Password can not be empty.");
 
-                if (!string.IsNullOrWhiteSpace(updateUser.Password))
-                    userFound.Password = EncryptPassword(updateUser.Password);
-
+                loggedAdmin.Password = EncryptPassword(updateUser.Password);
                 await context.SaveChangesAsync();
                 return Ok("Updated.");
             }
             else
             {
-                return NotFound($"Can't find logged user id {loggedUserId}.");
+                return NotFound($"Can't find logged user id {loggedAdmin}.");
             }
         }
         #endregion
@@ -184,40 +200,28 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
         }
 
-        private string ExpireToken()
+        private async Task<Dal.Model.User> GetLoggedAdminAsync()
         {
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(User.Claims),
-                Expires = DateTime.UtcNow.AddYears(-1),
-                NotBefore = DateTime.MinValue,
-                SigningCredentials = new SigningCredentials(
-                    authenticationManager.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256)
-            };
-            var tokenHandler = new JwtSecurityTokenHandler();
-            return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
+            if (User == null)
+                throw new ArgumentNullException("User not logged.");
+
+            return await context.Users.SingleOrDefaultAsync(user =>
+                user.Id == User.GetUserId() &&
+                user.Role == Dal.Model.UserRole.Admin &&
+                user.Logged == true
+                );
         }
 
-        private int GetLoggedUserId()
+        private async Task<bool> IsAdminLoggedAsync(Dal.Model.User loggedAdminAlreadyRead = null)
         {
-            var claim = User?.Claims.Where(c => c.Type == claimTypeNameUserId).FirstOrDefault();
-            if (claim != null)
-            {
-                int userId;
-                if (int.TryParse(claim.Value, out userId))
-                {
-                    return userId;
-                }
-                else
-                {
-                    throw new Exception("Claim not valid.");
-                }
-            }
-            else
-            {
-                throw new Exception("Claim not found.");
-            }
+            var loggedAdmin = loggedAdminAlreadyRead?? await GetLoggedAdminAsync();
+            return loggedAdmin != null && loggedAdmin.Logged;
         }
+
+        private ActionResult GetUnauthorizedLoginResponse()
+        {
+            return Unauthorized($"Admin {User.GetEmail()} not logged in.");
+        }
+        #endregion
     }
-    #endregion
 }

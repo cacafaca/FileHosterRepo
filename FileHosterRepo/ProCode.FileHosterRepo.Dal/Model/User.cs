@@ -19,5 +19,6 @@ namespace ProCode.FileHosterRepo.Dal.Model
         public string Nickname { get; set; }
         public DateTime? Created { get; set; }
         public UserRole Role { get; set; }
+        public bool Logged { get; set; }
     }
 }

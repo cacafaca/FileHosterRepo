@@ -18,7 +18,8 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     Password = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false),
                     Nickname = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true),
                     Created = table.Column<DateTime>(type: "datetime", nullable: true),
-                    Role = table.Column<int>(type: "int", nullable: false)
+                    Role = table.Column<int>(type: "int", nullable: false),
+                    Logged = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -44,24 +45,6 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserTokens",
-                columns: table => new
-                {
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    Token = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserTokens", x => x.UserId);
-                    table.ForeignKey(
-                        name: "FK_UserTokens_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -133,15 +116,24 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                 name: "IX_MediaVersions_UserId",
                 table: "MediaVersions",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Email",
+                table: "Users",
+                column: "Email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Nickname",
+                table: "Users",
+                column: "Nickname",
+                unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
                 name: "MediaLinks");
-
-            migrationBuilder.DropTable(
-                name: "UserTokens");
 
             migrationBuilder.DropTable(
                 name: "MediaVersions");

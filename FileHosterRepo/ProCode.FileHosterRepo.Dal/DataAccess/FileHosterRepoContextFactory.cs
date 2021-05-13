@@ -5,7 +5,7 @@ using System.IO;
 
 namespace ProCode.FileHosterRepo.Dal.DataAccess
 {
-    public class FileHosterContextFactory : IDesignTimeDbContextFactory<FileHosterContext>
+    public class FileHosterRepoContextFactory : IDesignTimeDbContextFactory<FileHosterRepoContext>
     {
 #if DEBUG
         const string connectionStringDevelopmentJsonFile = "DataAccess\\ConnectionStringDevelopment.json";
@@ -21,30 +21,30 @@ namespace ProCode.FileHosterRepo.Dal.DataAccess
             return connectionStringProductionJsonFile;
 #endif
         }
-        public FileHosterContext CreateDbContext(string[] args)
+        public FileHosterRepoContext CreateDbContext(string[] args)
         {
             return CreateMySqlDbContext();
         }
 
-        private static FileHosterContext CreateMySqlDbContext()
+        private static FileHosterRepoContext CreateMySqlDbContext()
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile(GetConnectionStringJsonFile(), optional: true, reloadOnChange: true);
             var connectionString = builder.Build().GetSection("ConnectionString").Value;
-            var optionsBuilder = new DbContextOptionsBuilder<FileHosterContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<FileHosterRepoContext>();
             optionsBuilder.UseMySQL(connectionString);
-            return new FileHosterContext(optionsBuilder.Options);
+            return new FileHosterRepoContext(optionsBuilder.Options);
         }
-        private static FileHosterContext CreateMsSqlDbContext()
+        private static FileHosterRepoContext CreateMsSqlDbContext()
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile(GetConnectionStringJsonFile(), optional: true, reloadOnChange: true);
             var connectionString = builder.Build().GetSection("ConnectionString").Value;
-            var optionsBuilder = new DbContextOptionsBuilder<FileHosterContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<FileHosterRepoContext>();
             //optionsBuilder.UseSqlServer(connectionString);
-            return new FileHosterContext(optionsBuilder.Options);
+            return new FileHosterRepoContext(optionsBuilder.Options);
         }
     }
 }
