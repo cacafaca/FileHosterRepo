@@ -66,7 +66,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         }
 
         [TestMethod]
-        public async Task Login_Successfull()
+        public async Task Login_Successful()
         {
             // Register administrator.
             HttpResponseMessage response = await Config.Client.PostAsync("/Admin/Register",
@@ -176,14 +176,16 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             var token = await response.Content.ReadAsStringAsync();
 
             // Update administrator password.
-            var passwordBefore = (await Config.DbContext.Users.SingleOrDefaultAsync(u => u.Role == Dal.Model.UserRole.Admin)).Password;
+            var passwordBefore = (await Config.DbContext.Users.
+                SingleOrDefaultAsync(u => u.Role == Dal.Model.UserRole.Admin)).Password;
             Config.Client.SetToken(token);
             response = await Config.Client.PatchAsync("/Admin/Update",
                 new StringContent(string.Join("&", new string[] {
                     "Password=" + Uri.EscapeDataString("updatedpassword")
                 }), Encoding.UTF8, Config.HttpPostMediaType));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-            var passwordAfter = (await Config.DbContext.Users.AsNoTracking().SingleOrDefaultAsync(u => u.Role == Dal.Model.UserRole.Admin)).Password;
+            var passwordAfter = (await Config.DbContext.Users.AsNoTracking()
+                .SingleOrDefaultAsync(u => u.Role == Dal.Model.UserRole.Admin)).Password;
             Assert.AreNotEqual(passwordBefore, passwordAfter);
         }
 

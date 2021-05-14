@@ -113,17 +113,20 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         [HttpGet("Info")]
         public async Task<ActionResult<Model.Response.User>> Info(int? userId)
         {
+            // Always check at beginning!
+            if (!await IsUserLoggedAsync()) return GetUnauthorizedLoginResponse();
+
             int userIdSearch = userId == null ? User.GetUserId() : (int)userId; // If userId is null, means get it for its self.
 
-            var userFound = await context.Users.Where(u => u.Id == userIdSearch).FirstOrDefaultAsync();
-            if (userFound != null)
+            var user = await context.Users.SingleOrDefaultAsync(u => u.Id == userIdSearch);
+            if (user != null)
             {
                 return new Model.Response.User()
                 {
-                    Id = userFound.Id,
-                    Nickname = userFound.Nickname,
-                    Created = userFound.Created,
-                    Role = userFound.Role
+                    Id = user.Id,
+                    Nickname = user.Nickname,
+                    Created = user.Created,
+                    Role = user.Role
                 };
             }
             else
@@ -133,49 +136,45 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpPatch("Update")]
-        public async Task<ActionResult> Update([FromForm] Model.Request.UserRegister updateUser)
+        public async Task<ActionResult<bool>> Update([FromForm] Model.Request.UserRegister updateUser)
         {
+            // Validate nickname.
             if (string.IsNullOrWhiteSpace(updateUser.Nickname))
                 return Conflict("Nickname is empty.");
+            // Validate password.
+            if (string.IsNullOrWhiteSpace(updateUser.Password))
+                return Conflict("Password can not be empty.");
 
-            var loggedUser = await GetLoggedUserAsync();
-            if (loggedUser != null)
+            Dal.Model.User loggedUser;
+
+            // Always check at beginning!
+            if (!await IsUserLoggedAsync(loggedUser = await GetLoggedUserAsync())) return GetUnauthorizedLoginResponse();
+
+            var newPassword = EncryptPassword(updateUser.Password);
+            if (loggedUser.Nickname != updateUser.Nickname || loggedUser.Password != newPassword)
             {
                 loggedUser.Nickname = updateUser.Nickname;
-
-                if (!string.IsNullOrWhiteSpace(updateUser.Password))
-                    loggedUser.Password = EncryptPassword(updateUser.Password);
-
+                loggedUser.Password = newPassword;
                 await context.SaveChangesAsync();
-                return Ok("Updated.");
+                return Ok(true);
             }
             else
             {
-                return NotFound($"Can't find logged user id {User.GetUserId()}.");
+                return Ok(false);
             }
         }
 
         [HttpDelete("Delete")]
         public async Task<ActionResult> Delete()
         {
-            var userFound = await context.Users.SingleOrDefaultAsync(u => u.Id == User.GetUserId());
-            if (userFound != null)
-            {
-                try
-                {
-                    context.Users.Remove(userFound);
-                    await context.SaveChangesAsync();
-                    return Ok($"User {userFound} deleted.");
-                }
-                catch (Exception ex)
-                {
-                    return Conflict(ex);
-                }
-            }
-            else
-            {
-                return Conflict("User not found.");
-            }
+            Dal.Model.User loggedUser;
+
+            // Always check at beginning!
+            if (!await IsUserLoggedAsync(loggedUser = await GetLoggedUserAsync())) return GetUnauthorizedLoginResponse();
+
+            context.Users.Remove(loggedUser);
+            await context.SaveChangesAsync();
+            return Ok($"User {loggedUser} deleted.");
         }
         #endregion
 
@@ -220,10 +219,25 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         private async Task<Dal.Model.User> GetLoggedUserAsync()
         {
             if (User == null)
-                throw new ArgumentNullException("User not logged.");
-            
-            return await context.Users.SingleOrDefaultAsync(user => user.Id == User.GetUserId()); ;
+                throw new ArgumentNullException("User is not logged.");
+
+            return await context.Users.SingleOrDefaultAsync(user =>
+                user.Id == User.GetUserId() &&
+                user.Role != Dal.Model.UserRole.Admin &&
+                user.Logged == true
+                );
         }
+
+        private async Task<bool> IsUserLoggedAsync(Dal.Model.User loggedUserAlreadyRead = null)
+        {
+            var loggedAdmin = loggedUserAlreadyRead ?? await GetLoggedUserAsync();
+            return loggedAdmin != null && loggedAdmin.Logged;
+        }
+
+        private ActionResult GetUnauthorizedLoginResponse()
+        {
+            return Unauthorized($"User {User.GetEmail()} not logged in.");
+        }
+        #endregion
     }
-    #endregion
 }

@@ -101,17 +101,14 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         [HttpGet("Logout")]
         public async Task<ActionResult<string>> Logout()
         {
-            var loggedUser = await context.Users.SingleOrDefaultAsync(u => u.Id == User.GetUserId() && u.Role == Dal.Model.UserRole.Admin);
-            if (loggedUser != null)
-            {
-                loggedUser.Logged = false;
-                await context.SaveChangesAsync();
-                return Ok($"Administrator {User.Claims.Where(c => c.Type == ClaimTypes.Email).FirstOrDefault()?.Value} logged out.");
-            }
-            else
-            {
-                return Conflict("Administrator is not logged in.");
-            }
+            Dal.Model.User loggedAdmin;
+
+            // Always check at beginning!
+            if (!await IsAdminLoggedAsync(loggedAdmin = await GetLoggedAdminAsync())) return GetUnauthorizedLoginResponse();
+
+            loggedAdmin.Logged = false; // loggedAdmin is impossible to be null.
+            await context.SaveChangesAsync();
+            return Ok($"Administrator {User.Claims.Where(c => c.Type == ClaimTypes.Email).FirstOrDefault()?.Value} logged out.");
         }
 
         [HttpGet("Info")]
@@ -125,40 +122,42 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             var admin = await context.Users.SingleOrDefaultAsync(u => u.Id == userIdSearch && u.Role == Dal.Model.UserRole.Admin);
             if (admin != null)
             {
-                return Ok(new Model.Response.User()
+                return new Model.Response.User()
                 {
                     Id = admin.Id,
                     Nickname = admin.Nickname,
                     Created = admin.Created,
                     Role = admin.Role
-                });
+                };
             }
             else
             {
-                return NotFound($"User id '{userIdSearch}' not found.");
+                return NotFound($"Administrator id '{userIdSearch}' not found.");
             }
         }
 
         [HttpPatch("Update")]
-        public async Task<ActionResult> Update([FromForm] Model.Request.UserRegister updateUser)
+        public async Task<ActionResult<bool>> Update([FromForm] Model.Request.UserRegister updateUser)
         {
+            // Validate password.
+            if (string.IsNullOrWhiteSpace(updateUser.Password))
+                return Conflict("Password can not be empty.");
+
             Dal.Model.User loggedAdmin;
 
             // Always check at beginning!
             if (!await IsAdminLoggedAsync(loggedAdmin = await GetLoggedAdminAsync())) return GetUnauthorizedLoginResponse();
 
-            if (loggedAdmin != null)
+            var newPassword = EncryptPassword(updateUser.Password);
+            if (loggedAdmin.Password != newPassword)
             {
-                if (string.IsNullOrWhiteSpace(updateUser.Password))
-                    return Conflict("Password can not be empty.");
-
-                loggedAdmin.Password = EncryptPassword(updateUser.Password);
+                loggedAdmin.Password = newPassword;
                 await context.SaveChangesAsync();
-                return Ok("Updated.");
+                return Ok(true);
             }
             else
             {
-                return NotFound($"Can't find logged user id {loggedAdmin}.");
+                return Ok(false);   // Return false, because there is no point updating same value.
             }
         }
         #endregion
@@ -203,7 +202,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         private async Task<Dal.Model.User> GetLoggedAdminAsync()
         {
             if (User == null)
-                throw new ArgumentNullException("User not logged.");
+                throw new ArgumentNullException("Administrator is not logged.");
 
             return await context.Users.SingleOrDefaultAsync(user =>
                 user.Id == User.GetUserId() &&
@@ -214,7 +213,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         private async Task<bool> IsAdminLoggedAsync(Dal.Model.User loggedAdminAlreadyRead = null)
         {
-            var loggedAdmin = loggedAdminAlreadyRead?? await GetLoggedAdminAsync();
+            var loggedAdmin = loggedAdminAlreadyRead ?? await GetLoggedAdminAsync();
             return loggedAdmin != null && loggedAdmin.Logged;
         }
 
