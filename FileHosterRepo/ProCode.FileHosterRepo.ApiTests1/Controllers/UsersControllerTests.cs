@@ -28,7 +28,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 new StringContent(string.Join("&", new string[] {
                     "Email=" + Uri.EscapeDataString("admin@admin.com"),
                     "Password=" + Uri.EscapeDataString("admin")
-                }), Encoding.UTF8, Config.HttpPostMediaType)).Wait();
+                }), Encoding.UTF8, Config.HttpMediaTypeForm)).Wait();
         }
         #endregion
 
@@ -41,7 +41,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     "Email=" + Uri.EscapeDataString("singleuser@user.com"),
                     "Password=" + Uri.EscapeDataString("singleuser"),
                     "Nickname=" + Uri.EscapeDataString("SingleUser")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                }), Encoding.UTF8, Config.HttpMediaTypeForm));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
             Assert.IsTrue(!string.IsNullOrWhiteSpace(token));
@@ -57,7 +57,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     "Email=" + Uri.EscapeDataString("loginuser@user.com"),
                     "Password=" + Uri.EscapeDataString("loginuser"),
                     "Nickname=" + Uri.EscapeDataString("LoginUser")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                }), Encoding.UTF8, Config.HttpMediaTypeForm));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login user.
@@ -65,7 +65,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 new StringContent(string.Join("&", new string[] {
                     "Email=" + Uri.EscapeDataString("loginuser@user.com"),
                     "Password=" + Uri.EscapeDataString("loginuser")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                }), Encoding.UTF8, Config.HttpMediaTypeForm));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
             Assert.IsTrue(!string.IsNullOrWhiteSpace(token));
@@ -80,7 +80,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     "Email=" + Uri.EscapeDataString("loginuser@user.com"),
                     "Password=" + Uri.EscapeDataString("loginuser"),
                     "Nickname=" + Uri.EscapeDataString("LoginUser")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                }), Encoding.UTF8, Config.HttpMediaTypeForm));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login user.
@@ -88,7 +88,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 new StringContent(string.Join("&", new string[] {
                     "Email=" + Uri.EscapeDataString("loginuser@user.com"),
                     "Password=" + Uri.EscapeDataString("badpassword")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                }), Encoding.UTF8, Config.HttpMediaTypeForm));
             Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
@@ -101,7 +101,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     "Email=" + Uri.EscapeDataString("logout@user.com"),
                     "Password=" + Uri.EscapeDataString("logout"),
                     "Nickname=" + Uri.EscapeDataString("Logout")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                }), Encoding.UTF8, Config.HttpMediaTypeForm));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
 
@@ -124,7 +124,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     "Email=" + Uri.EscapeDataString("logout@user.com"),
                     "Password=" + Uri.EscapeDataString("logout"),
                     "Nickname=" + Uri.EscapeDataString("Logout")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                }), Encoding.UTF8, Config.HttpMediaTypeForm));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login user.
@@ -132,7 +132,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 new StringContent(string.Join("&", new string[] {
                     "Email=" + Uri.EscapeDataString("logout@user.com"),
                     "Password=" + Uri.EscapeDataString("logout")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                }), Encoding.UTF8, Config.HttpMediaTypeForm));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
 
@@ -155,7 +155,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     "Email=" + Uri.EscapeDataString("update@user.com"),
                     "Password=" + Uri.EscapeDataString("firstpass"),
                     "Nickname=" + Uri.EscapeDataString("FirstNickname")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                }), Encoding.UTF8, Config.HttpMediaTypeForm));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
 
@@ -168,7 +168,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 new StringContent(string.Join("&", new string[] {
                     "Nickname=" + Uri.EscapeDataString("UpdatedNickname"),
                     "Password=" + Uri.EscapeDataString("updatedpassword")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                }), Encoding.UTF8, Config.HttpMediaTypeForm));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var userAfter = (await Config.DbContext.Users.AsNoTracking()
                 .SingleOrDefaultAsync(u =>
@@ -187,7 +187,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     "Email=" + Uri.EscapeDataString("infouser@user.com"),
                     "Password=" + Uri.EscapeDataString("infouser"),
                     "Nickname=" + Uri.EscapeDataString("InfoUser")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                }), Encoding.UTF8, Config.HttpMediaTypeForm));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login user.
@@ -195,7 +195,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 new StringContent(string.Join("&", new string[] {
                     "Email=" + Uri.EscapeDataString("infouser@user.com"),
                     "Password=" + Uri.EscapeDataString("infouser")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                }), Encoding.UTF8, Config.HttpMediaTypeForm));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
 
@@ -217,7 +217,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     "Email=" + Uri.EscapeDataString("deleteuser@user.com"),
                     "Password=" + Uri.EscapeDataString("deleteuser"),
                     "Nickname=" + Uri.EscapeDataString("DeleteUser")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                }), Encoding.UTF8, Config.HttpMediaTypeForm));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
 

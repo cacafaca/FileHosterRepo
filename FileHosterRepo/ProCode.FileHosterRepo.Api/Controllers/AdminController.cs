@@ -16,38 +16,30 @@ namespace ProCode.FileHosterRepo.Api.Controllers
     [Authorize]
     [ApiController]
     [Route("[controller]")] // Adds "/Users" to link. Instead "/Login" we get "/Users/Login".
-    public class AdminController : Controller
+    public class AdminController : BaseController
     {
         #region Constants
         const string claimTypeNameUserId = "userId";
         const string adminNickname = "Admin";
         #endregion
 
-        #region Fields
-        private readonly Dal.DataAccess.FileHosterRepoContext context;
-        private readonly IJwtAuthenticationManager authenticationManager;
-        #endregion
-
         #region Constructor
         public AdminController(Dal.DataAccess.FileHosterRepoContext context, IJwtAuthenticationManager authenticationManager)
-        {
-            this.context = context;
-            this.authenticationManager = authenticationManager;
-        }
+            : base(context, authenticationManager) { }
         #endregion
 
         #region Actions
         [AllowAnonymous]
         [HttpPost("Register")]
-        public async Task<ActionResult<string>> Register([FromForm] Model.Request.UserRegister newUser)
+        public async Task<ActionResult> Register(Model.Request.UserRegister newUser)
         {
             //Validate new user data.
             if (newUser == null)
-                return Conflict("Please send data for a new user.");
+                return BadRequest("Please send data for a new user.");
             if (string.IsNullOrWhiteSpace(newUser.Email))
-                return Conflict("Please send email.");
+                return BadRequest("Please send email.");
             if (string.IsNullOrWhiteSpace(newUser.Password))
-                return Conflict("Please send password.");
+                return BadRequest("Please send password.");
 
             // Check if administrator exists. At this point it can be only one administrator.
             var adminsFound = await context.Users.Where(u => u.Role == Dal.Model.UserRole.Admin).ToListAsync();
@@ -75,7 +67,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         [AllowAnonymous]
         [HttpPost("Login")]
-        public async Task<ActionResult<string>> Login([FromForm] Model.Request.User loginUser)
+        public async Task<ActionResult<string>> Login(Model.Request.User loginUser)
         {
             var usersFound = await context.Users.Where(u => u.Email == loginUser.Email && u.Role == Dal.Model.UserRole.Admin).ToListAsync();
             switch (usersFound.Count)
@@ -109,6 +101,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             loggedAdmin.Logged = false; // loggedAdmin is impossible to be null.
             await context.SaveChangesAsync();
             return Ok($"Administrator {User.Claims.Where(c => c.Type == ClaimTypes.Email).FirstOrDefault()?.Value} logged out.");
+            //return Ok(GenerateToken(0, string.Empty));
         }
 
         [HttpGet("Info")]
@@ -137,7 +130,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpPatch("Update")]
-        public async Task<ActionResult<bool>> Update([FromForm] Model.Request.UserRegister updateUser)
+        public async Task<ActionResult<bool>> Update(Model.Request.UserRegister updateUser)
         {
             // Validate password.
             if (string.IsNullOrWhiteSpace(updateUser.Password))

@@ -12,7 +12,8 @@ namespace ProCode.FileHosterRepo.ApiTests
     static class Config
     {
         #region Fields
-        public const string HttpPostMediaType = "application/x-www-form-urlencoded";
+        public const string HttpMediaTypeForm = "application/x-www-form-urlencoded";
+        public const string HttpMediaTypeJson = "application/json";
         private static IConfigurationRoot configurationRoot;
         private static readonly FileHosterRepoContext fileHosterContext;
         private static readonly WebApplicationFactory<Startup> webAppFactory;

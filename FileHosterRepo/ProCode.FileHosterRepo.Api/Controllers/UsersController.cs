@@ -3,7 +3,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using ProCode.FileHosterRepo.Api.Model;
 using System.Security.Cryptography;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
@@ -16,23 +15,13 @@ namespace ProCode.FileHosterRepo.Api.Controllers
     [Authorize]
     [ApiController]
     [Route("[controller]")] // "[controller]" adds "/Users" to link. Instead "/Login" we get "/Users/Login".
-    public class UsersController : Controller
+    public class UsersController : BaseController
     {
-        #region Constants
-        #endregion
-
-        #region Fields
-        private readonly Dal.DataAccess.FileHosterRepoContext context;
-        private readonly IJwtAuthenticationManager authenticationManager;
-        #endregion
-
         #region Constructor
         public UsersController(Dal.DataAccess.FileHosterRepoContext context, IJwtAuthenticationManager authenticationManager)
-        {
-            this.context = context;
-            this.authenticationManager = authenticationManager;
-        }
+            : base(context, authenticationManager) { }
         #endregion
+        /*
 
         #region Actions
         [AllowAnonymous]
@@ -239,5 +228,6 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             return Unauthorized($"User {User.GetEmail()} not logged in.");
         }
         #endregion
+        */
     }
 }

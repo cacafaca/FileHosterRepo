@@ -41,7 +41,12 @@ namespace ProCode.FileHosterRepo.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers()
+                .AddJsonOptions(opt =>
+                {
+                    opt.JsonSerializerOptions.PropertyNamingPolicy = null;
+                    opt.JsonSerializerOptions.DictionaryKeyPolicy = null;
+                });
 
             services.AddDbContext<Dal.DataAccess.FileHosterRepoContext>(options =>
                 options.UseMySQL(Configuration.GetConnectionString(_connectionStringName))
@@ -58,7 +63,7 @@ namespace ProCode.FileHosterRepo.Api
                 options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = (services.Where(x=>x.Lifetime==ServiceLifetime.Singleton && x.ServiceType.Name == nameof(IJwtAuthenticationManager)).FirstOrDefault().ImplementationInstance as JwtAuthenticationManager).GetSymmetricSecurityKey(), //authManager.GetSymmetricSecurityKey(),                    
+                    IssuerSigningKey = (services.Where(x=>x.Lifetime==ServiceLifetime.Singleton && x.ServiceType.Name == nameof(IJwtAuthenticationManager)).FirstOrDefault().ImplementationInstance as JwtAuthenticationManager).GetSymmetricSecurityKey(),
 
                     ValidateIssuer = false,
                     ValidateAudience = false

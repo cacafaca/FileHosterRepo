@@ -9,7 +9,7 @@ using ProCode.FileHosterRepo.Dal.DataAccess;
 namespace ProCode.FileHosterRepo.Dal.Migrations
 {
     [DbContext(typeof(FileHosterRepoContext))]
-    [Migration("20210513163808_Initial")]
+    [Migration("20210514010346_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

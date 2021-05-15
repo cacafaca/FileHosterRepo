@@ -8,7 +8,7 @@ using ProCode.FileHosterRepo.Dal.DataAccess;
 namespace ProCode.FileHosterRepo.Dal.Migrations
 {
     [DbContext(typeof(FileHosterRepoContext))]
-    partial class FileHosterContextModelSnapshot : ModelSnapshot
+    partial class FileHosterRepoContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {

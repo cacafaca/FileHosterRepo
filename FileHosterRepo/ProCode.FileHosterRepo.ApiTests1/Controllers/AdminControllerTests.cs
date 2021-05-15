@@ -32,10 +32,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             // Register administrator.
             HttpResponseMessage response = await Config.Client.PostAsync("/Admin/Register",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("admin@admin.com"),
-                    "Password=" + Uri.EscapeDataString("admin")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""admin@admin.com"",
+                        ""Password"": ""admin""
+                    }", 
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var responseToken = await response.Content.ReadAsStringAsync();
             Assert.IsTrue(!string.IsNullOrWhiteSpace(responseToken));
@@ -48,18 +50,22 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             // Register first administrator.
             HttpResponseMessage response = await Config.Client.PostAsync("/Admin/Register",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("admin1@admin.com"),
-                    "Password=" + Uri.EscapeDataString("admin1")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""admin1@admin.com"",
+                        ""Password"": ""admin1""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Register second administrator.
             response = await Config.Client.PostAsync("/Admin/Register",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("admin2@admin.com"),
-                    "Password=" + Uri.EscapeDataString("admin2")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""admin2@admin.com"",
+                        ""Password"": ""admin2""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.Conflict, response.StatusCode);
             var responseStr = await response.Content.ReadAsStringAsync();
             Assert.IsTrue(responseStr.Contains("admin1@admin.com"));
@@ -70,18 +76,22 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             // Register administrator.
             HttpResponseMessage response = await Config.Client.PostAsync("/Admin/Register",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("admin@admin.com"),
-                    "Password=" + Uri.EscapeDataString("admin")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""admin@admin.com"",
+                        ""Password"": ""admin""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login administrator.
             response = await Config.Client.PostAsync("/Admin/Login",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("admin@admin.com"),
-                    "Password=" + Uri.EscapeDataString("admin")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""admin@admin.com"",
+                        ""Password"": ""admin""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
             Assert.IsTrue(!string.IsNullOrWhiteSpace(token));
@@ -92,18 +102,22 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             // Register administrator.
             HttpResponseMessage response = await Config.Client.PostAsync("/Admin/Register",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("admin@admin.com"),
-                    "Password=" + Uri.EscapeDataString("admin")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""admin@admin.com"",
+                        ""Password"": ""admin""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login administrator with wrong password.
             response = await Config.Client.PostAsync("/Admin/Login",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("admin@admin.com"),
-                    "Password=" + Uri.EscapeDataString("badpassword")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""admin@admin.com"",
+                        ""Password"": ""badpassword""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
@@ -112,10 +126,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             // Register administrator.
             HttpResponseMessage response = await Config.Client.PostAsync("/Admin/Register",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("admin@admin.com"),
-                    "Password=" + Uri.EscapeDataString("admin")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""admin@admin.com"",
+                        ""Password"": ""admin""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
 
@@ -136,18 +152,22 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             // Register administrator.
             HttpResponseMessage response = await Config.Client.PostAsync("/Admin/Register",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("admin@admin.com"),
-                    "Password=" + Uri.EscapeDataString("admin")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""admin@admin.com"",
+                        ""Password"": ""admin""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login administrator.
             response = await Config.Client.PostAsync("/Admin/Login",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("admin@admin.com"),
-                    "Password=" + Uri.EscapeDataString("admin")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""admin@admin.com"",
+                        ""Password"": ""admin""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
 
@@ -168,10 +188,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             // Register administrator.
             HttpResponseMessage response = await Config.Client.PostAsync("/Admin/Register",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("admin@admin.com"),
-                    "Password=" + Uri.EscapeDataString("admin")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""admin@admin.com"",
+                        ""Password"": ""admin""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
 
@@ -180,9 +202,11 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 SingleOrDefaultAsync(u => u.Role == Dal.Model.UserRole.Admin)).Password;
             Config.Client.SetToken(token);
             response = await Config.Client.PatchAsync("/Admin/Update",
-                new StringContent(string.Join("&", new string[] {
-                    "Password=" + Uri.EscapeDataString("updatedpassword")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                new StringContent(
+                    @"{ 
+                        ""Password"": ""updated_admin_password""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var passwordAfter = (await Config.DbContext.Users.AsNoTracking()
                 .SingleOrDefaultAsync(u => u.Role == Dal.Model.UserRole.Admin)).Password;
@@ -194,10 +218,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             // Register administrator.
             HttpResponseMessage response = await Config.Client.PostAsync("/Admin/Register",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("admin@admin.com"),
-                    "Password=" + Uri.EscapeDataString("admin")
-                }), Encoding.UTF8, Config.HttpPostMediaType));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""admin@admin.com"",
+                        ""Password"": ""admin""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
 
