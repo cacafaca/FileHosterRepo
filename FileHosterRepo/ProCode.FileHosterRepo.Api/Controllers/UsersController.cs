@@ -41,12 +41,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                     Password = EncryptPassword(newUser.Password),
                     Nickname = newUser.Nickname,
                     Created = DateTime.Now,
-                    Role = Dal.Model.UserRole.PlainUser,
+                    Role = Dal.Model.UserRole.User,
                     Logged = true
                 };
                 context.Users.Add(newUserDb);
                 await context.SaveChangesAsync();
-                return Ok(token.Generate(newUserDb.UserId, newUserDb.Email));
+                return Ok(token.Generate(newUserDb.UserId, newUserDb.Email, Dal.Model.UserRole.User));
             }
             else
             {
@@ -68,7 +68,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                     {
                         usersFound.First().Logged = true;
                         await context.SaveChangesAsync();
-                        return Ok(token.Generate(usersFound.First().UserId, usersFound.First().Email));
+                        return Ok(token.Generate(usersFound.First().UserId, usersFound.First().Email, usersFound.First().Role));
                     }
                     else
                     {
@@ -100,112 +100,83 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         public async Task<ActionResult<Model.Response.User>> Info(int? userId)
         {
             // Always check at beginning!
-            if (!await IsUserLoggedAsync()) return GetUnauthorizedLoginResponse();
-
-            int userIdSearch = userId == null ? User.GetUserId() : (int)userId; // If userId is null, means get it for its self.
-
-            var user = await context.Users.SingleOrDefaultAsync(u => u.UserId == userIdSearch);
-            if (user != null)
+            var loggedUser = await GetLoggedUserAsync();
+            if (loggedUser != null)
             {
-                return new Model.Response.User()
+                var user = userId == null ? loggedUser : await context.Users.SingleOrDefaultAsync(u => u.UserId == (int)userId);
+                if (user != null)
                 {
-                    Id = user.UserId,
-                    Nickname = user.Nickname,
-                    Created = user.Created,
-                    Role = user.Role
-                };
+                    return new Model.Response.User()
+                    {
+                        Id = user.UserId,
+                        Nickname = user.Nickname,
+                        Created = user.Created,
+                        Role = user.Role
+                    };
+                }
+                else
+                {
+                    return NotFound($"User id '{userId}' not found.");
+                }
             }
             else
             {
-                return NotFound($"User id '{userIdSearch}' not found.");
+                return GetUnauthorizedLoginResponse();
             }
         }
 
         [HttpPatch("Update")]
         public async Task<ActionResult<bool>> Update(Model.Request.UserRegister updateUser)
         {
-            // Validate nickname.
-            if (string.IsNullOrWhiteSpace(updateUser.Nickname))
-                return Conflict("Nickname is empty.");
-            // Validate password.
-            if (string.IsNullOrWhiteSpace(updateUser.Password))
-                return Conflict("Password can not be empty.");
-
-            Dal.Model.User loggedUser;
-
             // Always check at beginning!
-            if (!await IsUserLoggedAsync(loggedUser = await GetLoggedUserAsync())) return GetUnauthorizedLoginResponse();
-
-            var newPassword = EncryptPassword(updateUser.Password);
-            if (loggedUser.Nickname != updateUser.Nickname || loggedUser.Password != newPassword)
+            var loggedUser = await GetLoggedUserAsync();
+            if (loggedUser != null)
             {
-                loggedUser.Nickname = updateUser.Nickname;
-                loggedUser.Password = newPassword;
-                await context.SaveChangesAsync();
-                return Ok(true);
+                // Validate nickname.
+                if (string.IsNullOrWhiteSpace(updateUser.Nickname))
+                    return Conflict("Nickname is empty.");
+                // Validate password.
+                if (string.IsNullOrWhiteSpace(updateUser.Password))
+                    return Conflict("Password can not be empty.");
+
+                var newPassword = EncryptPassword(updateUser.Password);
+                if (loggedUser.Nickname != updateUser.Nickname || loggedUser.Password != newPassword)
+                {
+                    loggedUser.Nickname = updateUser.Nickname;
+                    loggedUser.Password = newPassword;
+                    await context.SaveChangesAsync();
+                    return Ok(true);
+                }
+                else
+                {
+                    return Ok(false);
+                }
             }
             else
             {
-                return Ok(false);
+                return GetUnauthorizedLoginResponse();
             }
         }
 
         [HttpDelete("Delete")]
         public async Task<ActionResult> Delete()
         {
-            Dal.Model.User loggedUser;
-
             // Always check at beginning!
-            if (!await IsUserLoggedAsync(loggedUser = await GetLoggedUserAsync())) return GetUnauthorizedLoginResponse();
-
-            context.Users.Remove(loggedUser);
-            await context.SaveChangesAsync();
-            return Ok($"User {loggedUser} deleted.");
+            var loggedUser = await GetLoggedUserAsync();
+            if (loggedUser != null)
+            {
+                context.Users.Remove(loggedUser);
+                await context.SaveChangesAsync();
+                return Ok($"User {loggedUser} deleted.");
+            }
+            else
+            {
+                return GetUnauthorizedLoginResponse();
+            }
         }
         #endregion
 
         #region Methods
-        private static string GetPasswordHash(string password)
-        {
-            using var sha1 = new SHA1Managed();
-            var hash = Encoding.UTF8.GetBytes(password);
-            var generatedHash = sha1.ComputeHash(hash);
-            var generatedHashString = Convert.ToBase64String(generatedHash);
-            return generatedHashString;
-        }
-
-        private static string EncryptPassword(string password)
-        {
-            byte[] data = Encoding.ASCII.GetBytes(password);
-            data = new SHA256Managed().ComputeHash(data);
-            String hash;
-            hash = Convert.ToBase64String(data);
-            //hash = Encoding.ASCII.GetString(data);
-            return hash;
-        }
-
-        private async Task<Dal.Model.User> GetLoggedUserAsync()
-        {
-            if (User == null)
-                throw new ArgumentNullException("User is not logged.");
-
-            return await context.Users.SingleOrDefaultAsync(user =>
-                user.UserId == User.GetUserId() &&
-                user.Role != Dal.Model.UserRole.Admin &&
-                user.Logged == true
-                );
-        }
-
-        private async Task<bool> IsUserLoggedAsync(Dal.Model.User loggedUserAlreadyRead = null)
-        {
-            var loggedAdmin = loggedUserAlreadyRead ?? await GetLoggedUserAsync();
-            return loggedAdmin != null && loggedAdmin.Logged;
-        }
-
-        private ActionResult GetUnauthorizedLoginResponse()
-        {
-            return Unauthorized($"User {User.GetEmail()} not logged in.");
-        }
         #endregion
     }
 }

@@ -5,20 +5,24 @@ namespace ProCode.FileHosterRepo.Api.Model.Request
     public class Media
     {
         public string Name { get; set; }
-        public MediaPart MediaPart { get; set; }
+        public string Description { get; set; }
+        public string ReferenceLink { get; set; }
+        public IList<MediaPart> Parts { get; set; }
     }
 
     public class MediaPart
     {
-        public Media Media { get; set; }
+        public int Season { get; set; }
+        public int Episode { get; set; }
         public string Name { get; set; }
-        public IList<MediaPartLink> MediaPartLinkList { get; set; }
+        public string Description { get; set; }
+        public string ReferenceLink { get; set; }
+        public IList<MediaLink> Links { get; set; }
     }
 
-    public class MediaPartLink
+    public class MediaLink
     {
-        public MediaPart MediaVersion { get; set; }
-        public int LinkOrder { get; set; }
+        public int LinkId { get; set; }
         public string Link { get; set; }
     }
 }

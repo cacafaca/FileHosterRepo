@@ -25,9 +25,67 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         #region Actions
         [HttpPost("Add")]
-        public async Task<ActionResult<bool>> Add([FromForm] Model.Request.Media newMedia)
+        public async Task<ActionResult<bool>> Add(Model.Request.Media newMedia)
         {
-            throw new NotImplementedException();
+            // Always check at beginning!
+            var loggedUser = await GetLoggedUserAsync();
+            if (loggedUser != null)
+            {
+                try
+                {
+                    // Media
+                    var newDbMedia = await context.Medias.AddAsync(new Dal.Model.Media
+                    {
+                        Name = newMedia.Name,
+                        Description = newMedia.Description,
+                        ReferenceLink = new Uri(newMedia.ReferenceLink),
+                        UserId = User.GetUserId()
+                    });
+                    await context.SaveChangesAsync();   // Save to get MediaId.
+
+                    // Media part
+                    await context.MediaParts.AddRangeAsync(newMedia.Parts.Select(p =>
+                      new Dal.Model.MediaPart
+                      {
+                          MediaId = newDbMedia.Entity.MediaId,
+                          Season = p.Season,
+                          Episode = p.Episode,
+                          Name = p.Name,
+                          Description = p.Description,
+                          ReferenceLink = new Uri(p.ReferenceLink),
+                          UserId = User.GetUserId()
+                      }));
+                    await context.SaveChangesAsync();
+
+                    // Links
+                    var newDbMediaParts = context.MediaParts.Where(p => p.MediaId == newDbMedia.Entity.MediaId);
+                    var allLinksOfCreatedParts = context.MediaLinks
+                        .Where(l => newDbMediaParts.Any(p => p.MediaPartId == l.MediaPartId));
+                    int maxVersion = allLinksOfCreatedParts.Count() > 0 ? allLinksOfCreatedParts.Max(mp => mp.VersionId) : 1;
+                    foreach (var newDbMediaPart in newDbMediaParts)
+                        await context.MediaLinks.AddRangeAsync(newMedia.Parts.Where(p => p.Season == newDbMediaPart.Season && p.Episode == newDbMediaPart.Episode).FirstOrDefault().Links.Select(l =>
+                            new Dal.Model.MediaLink
+                            {
+                                MediaPartId = newDbMediaPart.MediaPartId,
+                                VersionId = maxVersion,
+                                LinkId = l.LinkId,
+                                Link = new Uri(l.Link),
+                                Created = DateTime.Now,
+                                UserId = User.GetUserId()
+                            }));
+                    await context.SaveChangesAsync();
+
+                    return Ok(true);
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex.Message);
+                }
+            }
+            else
+            {
+                return GetUnauthorizedLoginResponse();
+            }
         }
         #endregion
 

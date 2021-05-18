@@ -22,5 +22,10 @@ namespace ProCode.FileHosterRepo.Dal.Model
         public DateTime? Created { get; set; }
         public UserRole Role { get; set; }
         public bool Logged { get; set; }
+
+        public override string ToString()
+        {
+            return $"Email:{Email}, Nickname:{Nickname}, Role:{Role}, Logged:{Logged}";
+        }
     }
 }

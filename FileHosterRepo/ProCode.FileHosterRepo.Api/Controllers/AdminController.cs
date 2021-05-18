@@ -3,8 +3,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
-using System.Text;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 
@@ -54,7 +52,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 };
                 context.Users.Add(newAdminDb);
                 await context.SaveChangesAsync();
-                return Ok(token.Generate(newAdminDb.UserId, newAdminDb.Email));
+                return Ok(token.Generate(newAdminDb.UserId, newAdminDb.Email, Dal.Model.UserRole.Admin));
             }
             else
             {
@@ -76,7 +74,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                     {
                         usersFound.First().Logged = true;
                         await context.SaveChangesAsync();
-                        return Ok(token.Generate(usersFound.First().UserId, usersFound.First().Email));
+                        return Ok(token.Generate(usersFound.First().UserId, usersFound.First().Email, usersFound.First().Role));
                     }
                     else
                     {
@@ -90,38 +88,38 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         [HttpGet("Logout")]
         public async Task<ActionResult<string>> Logout()
         {
-            Dal.Model.User loggedAdmin;
-
             // Always check at beginning!
-            if (!await IsAdminLoggedAsync(loggedAdmin = await GetLoggedAdminAsync())) return GetUnauthorizedLoginResponse();
-
-            loggedAdmin.Logged = false; // loggedAdmin is impossible to be null.
-            await context.SaveChangesAsync();
-            return Ok($"Administrator {User.Claims.Where(c => c.Type == ClaimTypes.Email).FirstOrDefault()?.Value} logged out.");
+            var loggedAdmin = await GetLoggedUserAsync();
+            if (loggedAdmin != null)
+            {
+                loggedAdmin.Logged = false; // loggedAdmin is impossible to be null.
+                await context.SaveChangesAsync();
+                return Ok($"Administrator {User.Claims.Where(c => c.Type == ClaimTypes.Email).FirstOrDefault()?.Value} logged out.");
+            }
+            else
+            {
+                return GetUnauthorizedLoginResponse();
+            }
         }
 
         [HttpGet("Info")]
-        public async Task<ActionResult<Model.Response.User>> Info(int? userId)
+        public async Task<ActionResult<Model.Response.User>> Info()
         {
             // Always check at beginning!
-            if (!await IsAdminLoggedAsync()) return GetUnauthorizedLoginResponse();
-
-            int userIdSearch = userId == null ? User.GetUserId() : (int)userId;
-
-            var admin = await context.Users.SingleOrDefaultAsync(u => u.UserId == userIdSearch && u.Role == Dal.Model.UserRole.Admin);
-            if (admin != null)
+            var loggedAdmin = await GetLoggedUserAsync();
+            if (loggedAdmin != null)
             {
                 return new Model.Response.User()
                 {
-                    Id = admin.UserId,
-                    Nickname = admin.Nickname,
-                    Created = admin.Created,
-                    Role = admin.Role
+                    Id = loggedAdmin.UserId,
+                    Nickname = loggedAdmin.Nickname,
+                    Created = loggedAdmin.Created,
+                    Role = loggedAdmin.Role
                 };
             }
             else
             {
-                return NotFound($"Administrator id '{userIdSearch}' not found.");
+                return GetUnauthorizedLoginResponse();
             }
         }
 
@@ -132,66 +130,30 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             if (string.IsNullOrWhiteSpace(updateUser.Password))
                 return Conflict("Password can not be empty.");
 
-            Dal.Model.User loggedAdmin;
-
             // Always check at beginning!
-            if (!await IsAdminLoggedAsync(loggedAdmin = await GetLoggedAdminAsync())) return GetUnauthorizedLoginResponse();
-
-            var newPassword = EncryptPassword(updateUser.Password);
-            if (loggedAdmin.Password != newPassword)
+            var loggedAdmin = await GetLoggedUserAsync();
+            if (loggedAdmin != null)
             {
-                loggedAdmin.Password = newPassword;
-                await context.SaveChangesAsync();
-                return Ok(true);
+                var newPassword = EncryptPassword(updateUser.Password);
+                if (loggedAdmin.Password != newPassword)
+                {
+                    loggedAdmin.Password = newPassword;
+                    await context.SaveChangesAsync();
+                    return Ok(true);
+                }
+                else
+                {
+                    return Ok(false);   // Return false, because there is no point updating same value.
+                }
             }
             else
             {
-                return Ok(false);   // Return false, because there is no point updating same value.
+                return GetUnauthorizedLoginResponse();
             }
         }
         #endregion
 
         #region Methods
-        private static string GetPasswordHash(string password)
-        {
-            using var sha1 = new SHA1Managed();
-            var hash = Encoding.UTF8.GetBytes(password);
-            var generatedHash = sha1.ComputeHash(hash);
-            var generatedHashString = Convert.ToBase64String(generatedHash);
-            return generatedHashString;
-        }
-        private static string EncryptPassword(string password)
-        {
-            byte[] data = Encoding.ASCII.GetBytes(password);
-            data = new SHA256Managed().ComputeHash(data);
-            String hash;
-            hash = Convert.ToBase64String(data);
-            //hash = Encoding.ASCII.GetString(data);
-            return hash;
-        }
-
-        private async Task<Dal.Model.User> GetLoggedAdminAsync()
-        {
-            if (User == null)
-                throw new ArgumentNullException("Administrator is not logged.");
-
-            return await context.Users.SingleOrDefaultAsync(user =>
-                user.UserId == User.GetUserId() &&
-                user.Role == Dal.Model.UserRole.Admin &&
-                user.Logged == true
-                );
-        }
-
-        private async Task<bool> IsAdminLoggedAsync(Dal.Model.User loggedAdminAlreadyRead = null)
-        {
-            var loggedAdmin = loggedAdminAlreadyRead ?? await GetLoggedAdminAsync();
-            return loggedAdmin != null && loggedAdmin.Logged;
-        }
-
-        private ActionResult GetUnauthorizedLoginResponse()
-        {
-            return Unauthorized($"Admin {User.GetEmail()} not logged in.");
-        }
         #endregion
     }
 }

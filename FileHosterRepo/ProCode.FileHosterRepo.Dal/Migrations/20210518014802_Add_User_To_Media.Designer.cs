@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProCode.FileHosterRepo.Dal.DataAccess;
 
 namespace ProCode.FileHosterRepo.Dal.Migrations
 {
     [DbContext(typeof(FileHosterRepoContext))]
-    partial class FileHosterRepoContextModelSnapshot : ModelSnapshot
+    [Migration("20210518014802_Add_User_To_Media")]
+    partial class Add_User_To_Media
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -63,7 +65,7 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     b.Property<int>("MediaPartId")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.Property<string>("VersionComment")
@@ -184,9 +186,7 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
 
                     b.HasOne("ProCode.FileHosterRepo.Dal.Model.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("MediaPart");
 

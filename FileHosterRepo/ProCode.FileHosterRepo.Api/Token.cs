@@ -22,14 +22,15 @@ namespace ProCode.FileHosterRepo.Api
         }
         #endregion
 
-        public string Generate(int userId, string email)
+        public string Generate(int userId, string email, Dal.Model.UserRole role)
         {
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim(ClaimTypeNameUserId, userId.ToString()),
-                    new Claim(ClaimTypes.Email, email)
+                    new Claim(ClaimTypes.Email, email),
+                    new Claim(ClaimTypes.Role, role.ToString())
                 }),
                 Expires = DateTime.UtcNow.AddHours(1),
                 NotBefore = DateTime.UtcNow,

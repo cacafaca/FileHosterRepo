@@ -32,14 +32,31 @@ namespace ProCode.FileHosterRepo.Api
 
         public static string GetEmail(this ClaimsPrincipal user)
         {
-            var userIdClaim = user.Claims.Where(c => c.Type == ClaimTypes.Email).FirstOrDefault();
-            if (userIdClaim != null)
+            var emailClaim = user.Claims.Where(c => c.Type == ClaimTypes.Email).FirstOrDefault();
+            if (emailClaim != null)
             {
-                return userIdClaim.Value;
+                return emailClaim.Value;
             }
             else
             {
                 throw new ArgumentException($"Can't find claim {ClaimTypes.Email}.");
+            }
+        }
+
+        public static Dal.Model.UserRole GetRole(this ClaimsPrincipal user)
+        {
+            var userRoleClaim = user.Claims.Where(c => c.Type == ClaimTypes.Role).FirstOrDefault();
+            if (userRoleClaim != null)
+            {
+                if (!Enum.TryParse(userRoleClaim.Value, out Dal.Model.UserRole userRole) && !Enum.IsDefined(typeof(Dal.Model.UserRole), userRole))
+                {
+                    throw new ArgumentException($"Claim value {userRoleClaim.Value} is not an integer.");
+                }
+                return userRole;
+            }
+            else
+            {
+                throw new ArgumentException($"Can't find claim {ClaimTypeNameUserId}.");
             }
         }
     }
