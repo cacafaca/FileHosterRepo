@@ -6,9 +6,11 @@ namespace ProCode.FileHosterRepo.Dal.Model
 {
     public class User
     {
+        // Primary key
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public int UserId { get; set; }
+
         [Required]
         [StringLength(200)]
         public string Email { get; set; }

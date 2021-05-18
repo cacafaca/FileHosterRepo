@@ -5,9 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
 
 namespace ProCode.FileHosterRepo.Api.Controllers
@@ -21,12 +19,11 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         public UsersController(Dal.DataAccess.FileHosterRepoContext context, IJwtAuthenticationManager authenticationManager)
             : base(context, authenticationManager) { }
         #endregion
-        /*
 
         #region Actions
         [AllowAnonymous]
         [HttpPost("Register")]
-        public async Task<ActionResult<string>> Register([FromForm] Model.Request.UserRegister newUser)
+        public async Task<ActionResult<string>> Register(Model.Request.UserRegister newUser)
         {
             // Check if there is an administrator first. Can't allow user to register before Administrator.
             var adminUser = await context.Users.Where(u => u.Role == Dal.Model.UserRole.Admin).ToListAsync();
@@ -49,7 +46,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 };
                 context.Users.Add(newUserDb);
                 await context.SaveChangesAsync();
-                return Ok(GenerateToken(newUserDb.Id, newUserDb.Email));
+                return Ok(token.Generate(newUserDb.UserId, newUserDb.Email));
             }
             else
             {
@@ -59,7 +56,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         [AllowAnonymous]
         [HttpPost("Login")]
-        public async Task<ActionResult<string>> Login([FromForm] Model.Request.User loginUser)
+        public async Task<ActionResult<string>> Login(Model.Request.User loginUser)
         {
             var usersFound = await context.Users.Where(u => u.Email == loginUser.Email && u.Role != Dal.Model.UserRole.Admin).ToListAsync();
             switch (usersFound.Count)
@@ -71,7 +68,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                     {
                         usersFound.First().Logged = true;
                         await context.SaveChangesAsync();
-                        return Ok(GenerateToken(usersFound.First().Id, usersFound.First().Email));
+                        return Ok(token.Generate(usersFound.First().UserId, usersFound.First().Email));
                     }
                     else
                     {
@@ -86,7 +83,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         [HttpGet("Logout")]
         public async Task<ActionResult<string>> Logout()
         {
-            var loggedUser = await context.Users.SingleOrDefaultAsync(u => u.Id == User.GetUserId());
+            var loggedUser = await context.Users.SingleOrDefaultAsync(u => u.UserId == User.GetUserId());
             if (loggedUser != null)
             {
                 loggedUser.Logged = false;
@@ -107,12 +104,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
             int userIdSearch = userId == null ? User.GetUserId() : (int)userId; // If userId is null, means get it for its self.
 
-            var user = await context.Users.SingleOrDefaultAsync(u => u.Id == userIdSearch);
+            var user = await context.Users.SingleOrDefaultAsync(u => u.UserId == userIdSearch);
             if (user != null)
             {
                 return new Model.Response.User()
                 {
-                    Id = user.Id,
+                    Id = user.UserId,
                     Nickname = user.Nickname,
                     Created = user.Created,
                     Role = user.Role
@@ -125,7 +122,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpPatch("Update")]
-        public async Task<ActionResult<bool>> Update([FromForm] Model.Request.UserRegister updateUser)
+        public async Task<ActionResult<bool>> Update(Model.Request.UserRegister updateUser)
         {
             // Validate nickname.
             if (string.IsNullOrWhiteSpace(updateUser.Nickname))
@@ -187,31 +184,13 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             return hash;
         }
 
-        private string GenerateToken(int userId, string email)
-        {
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(LoggedUser.ClaimTypeNameUserId, userId.ToString()),
-                    new Claim(ClaimTypes.Email, email)
-                }),
-                Expires = DateTime.UtcNow.AddHours(1),
-                NotBefore = DateTime.UtcNow,
-                SigningCredentials = new SigningCredentials(
-                    authenticationManager.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256)
-            };
-            var tokenHandler = new JwtSecurityTokenHandler();
-            return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
-        }
-
         private async Task<Dal.Model.User> GetLoggedUserAsync()
         {
             if (User == null)
                 throw new ArgumentNullException("User is not logged.");
 
             return await context.Users.SingleOrDefaultAsync(user =>
-                user.Id == User.GetUserId() &&
+                user.UserId == User.GetUserId() &&
                 user.Role != Dal.Model.UserRole.Admin &&
                 user.Logged == true
                 );
@@ -228,6 +207,5 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             return Unauthorized($"User {User.GetEmail()} not logged in.");
         }
         #endregion
-        */
     }
 }

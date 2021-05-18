@@ -3,12 +3,9 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using ProCode.FileHosterRepo.Api.Model;
 using System.Security.Cryptography;
 using System.Text;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
 
 namespace ProCode.FileHosterRepo.Api.Controllers
@@ -31,7 +28,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         #region Actions
         [AllowAnonymous]
         [HttpPost("Register")]
-        public async Task<ActionResult> Register(Model.Request.UserRegister newUser)
+        public async Task<ActionResult<string>> Register(Model.Request.UserRegister newUser)
         {
             //Validate new user data.
             if (newUser == null)
@@ -57,7 +54,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 };
                 context.Users.Add(newAdminDb);
                 await context.SaveChangesAsync();
-                return Ok(GenerateToken(newAdminDb.Id, newAdminDb.Email));
+                return Ok(token.Generate(newAdminDb.UserId, newAdminDb.Email));
             }
             else
             {
@@ -79,7 +76,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                     {
                         usersFound.First().Logged = true;
                         await context.SaveChangesAsync();
-                        return Ok(GenerateToken(usersFound.First().Id, usersFound.First().Email));
+                        return Ok(token.Generate(usersFound.First().UserId, usersFound.First().Email));
                     }
                     else
                     {
@@ -101,7 +98,6 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             loggedAdmin.Logged = false; // loggedAdmin is impossible to be null.
             await context.SaveChangesAsync();
             return Ok($"Administrator {User.Claims.Where(c => c.Type == ClaimTypes.Email).FirstOrDefault()?.Value} logged out.");
-            //return Ok(GenerateToken(0, string.Empty));
         }
 
         [HttpGet("Info")]
@@ -112,12 +108,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
             int userIdSearch = userId == null ? User.GetUserId() : (int)userId;
 
-            var admin = await context.Users.SingleOrDefaultAsync(u => u.Id == userIdSearch && u.Role == Dal.Model.UserRole.Admin);
+            var admin = await context.Users.SingleOrDefaultAsync(u => u.UserId == userIdSearch && u.Role == Dal.Model.UserRole.Admin);
             if (admin != null)
             {
                 return new Model.Response.User()
                 {
-                    Id = admin.Id,
+                    Id = admin.UserId,
                     Nickname = admin.Nickname,
                     Created = admin.Created,
                     Role = admin.Role
@@ -174,31 +170,13 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             return hash;
         }
 
-        private string GenerateToken(int userId, string email)
-        {
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(claimTypeNameUserId, userId.ToString()),
-                    new Claim(ClaimTypes.Email, email)
-                }),
-                Expires = DateTime.UtcNow.AddHours(1),
-                NotBefore = DateTime.UtcNow,
-                SigningCredentials = new SigningCredentials(
-                    authenticationManager.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256)
-            };
-            var tokenHandler = new JwtSecurityTokenHandler();
-            return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
-        }
-
         private async Task<Dal.Model.User> GetLoggedAdminAsync()
         {
             if (User == null)
                 throw new ArgumentNullException("Administrator is not logged.");
 
             return await context.Users.SingleOrDefaultAsync(user =>
-                user.Id == User.GetUserId() &&
+                user.UserId == User.GetUserId() &&
                 user.Role == Dal.Model.UserRole.Admin &&
                 user.Logged == true
                 );

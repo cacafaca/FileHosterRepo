@@ -2,11 +2,12 @@
 
 namespace ProCode.FileHosterRepo.Api.Controllers
 {
-    public class BaseController : Controller
+    public abstract class BaseController : Controller
     {
         #region Fields
         protected readonly Dal.DataAccess.FileHosterRepoContext context;
         protected readonly IJwtAuthenticationManager authenticationManager;
+        protected readonly Token token;
         #endregion
 
         #region Constructor
@@ -14,7 +15,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         {
             this.context = context;
             this.authenticationManager = authenticationManager;
+            this.token = new Token(authenticationManager);
         }
+        #endregion
+
+        #region Methods
+
         #endregion
     }
 }

@@ -1,13 +1,10 @@
 ﻿using FakeItEasy;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ProCode.FileHosterRepo.Api.Controllers;
 using ProCode.FileHosterRepo.ApiTests;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -25,10 +22,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 
             // Register administrator. In order to register user administrator needs to be registered.
             Config.Client.PostAsync("/Admin/Register",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("admin@admin.com"),
-                    "Password=" + Uri.EscapeDataString("admin")
-                }), Encoding.UTF8, Config.HttpMediaTypeForm)).Wait();
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""admin@admin.com"",
+                        ""Password"": ""admin""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson)).Wait();
         }
         #endregion
 
@@ -37,11 +36,13 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             // Register user.
             HttpResponseMessage response = await Config.Client.PostAsync("/Users/Register",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("singleuser@user.com"),
-                    "Password=" + Uri.EscapeDataString("singleuser"),
-                    "Nickname=" + Uri.EscapeDataString("SingleUser")
-                }), Encoding.UTF8, Config.HttpMediaTypeForm));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""user@user.com"",
+                        ""Password"": ""user"",
+                        ""Nickname"": ""User""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
             Assert.IsTrue(!string.IsNullOrWhiteSpace(token));
@@ -53,19 +54,23 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             // Register user.
             HttpResponseMessage response = await Config.Client.PostAsync("/Users/Register",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("loginuser@user.com"),
-                    "Password=" + Uri.EscapeDataString("loginuser"),
-                    "Nickname=" + Uri.EscapeDataString("LoginUser")
-                }), Encoding.UTF8, Config.HttpMediaTypeForm));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""user@user.com"",
+                        ""Password"": ""user"",
+                        ""Nickname"": ""User""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login user.
             response = await Config.Client.PostAsync("/Users/Login",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("loginuser@user.com"),
-                    "Password=" + Uri.EscapeDataString("loginuser")
-                }), Encoding.UTF8, Config.HttpMediaTypeForm));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""user@user.com"",
+                        ""Password"": ""user""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
             Assert.IsTrue(!string.IsNullOrWhiteSpace(token));
@@ -76,19 +81,23 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             // Register user.
             HttpResponseMessage response = await Config.Client.PostAsync("/Users/Register",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("loginuser@user.com"),
-                    "Password=" + Uri.EscapeDataString("loginuser"),
-                    "Nickname=" + Uri.EscapeDataString("LoginUser")
-                }), Encoding.UTF8, Config.HttpMediaTypeForm));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""user@user.com"",
+                        ""Password"": ""user"",
+                        ""Nickname"": ""User""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login user.
             response = await Config.Client.PostAsync("/Users/Login",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("loginuser@user.com"),
-                    "Password=" + Uri.EscapeDataString("badpassword")
-                }), Encoding.UTF8, Config.HttpMediaTypeForm));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""user@user.com"",
+                        ""Password"": ""bad_password""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
@@ -97,11 +106,13 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             // Register user.
             HttpResponseMessage response = await Config.Client.PostAsync("/Users/Register",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("logout@user.com"),
-                    "Password=" + Uri.EscapeDataString("logout"),
-                    "Nickname=" + Uri.EscapeDataString("Logout")
-                }), Encoding.UTF8, Config.HttpMediaTypeForm));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""user@user.com"",
+                        ""Password"": ""user"",
+                        ""Nickname"": ""User""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
 
@@ -120,19 +131,23 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             // Register user.
             HttpResponseMessage response = await Config.Client.PostAsync("/Users/Register",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("logout@user.com"),
-                    "Password=" + Uri.EscapeDataString("logout"),
-                    "Nickname=" + Uri.EscapeDataString("Logout")
-                }), Encoding.UTF8, Config.HttpMediaTypeForm));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""user@user.com"",
+                        ""Password"": ""user"",
+                        ""Nickname"": ""User""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login user.
             response = await Config.Client.PostAsync("/Users/Login",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("logout@user.com"),
-                    "Password=" + Uri.EscapeDataString("logout")
-                }), Encoding.UTF8, Config.HttpMediaTypeForm));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""user@user.com"",
+                        ""Password"": ""user""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
 
@@ -151,28 +166,32 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             // Register user.
             HttpResponseMessage response = await Config.Client.PostAsync("/Users/Register",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("update@user.com"),
-                    "Password=" + Uri.EscapeDataString("firstpass"),
-                    "Nickname=" + Uri.EscapeDataString("FirstNickname")
-                }), Encoding.UTF8, Config.HttpMediaTypeForm));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""user@user.com"",
+                        ""Password"": ""user"",
+                        ""Nickname"": ""User""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
 
             // Update user's nickname and password.
             var userBefore = (await Config.DbContext.Users.SingleOrDefaultAsync(
-                u => u.Email == "update@user.com" &&
+                u => u.Email == "user@user.com" &&
                 u.Role != Dal.Model.UserRole.Admin));
             Config.Client.SetToken(token);
             response = await Config.Client.PatchAsync("/Users/Update",
-                new StringContent(string.Join("&", new string[] {
-                    "Nickname=" + Uri.EscapeDataString("UpdatedNickname"),
-                    "Password=" + Uri.EscapeDataString("updatedpassword")
-                }), Encoding.UTF8, Config.HttpMediaTypeForm));
+                new StringContent(
+                    @"{ 
+                        ""Password"": ""new_password"",
+                        ""Nickname"": ""New_Nickname""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var userAfter = (await Config.DbContext.Users.AsNoTracking()
                 .SingleOrDefaultAsync(u =>
-                    u.Email == "update@user.com" &&
+                    u.Email == "user@user.com" &&
                     u.Role != Dal.Model.UserRole.Admin));
             Assert.AreNotEqual(userBefore.Nickname, userAfter.Nickname);
             Assert.AreNotEqual(userBefore.Password, userAfter.Password);
@@ -183,19 +202,23 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             // Register user.
             HttpResponseMessage response = await Config.Client.PostAsync("/Users/Register",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("infouser@user.com"),
-                    "Password=" + Uri.EscapeDataString("infouser"),
-                    "Nickname=" + Uri.EscapeDataString("InfoUser")
-                }), Encoding.UTF8, Config.HttpMediaTypeForm));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""user@user.com"",
+                        ""Password"": ""user"",
+                        ""Nickname"": ""User""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login user.
             response = await Config.Client.PostAsync("/Users/Login",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("infouser@user.com"),
-                    "Password=" + Uri.EscapeDataString("infouser")
-                }), Encoding.UTF8, Config.HttpMediaTypeForm));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""user@user.com"",
+                        ""Password"": ""user""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
 
@@ -206,18 +229,20 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             var userInfoJson = await response.Content.ReadAsStringAsync();
             var userInfo = JsonSerializer.Deserialize<Api.Model.Response.User>(userInfoJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             Assert.IsNotNull(userInfo);
-            Assert.AreEqual("InfoUser", userInfo.Nickname);
+            Assert.AreEqual("User", userInfo.Nickname);
         }
         [TestMethod()]
         public async Task Delete_User()
         {
             // Register user.
             HttpResponseMessage response = await Config.Client.PostAsync("/Users/Register",
-                new StringContent(string.Join("&", new string[] {
-                    "Email=" + Uri.EscapeDataString("deleteuser@user.com"),
-                    "Password=" + Uri.EscapeDataString("deleteuser"),
-                    "Nickname=" + Uri.EscapeDataString("DeleteUser")
-                }), Encoding.UTF8, Config.HttpMediaTypeForm));
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""user@user.com"",
+                        ""Password"": ""user"",
+                        ""Nickname"": ""User""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
 
@@ -227,7 +252,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             Assert.IsNull(await Config.DbContext.Users.SingleOrDefaultAsync(
-                u => u.Email == "deleteuser@user.com"));
+                u => u.Email == "user@user.com"));
         }
     }
 }

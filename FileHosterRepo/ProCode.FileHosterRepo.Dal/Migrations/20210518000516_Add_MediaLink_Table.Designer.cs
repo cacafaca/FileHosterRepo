@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProCode.FileHosterRepo.Dal.DataAccess;
 
 namespace ProCode.FileHosterRepo.Dal.Migrations
 {
     [DbContext(typeof(FileHosterRepoContext))]
-    partial class FileHosterRepoContextModelSnapshot : ModelSnapshot
+    [Migration("20210518000516_Add_MediaLink_Table")]
+    partial class Add_MediaLink_Table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
