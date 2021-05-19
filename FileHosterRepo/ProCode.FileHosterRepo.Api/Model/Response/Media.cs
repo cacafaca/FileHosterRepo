@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ProCode.FileHosterRepo.Api.Model.Request
+namespace ProCode.FileHosterRepo.Api.Model.Response
 {
     public class Media
     {
@@ -8,7 +8,8 @@ namespace ProCode.FileHosterRepo.Api.Model.Request
         public string Name { get; set; }
         public string Description { get; set; }
         public string ReferenceLink { get; set; }
-        public IList<MediaPart> Parts { get; set; }
+        public User User { get; set; }
+        public IEnumerable<MediaPart> Parts { get; set; }
     }
 
     public class MediaPart
@@ -19,7 +20,8 @@ namespace ProCode.FileHosterRepo.Api.Model.Request
         public string Name { get; set; }
         public string Description { get; set; }
         public string ReferenceLink { get; set; }
-        public IList<MediaLink> Links { get; set; }
+        public User User { get; set; }
+        public IEnumerable<MediaLink> Links { get; set; }
     }
 
     public class MediaLink

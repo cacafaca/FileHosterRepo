@@ -108,7 +108,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 {
                     return new Model.Response.User()
                     {
-                        Id = user.UserId,
+                        UserId = user.UserId,
                         Nickname = user.Nickname,
                         Created = user.Created,
                         Role = user.Role

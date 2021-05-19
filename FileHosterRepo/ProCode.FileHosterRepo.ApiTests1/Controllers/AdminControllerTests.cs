@@ -238,7 +238,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             });
             Assert.AreEqual("Admin", responseUser.Nickname);
             Assert.AreEqual(Dal.Model.UserRole.Admin, responseUser.Role);
-            Assert.AreEqual(1, responseUser.Id);
+            Assert.AreEqual(1, responseUser.UserId);
         }
     }
 }

@@ -109,8 +109,18 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 new StringContent(
                     JsonSerializer.Serialize(newMedia),
                     Encoding.UTF8, Config.HttpMediaTypeJson));
-            var message = response.Content.ReadAsStringAsync().Result;
-            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, message);
+            var responseMessage = response.Content.ReadAsStringAsync().Result;
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
+            Model.Response.Media responseMedia = JsonSerializer.Deserialize<Api.Model.Response.Media>(responseMessage);
+            Assert.IsNotNull(responseMedia);
+
+            Assert.AreEqual(1, responseMedia.Parts.ToArray()[0].MediaPartId);
+            Assert.AreEqual(1, responseMedia.Parts.ToArray()[0].Links.ToArray()[0].LinkId);
+            Assert.AreEqual(2, responseMedia.Parts.ToArray()[0].Links.ToArray()[1].LinkId);
+
+            Assert.AreEqual(2, responseMedia.Parts.ToArray()[1].MediaPartId);
+            Assert.AreEqual(1, responseMedia.Parts.ToArray()[1].Links.ToArray()[0].LinkId);
+            Assert.AreEqual(2, responseMedia.Parts.ToArray()[1].Links.ToArray()[1].LinkId);
         }
 
         [TestMethod()]
@@ -192,7 +202,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 new StringContent(
                     JsonSerializer.Serialize(newMedia),
                     Encoding.UTF8, Config.HttpMediaTypeJson));
-            var message = response.Content.ReadAsStringAsync().Result;
+            message = response.Content.ReadAsStringAsync().Result;
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, message);
         }
     }

@@ -2,14 +2,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using ProCode.FileHosterRepo.Api.Model;
-using System.Security.Cryptography;
-using System.Text;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
+using System.Collections.Generic;
 
 namespace ProCode.FileHosterRepo.Api.Controllers
 {
@@ -25,57 +19,31 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         #region Actions
         [HttpPost("Add")]
-        public async Task<ActionResult<bool>> Add(Model.Request.Media newMedia)
+        public async Task<ActionResult<Model.Response.Media>> Add(Model.Request.Media newMedia)
         {
             // Always check at beginning!
             var loggedUser = await GetLoggedUserAsync();
             if (loggedUser != null)
             {
+                Model.Response.Media responseMedia;
                 try
                 {
                     // Media
-                    var newDbMedia = await context.Medias.AddAsync(new Dal.Model.Media
-                    {
-                        Name = newMedia.Name,
-                        Description = newMedia.Description,
-                        ReferenceLink = new Uri(newMedia.ReferenceLink),
-                        UserId = User.GetUserId()
-                    });
-                    await context.SaveChangesAsync();   // Save to get MediaId.
+                    var newDbMedia = await SaveMediaAsync(newMedia);
+                    responseMedia = MapMedia(newDbMedia, loggedUser);
 
                     // Media part
-                    await context.MediaParts.AddRangeAsync(newMedia.Parts.Select(p =>
-                      new Dal.Model.MediaPart
-                      {
-                          MediaId = newDbMedia.Entity.MediaId,
-                          Season = p.Season,
-                          Episode = p.Episode,
-                          Name = p.Name,
-                          Description = p.Description,
-                          ReferenceLink = new Uri(p.ReferenceLink),
-                          UserId = User.GetUserId()
-                      }));
-                    await context.SaveChangesAsync();
+                    var newDbMediaParts = await SaveMediaPartAsync(newMedia.Parts, newDbMedia.MediaId);
+                    responseMedia.Parts = MapMediaParts(newDbMediaParts, loggedUser);
 
                     // Links
-                    var newDbMediaParts = context.MediaParts.Where(p => p.MediaId == newDbMedia.Entity.MediaId);
-                    var allLinksOfCreatedParts = context.MediaLinks
-                        .Where(l => newDbMediaParts.Any(p => p.MediaPartId == l.MediaPartId));
-                    int maxVersion = allLinksOfCreatedParts.Count() > 0 ? allLinksOfCreatedParts.Max(mp => mp.VersionId) : 1;
-                    foreach (var newDbMediaPart in newDbMediaParts)
-                        await context.MediaLinks.AddRangeAsync(newMedia.Parts.Where(p => p.Season == newDbMediaPart.Season && p.Episode == newDbMediaPart.Episode).FirstOrDefault().Links.Select(l =>
-                            new Dal.Model.MediaLink
-                            {
-                                MediaPartId = newDbMediaPart.MediaPartId,
-                                VersionId = maxVersion,
-                                LinkId = l.LinkId,
-                                Link = new Uri(l.Link),
-                                Created = DateTime.Now,
-                                UserId = User.GetUserId()
-                            }));
-                    await context.SaveChangesAsync();
+                    var newDbMediaLinks = await SaveMediaLinksAsync(newMedia.Parts, newDbMediaParts);
+                    foreach (var part in responseMedia.Parts)
+                    {
+                        part.Links = MapMediaLinks(newDbMediaLinks.Where(link => link.MediaPartId == part.MediaPartId));
+                    }
 
-                    return Ok(true);
+                    return Ok(responseMedia);
                 }
                 catch (Exception ex)
                 {
@@ -90,6 +58,92 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         #endregion
 
         #region Methods
+        private async Task<Dal.Model.Media> SaveMediaAsync(Model.Request.Media newMedia)
+        {
+            var newDbMedia = await context.Medias.AddAsync(new Dal.Model.Media
+            {
+                Name = newMedia.Name,
+                Description = newMedia.Description,
+                ReferenceLink = new Uri(newMedia.ReferenceLink),
+                UserId = User.GetUserId()
+            });
+            await context.SaveChangesAsync();   // Save to get MediaId.
+            return newDbMedia.Entity;
+        }
+
+        private Model.Response.Media MapMedia(Dal.Model.Media newDbMedia, Dal.Model.User loggedUser)
+        {
+            return new Model.Response.Media
+            {
+                MediaId = newDbMedia.MediaId,
+                Name = newDbMedia.Name,
+                Description = newDbMedia.Description,
+                ReferenceLink = newDbMedia.ReferenceLink.AbsoluteUri,
+                User = loggedUser.MapReponseUser()
+            };
+        }
+
+        private async Task<IEnumerable<Dal.Model.MediaPart>> SaveMediaPartAsync(IEnumerable<Model.Request.MediaPart> newMediaParts, int mediaId)
+        {
+            await context.MediaParts.AddRangeAsync(newMediaParts.Select(part =>
+              new Dal.Model.MediaPart
+              {
+                  MediaId = mediaId,
+                  Season = part.Season,
+                  Episode = part.Episode,
+                  Name = part.Name,
+                  Description = part.Description,
+                  ReferenceLink = new Uri(part.ReferenceLink),
+                  UserId = User.GetUserId()
+              }));
+            await context.SaveChangesAsync();
+            return context.MediaParts.Where(part => part.MediaId == mediaId);
+        }
+
+        private static IEnumerable<Model.Response.MediaPart> MapMediaParts(IEnumerable<Dal.Model.MediaPart> newDbMediaParts, Dal.Model.User loggedUser)
+        {
+            return newDbMediaParts.Select(part => new Model.Response.MediaPart
+            {
+                MediaPartId = part.MediaPartId,
+                Season = part.Season,
+                Episode = part.Episode,
+                Name = part.Name,
+                Description = part.Description,
+                ReferenceLink = part.ReferenceLink.AbsoluteUri,
+                User = loggedUser.MapReponseUser()
+            }).ToList();
+        }
+
+        private async Task<IEnumerable<Dal.Model.MediaLink>> SaveMediaLinksAsync(IEnumerable<Model.Request.MediaPart> newMediaParts, IEnumerable<Dal.Model.MediaPart> mediaParts)
+        {
+            var existingMediaLinks = context.MediaLinks.Where(l => mediaParts.Any(p => p.MediaPartId == l.MediaPartId));
+            int maxVersion = existingMediaLinks.Any() ? existingMediaLinks.Max(mp => mp.VersionId) : 1;
+
+            foreach (var mediaPart in mediaParts)
+                await context.MediaLinks.AddRangeAsync(newMediaParts.Where(p => p.Season == mediaPart.Season && p.Episode == mediaPart.Episode).FirstOrDefault().Links.Select(l =>
+                    new Dal.Model.MediaLink
+                    {
+                        MediaPartId = mediaPart.MediaPartId,
+                        VersionId = maxVersion,
+                        LinkId = l.LinkId,
+                        Link = new Uri(l.Link),
+                        Created = DateTime.Now,
+                        UserId = User.GetUserId()
+                    }));
+            await context.SaveChangesAsync();
+
+            return context.MediaLinks.Where(l => mediaParts.Any(p => p.MediaPartId == l.MediaPartId));
+        }
+
+        private static IEnumerable<Model.Response.MediaLink> MapMediaLinks(IEnumerable<Dal.Model.MediaLink> mediaLinks)
+        {
+            return mediaLinks.Select(link => new Model.Response.MediaLink
+            {
+                MediaLinkId = link.MediaLinkId,
+                LinkId = link.LinkId,
+                Link = link.Link.AbsoluteUri
+            }).ToList();
+        }
         #endregion
     }
 }
