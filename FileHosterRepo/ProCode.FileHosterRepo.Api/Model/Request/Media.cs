@@ -8,7 +8,20 @@ namespace ProCode.FileHosterRepo.Api.Model.Request
         public string Name { get; set; }
         public string Description { get; set; }
         public string ReferenceLink { get; set; }
-        public IList<MediaPart> Parts { get; set; }
+        public IEnumerable<MediaPart> Parts { get; set; }
+    }
+
+    public class MediaTag
+    {
+        public string Name { get; set; }
+    }
+
+    public class MediaVersion
+    {
+        public int MediaLinkVersionId { get; set; }
+        public string VersionComment { get; set; }
+        public IEnumerable<MediaLink> Links { get; set; }
+        public IEnumerable<MediaTag> Tags { get; set; }
     }
 
     public class MediaPart
@@ -19,7 +32,7 @@ namespace ProCode.FileHosterRepo.Api.Model.Request
         public string Name { get; set; }
         public string Description { get; set; }
         public string ReferenceLink { get; set; }
-        public IList<MediaLink> Links { get; set; }
+        public MediaVersion Version { get; set; }
     }
 
     public class MediaLink

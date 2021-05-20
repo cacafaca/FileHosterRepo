@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProCode.FileHosterRepo.Dal.Model
 {
-    [Index(nameof(MediaPartId), nameof(VersionId), nameof(LinkId), IsUnique = true)]
+    [Index(nameof(MediaVersionId), nameof(LinkOrderId), IsUnique = true)]
     public class MediaLink
     {
         // Primary key
@@ -13,14 +13,15 @@ namespace ProCode.FileHosterRepo.Dal.Model
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int MediaLinkId { get; set; }
 
-        // Unique key
-        public int MediaPartId { get; set; }
-        [ForeignKey("MediaPartId")]
-        public MediaPart MediaPart { get; set; }
+        // Unique keyS
+        public int MediaVersionId { get; set; }
+        [ForeignKey("MediaVersionId")]
+        public MediaVersion Version { get; set; }
+        /// <summary>
+        /// Order number of the link in the link list.
+        /// </summary>
         [Required]
-        public int VersionId { get; set; }
-        [Required]
-        public int LinkId { get; set; }
+        public int LinkOrderId { get; set; }
 
         // Non PK fields
         [Required]

@@ -12,6 +12,7 @@ namespace ProCode.FileHosterRepo.Dal.DataAccess
         public DbSet<Model.User> Users { get; set; }
         public DbSet<Model.Media> Medias { get; set; }
         public DbSet<Model.MediaPart> MediaParts { get; set; }
+        public DbSet<Model.MediaVersion> MediaVersions { get; set; }
         public DbSet<Model.MediaLink> MediaLinks { get; set; }
         #endregion
 
@@ -26,12 +27,9 @@ namespace ProCode.FileHosterRepo.Dal.DataAccess
                 .HasIndex(u => u.Nickname)
                 .IsUnique();
 
-            //builder.Entity<Model.MediaPart>()
-            //    .HasIndex(mp => new { mp.Media, mp.Season, mp.Episode })
-            //    .IsUnique();
-
-            //builder.Entity<Model.MediaLink>()
-            //    .HasKey(mp => new { mp.MediaPart, mp.VersionId, mp.LinkId});
+            builder.Entity<Model.MediaTag>()
+                .Property(c => c.Name)
+                .UseCollation("SQL_Latin1_General_CP1_CI_AS");      // Case insensitive
         }
         #endregion
     }

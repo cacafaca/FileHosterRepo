@@ -57,10 +57,10 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("LinkId")
+                    b.Property<int>("LinkOrderId")
                         .HasColumnType("int");
 
-                    b.Property<int>("MediaPartId")
+                    b.Property<int>("MediaVersionId")
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
@@ -69,14 +69,11 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     b.Property<string>("VersionComment")
                         .HasColumnType("text");
 
-                    b.Property<int>("VersionId")
-                        .HasColumnType("int");
-
                     b.HasKey("MediaLinkId");
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("MediaPartId", "VersionId", "LinkId")
+                    b.HasIndex("MediaVersionId", "LinkOrderId")
                         .IsUnique();
 
                     b.ToTable("MediaLinks");
@@ -121,6 +118,36 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                         .IsUnique();
 
                     b.ToTable("MediaParts");
+                });
+
+            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaVersion", b =>
+                {
+                    b.Property<int>("MediaVersionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime");
+
+                    b.Property<int>("MediaPartId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Tags")
+                        .HasColumnType("text");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("VersionComment")
+                        .HasColumnType("text");
+
+                    b.HasKey("MediaVersionId");
+
+                    b.HasIndex("MediaPartId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("MediaVersions");
                 });
 
             modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.User", b =>
@@ -176,9 +203,9 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
 
             modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaLink", b =>
                 {
-                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.MediaPart", "MediaPart")
+                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.MediaVersion", "Version")
                         .WithMany()
-                        .HasForeignKey("MediaPartId")
+                        .HasForeignKey("MediaVersionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -188,9 +215,9 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("MediaPart");
-
                     b.Navigation("User");
+
+                    b.Navigation("Version");
                 });
 
             modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaPart", b =>
@@ -208,6 +235,25 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                         .IsRequired();
 
                     b.Navigation("Media");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaVersion", b =>
+                {
+                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.MediaPart", "MediaPart")
+                        .WithMany()
+                        .HasForeignKey("MediaPartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MediaPart");
 
                     b.Navigation("User");
                 });

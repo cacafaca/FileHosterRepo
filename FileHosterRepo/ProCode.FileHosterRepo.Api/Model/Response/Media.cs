@@ -24,9 +24,17 @@ namespace ProCode.FileHosterRepo.Api.Model.Response
         public IEnumerable<MediaLink> Links { get; set; }
     }
 
+    public class MediaVersion
+    {
+        public int MediaLinkVersionId { get; set; }
+        public string VersionComment { get; set; }
+        public string Tags { get; set; }
+    }
+
     public class MediaLink
     {
         public int MediaLinkId { get; set; }
+        public MediaVersion Version { get; set; }
         public int LinkId { get; set; }
         public string Link { get; set; }
     }

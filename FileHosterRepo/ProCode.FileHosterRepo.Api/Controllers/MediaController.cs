@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace ProCode.FileHosterRepo.Api.Controllers
 {
@@ -32,15 +33,18 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                     var newDbMedia = await SaveMediaAsync(newMedia);
                     responseMedia = MapMedia(newDbMedia, loggedUser);
 
-                    // Media part
+                    // Parts
                     var newDbMediaParts = await SaveMediaPartAsync(newMedia.Parts, newDbMedia.MediaId);
                     responseMedia.Parts = MapMediaParts(newDbMediaParts, loggedUser);
+
+                    // Version
+                    var newDbMediaVersion = await SaveMediaVersionAsync(newMedia.Parts, newDbMediaParts);
 
                     // Links
                     var newDbMediaLinks = await SaveMediaLinksAsync(newMedia.Parts, newDbMediaParts);
                     foreach (var part in responseMedia.Parts)
                     {
-                        part.Links = MapMediaLinks(newDbMediaLinks.Where(link => link.MediaPartId == part.MediaPartId));
+                        //part.Links = MapMediaLinks(newDbMediaLinks.Where(link => link.MediaPartId == part.MediaPartId));
                     }
 
                     return Ok(responseMedia);
@@ -71,7 +75,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             return newDbMedia.Entity;
         }
 
-        private Model.Response.Media MapMedia(Dal.Model.Media newDbMedia, Dal.Model.User loggedUser)
+        private static Model.Response.Media MapMedia(Dal.Model.Media newDbMedia, Dal.Model.User loggedUser)
         {
             return new Model.Response.Media
             {
@@ -79,7 +83,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 Name = newDbMedia.Name,
                 Description = newDbMedia.Description,
                 ReferenceLink = newDbMedia.ReferenceLink.AbsoluteUri,
-                User = loggedUser.MapReponseUser()
+                User = newDbMedia.User.MapReponseUser()
             };
         }
 
@@ -94,7 +98,8 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                   Name = part.Name,
                   Description = part.Description,
                   ReferenceLink = new Uri(part.ReferenceLink),
-                  UserId = User.GetUserId()
+                  UserId = User.GetUserId(),
+                  Created = DateTime.Now
               }));
             await context.SaveChangesAsync();
             return context.MediaParts.Where(part => part.MediaId == mediaId);
@@ -110,29 +115,53 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 Name = part.Name,
                 Description = part.Description,
                 ReferenceLink = part.ReferenceLink.AbsoluteUri,
-                User = loggedUser.MapReponseUser()
+                User = part.User.MapReponseUser()
             }).ToList();
+        }
+
+        private async Task<IEnumerable<Dal.Model.MediaVersion>> SaveMediaVersionAsync(IEnumerable<Model.Request.MediaPart> requestParts,
+            IEnumerable<Dal.Model.MediaPart> dbParts)
+        {
+            var newDbVersion = dbParts.Select(dbPart =>
+                new Dal.Model.MediaVersion
+                {
+                    MediaPartId = dbPart.MediaPartId,
+                    VersionComment = requestParts.Where(p => p.Season == dbPart.Season && p.Episode == dbPart.Episode).FirstOrDefault().Version.VersionComment,
+                    UserId = User.GetUserId(),
+                    Created = DateTime.Now
+                });
+            await context.MediaVersions.AddRangeAsync(newDbVersion);
+            await context.SaveChangesAsync();
+            return context.MediaVersions.Where(v => newDbVersion.Any(newVer => newVer.MediaVersionId == v.MediaVersionId));
+        }
+
+        private void MapMediaVersion()
+        {
+
         }
 
         private async Task<IEnumerable<Dal.Model.MediaLink>> SaveMediaLinksAsync(IEnumerable<Model.Request.MediaPart> newMediaParts, IEnumerable<Dal.Model.MediaPart> mediaParts)
         {
-            var existingMediaLinks = context.MediaLinks.Where(l => mediaParts.Any(p => p.MediaPartId == l.MediaPartId));
-            int maxVersion = existingMediaLinks.Any() ? existingMediaLinks.Max(mp => mp.VersionId) : 1;
+            /*
+            var existingMediaLinks = context.MediaLinks.Where(l => mediaParts.Any(p => p.MediaPartId == 1 ));
+            //int maxVersion = existingMediaLinks.Any() ? existingMediaLinks.Max(mp => mp.MediaLinkVersionId) : 1;
 
             foreach (var mediaPart in mediaParts)
                 await context.MediaLinks.AddRangeAsync(newMediaParts.Where(p => p.Season == mediaPart.Season && p.Episode == mediaPart.Episode).FirstOrDefault().Links.Select(l =>
                     new Dal.Model.MediaLink
                     {
-                        MediaPartId = mediaPart.MediaPartId,
-                        VersionId = maxVersion,
-                        LinkId = l.LinkId,
+                        //MediaPartId = mediaPart.MediaPartId,
+                        //MediaLinkVersionId = maxVersion,
+                        LinkOrderId = l.LinkId,
                         Link = new Uri(l.Link),
                         Created = DateTime.Now,
                         UserId = User.GetUserId()
                     }));
             await context.SaveChangesAsync();
 
-            return context.MediaLinks.Where(l => mediaParts.Any(p => p.MediaPartId == l.MediaPartId));
+            return context.MediaLinks.Where(l => mediaParts.Any(p => p.MediaPartId == 1));
+            */
+            throw new NotImplementedException();
         }
 
         private static IEnumerable<Model.Response.MediaLink> MapMediaLinks(IEnumerable<Dal.Model.MediaLink> mediaLinks)
@@ -140,7 +169,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             return mediaLinks.Select(link => new Model.Response.MediaLink
             {
                 MediaLinkId = link.MediaLinkId,
-                LinkId = link.LinkId,
+                LinkId = link.LinkOrderId,
                 Link = link.Link.AbsoluteUri
             }).ToList();
         }
