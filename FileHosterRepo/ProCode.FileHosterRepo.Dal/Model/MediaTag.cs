@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 
 namespace ProCode.FileHosterRepo.Dal.Model
 {
-    [Index(nameof(Name), IsUnique = false)]
+    [Table("media_tag")]
+    [Index(nameof(Name), IsUnique = true)]
     public class MediaTag
     {
         // PK
@@ -20,5 +21,10 @@ namespace ProCode.FileHosterRepo.Dal.Model
         // Bare data
         [StringLength(30)]
         public string Name { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Name}({MediaTagId})";
+        }
     }
 }

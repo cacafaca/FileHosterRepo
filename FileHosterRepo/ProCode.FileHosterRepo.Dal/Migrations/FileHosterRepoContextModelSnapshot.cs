@@ -17,9 +17,9 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 64)
                 .HasAnnotation("ProductVersion", "5.0.0");
 
-            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.Media", b =>
+            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaHeader", b =>
                 {
-                    b.Property<int>("MediaId")
+                    b.Property<int>("MediaHeaderId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
@@ -37,11 +37,26 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("MediaId");
+                    b.HasKey("MediaHeaderId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Medias");
+                    b.ToTable("media_header");
+                });
+
+            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaHeaderTag", b =>
+                {
+                    b.Property<int>("MediaHeaderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MediaTagId")
+                        .HasColumnType("int");
+
+                    b.HasKey("MediaHeaderId", "MediaTagId");
+
+                    b.HasIndex("MediaTagId");
+
+                    b.ToTable("media_header_tag");
                 });
 
             modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaLink", b =>
@@ -76,7 +91,7 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     b.HasIndex("MediaVersionId", "LinkOrderId")
                         .IsUnique();
 
-                    b.ToTable("MediaLinks");
+                    b.ToTable("media_link");
                 });
 
             modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaPart", b =>
@@ -94,7 +109,7 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     b.Property<int>("Episode")
                         .HasColumnType("int");
 
-                    b.Property<int>("MediaId")
+                    b.Property<int>("MediaHeaderId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -114,10 +129,44 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("MediaId", "Season", "Episode")
+                    b.HasIndex("MediaHeaderId", "Season", "Episode")
                         .IsUnique();
 
-                    b.ToTable("MediaParts");
+                    b.ToTable("media_part");
+                });
+
+            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaPartTag", b =>
+                {
+                    b.Property<int>("MediaPartId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MediaTagId")
+                        .HasColumnType("int");
+
+                    b.HasKey("MediaPartId", "MediaTagId");
+
+                    b.HasIndex("MediaTagId");
+
+                    b.ToTable("media_part_tag");
+                });
+
+            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaTag", b =>
+                {
+                    b.Property<int>("MediaTagId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)")
+                        .UseCollation("SQL_Latin1_General_CP1_CI_AS");
+
+                    b.HasKey("MediaTagId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("media_tag");
                 });
 
             modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaVersion", b =>
@@ -132,9 +181,6 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     b.Property<int>("MediaPartId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Tags")
-                        .HasColumnType("text");
-
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
@@ -147,7 +193,25 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("MediaVersions");
+                    b.ToTable("media_version");
+                });
+
+            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaVersionTag", b =>
+                {
+                    b.Property<int>("MediaVersionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MediaTagId")
+                        .HasColumnType("int");
+
+                    b.HasKey("MediaVersionId", "MediaTagId");
+
+                    b.HasIndex("MediaTagId");
+
+                    b.ToTable("media_version_tag");
+
+                    b
+                        .HasComment("Connection between MediaVersions and MediaTags tables.");
                 });
 
             modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.User", b =>
@@ -190,7 +254,7 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.Media", b =>
+            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaHeader", b =>
                 {
                     b.HasOne("ProCode.FileHosterRepo.Dal.Model.User", "User")
                         .WithMany()
@@ -199,6 +263,25 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaHeaderTag", b =>
+                {
+                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.MediaHeader", "MediaHeader")
+                        .WithMany()
+                        .HasForeignKey("MediaHeaderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.MediaTag", "MediaTag")
+                        .WithMany()
+                        .HasForeignKey("MediaTagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MediaHeader");
+
+                    b.Navigation("MediaTag");
                 });
 
             modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaLink", b =>
@@ -222,9 +305,9 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
 
             modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaPart", b =>
                 {
-                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.Media", "Media")
+                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.MediaHeader", "Media")
                         .WithMany()
-                        .HasForeignKey("MediaId")
+                        .HasForeignKey("MediaHeaderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -237,6 +320,25 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     b.Navigation("Media");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaPartTag", b =>
+                {
+                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.MediaPart", "MediaPart")
+                        .WithMany()
+                        .HasForeignKey("MediaPartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.MediaTag", "MediaTag")
+                        .WithMany()
+                        .HasForeignKey("MediaTagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MediaPart");
+
+                    b.Navigation("MediaTag");
                 });
 
             modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaVersion", b =>
@@ -256,6 +358,25 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     b.Navigation("MediaPart");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaVersionTag", b =>
+                {
+                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.MediaTag", "MediaTag")
+                        .WithMany()
+                        .HasForeignKey("MediaTagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.MediaVersion", "MediaVersion")
+                        .WithMany()
+                        .HasForeignKey("MediaVersionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MediaTag");
+
+                    b.Navigation("MediaVersion");
                 });
 #pragma warning restore 612, 618
         }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace ProCode.FileHosterRepo.Dal.Model
 {
+    [Table("media_version")]
     public class MediaVersion
     {
         // Primary key

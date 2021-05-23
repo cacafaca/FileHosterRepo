@@ -2,14 +2,33 @@
 
 namespace ProCode.FileHosterRepo.Api.Model.Response
 {
-    public class Media
+    public class MediaHeader
     {
-        public int MediaId { get; set; }
+        public int MediaHeaderId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string ReferenceLink { get; set; }
         public User User { get; set; }
         public IEnumerable<MediaPart> Parts { get; set; }
+        public IEnumerable<MediaTag> Tags { get; set; }
+    }
+
+    public class MediaTag
+    {
+        public string Name { get; set; }
+        
+        public override string ToString()
+        {
+            return Name;
+        }
+    }
+
+    public class MediaVersion
+    {
+        public int MediaLinkVersionId { get; set; }
+        public string VersionComment { get; set; }
+        public IEnumerable<MediaLink> Links { get; set; }
+        public IEnumerable<MediaTag> Tags { get; set; }
     }
 
     public class MediaPart
@@ -21,14 +40,8 @@ namespace ProCode.FileHosterRepo.Api.Model.Response
         public string Description { get; set; }
         public string ReferenceLink { get; set; }
         public User User { get; set; }
-        public IEnumerable<MediaLink> Links { get; set; }
-    }
-
-    public class MediaVersion
-    {
-        public int MediaLinkVersionId { get; set; }
-        public string VersionComment { get; set; }
-        public string Tags { get; set; }
+        public IEnumerable<MediaVersion >Version { get; set; }
+        public IEnumerable<MediaTag> Tags { get; set; }
     }
 
     public class MediaLink
@@ -37,5 +50,6 @@ namespace ProCode.FileHosterRepo.Api.Model.Response
         public MediaVersion Version { get; set; }
         public int LinkId { get; set; }
         public string Link { get; set; }
+        public IEnumerable<MediaTag> Tags { get; set; }
     }
 }

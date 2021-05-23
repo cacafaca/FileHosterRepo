@@ -5,7 +5,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProCode.FileHosterRepo.Dal.Model
 {
-    [Index(nameof(MediaId), nameof(Season), nameof(Episode), IsUnique = true)]
+    [Table("media_part")]
+    [Index(nameof(MediaHeaderId), nameof(Season), nameof(Episode), IsUnique = true)]
     public class MediaPart
     {
         // Primary key
@@ -14,10 +15,9 @@ namespace ProCode.FileHosterRepo.Dal.Model
         public int MediaPartId { get; set; }
 
         // Unique key
-        public int MediaId { get; set; }
-        [ForeignKey("MediaId")]
-        //[InverseProperty("MediaParts")]
-        public Media Media { get; set; }
+        public int MediaHeaderId { get; set; }
+        [ForeignKey("MediaHeaderId")]
+        public MediaHeader Media { get; set; }
         [Required]
         public int Season { get; set; }
         [Required]

@@ -4,12 +4,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProCode.FileHosterRepo.Dal.Model
 {
-    public class Media
+    [Table("media_header")]
+    public class MediaHeader
     {
         // Primary key
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int MediaId { get; set; }
+        public int MediaHeaderId { get; set; }
 
         // Non PK fields
         [Required]

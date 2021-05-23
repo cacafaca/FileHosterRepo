@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace ProCode.FileHosterRepo.Dal.Model
 {
-    [Table("media_version_tag")]
-    public class MediaVersionTag
+    [Table("media_part_tag")]
+    public class MediaPartTag
     {
         // FK version
-        public int MediaVersionId { get; set; }
-        [ForeignKey("MediaVersionId")]
-        public MediaVersion MediaVersion { get; set; }
+        public int MediaPartId { get; set; }
+        [ForeignKey("MediaPartId")]
+        public MediaPart MediaPart { get; set; }
         // FK tag
         public int MediaTagId { get; set; }
         [ForeignKey("MediaTagId")]
