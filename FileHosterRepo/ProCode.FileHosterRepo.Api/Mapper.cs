@@ -18,56 +18,44 @@ namespace ProCode.FileHosterRepo.Api
             };
         }
 
-        /// <summary>
-        /// Parts property will be null.
-        /// </summary>
-        /// <param name="media"></param>
-        /// <returns></returns>
-        public static Model.Response.MediaHeader MapResponseMedia(this Dal.Model.MediaHeader media)
+        public static void MapResponseMedia(this Dal.Model.MediaHeader media, ref Model.Response.MediaHeader responseHeader)
         {
-            return new Model.Response.MediaHeader
-            {
-                MediaHeaderId = media.MediaHeaderId,
-                Name = media.Name,
-                Description = media.Description,
-                ReferenceLink = media.ReferenceLink.AbsoluteUri,
-                User = media.User.MapReponseUser()
-            };
+            responseHeader.MediaHeaderId = media.MediaHeaderId;
+            responseHeader.Name = media.Name;
+            responseHeader.Description = media.Description;
+            responseHeader.ReferenceLink = media.ReferenceLink?.AbsoluteUri;
+            responseHeader.User = media.User.MapReponseUser();
         }
 
-        /// <summary>
-        /// Links will be null.
-        /// </summary>
-        /// <param name="mediaPart"></param>
-        /// <returns></returns>
-        public static Model.Response.MediaPart MapResponseMediaPart(this Dal.Model.MediaPart mediaPart)
+        public static void MapResponseMediaPart(this Dal.Model.MediaPart mediaPart, ref Model.Response.MediaPart responsePart)
         {
-            return new Model.Response.MediaPart
-            {
-                MediaPartId = mediaPart.MediaPartId,
-                Season = mediaPart.Season,
-                Episode = mediaPart.Episode,
-                Name = mediaPart.Name,
-                Description = mediaPart.Description,
-                ReferenceLink = mediaPart.ReferenceLink.AbsoluteUri,
-                User = mediaPart.User.MapReponseUser()
-            };
+            responsePart.MediaPartId = mediaPart.MediaPartId;
+            responsePart.Season = mediaPart.Season;
+            responsePart.Episode = mediaPart.Episode;
+            responsePart.Name = mediaPart.Name;
+            responsePart.Description = mediaPart.Description;
+            responsePart.ReferenceLink = mediaPart.ReferenceLink?.AbsoluteUri;
+            responsePart.User = mediaPart.User.MapReponseUser();
         }
 
-        public static Model.Response.MediaVersion MapResponseMediaVersion(this Dal.Model.MediaVersion mediaVersion)
+        public static void MapResponseMediaVersion(this Dal.Model.MediaVersion mediaVersion, ref Model.Response.MediaVersion responseVersion)
         {
-            return new Model.Response.MediaVersion
-            {
-                MediaLinkVersionId = mediaVersion.MediaVersionId,
-                VersionComment = mediaVersion.VersionComment,
-            };
+            responseVersion.MediaLinkVersionId = mediaVersion.MediaVersionId;
+            responseVersion.VersionComment = mediaVersion.VersionComment;
+        }
+
+        public static void MapResponseMediaLink(this Dal.Model.MediaLink link, ref Model.Response.MediaLink responseLink)
+        {
+            responseLink.MediaLinkId = link.MediaLinkId;
+            responseLink.LinkOrderId = link.LinkOrderId;
+            responseLink.Link = link.Link.AbsoluteUri;
         }
 
         public static Model.Response.MediaTag MapResponseMediaTag(this Dal.Model.MediaTag mediaTag)
         {
             return new Model.Response.MediaTag
             {
-                Name= mediaTag.Name
+                Name = mediaTag.Name
             };
         }
     }

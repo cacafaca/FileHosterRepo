@@ -13,11 +13,11 @@ namespace ProCode.FileHosterRepo.Dal.Model
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int MediaPartId { get; set; }
-
+        
         // Unique key
         public int MediaHeaderId { get; set; }
         [ForeignKey("MediaHeaderId")]
-        public MediaHeader Media { get; set; }
+        public MediaHeader MediaHeader { get; set; }
         [Required]
         public int Season { get; set; }
         [Required]

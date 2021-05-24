@@ -25,7 +25,7 @@ namespace ProCode.FileHosterRepo.ApiTests
         {
             using IHost host = CreateHostBuilder(null).Build();
 
-            DbContextOptionsBuilder optionsBuilder = new DbContextOptionsBuilder();
+            DbContextOptionsBuilder optionsBuilder = new();
             optionsBuilder.UseMySQL(configurationRoot.GetConnectionString("FileHosterRepoConnectionString"));
             fileHosterContext = new FileHosterRepoContext(optionsBuilder.Options);
 

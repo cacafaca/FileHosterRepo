@@ -20,7 +20,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         #region Actions
         [HttpPost("Add")]
-        public async Task<ActionResult<Model.Response.MediaHeader>> Add(Model.Request.MediaHeader requestedMedia)
+        public async Task<ActionResult<Model.Response.MediaHeader>> Add(Model.Request.MediaHeader requestedHeader)
         {
             // Always check at beginning!
             var loggedUser = await GetLoggedUserAsync();
@@ -28,148 +28,9 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             {
                 try
                 {
-                    // Header
-                    var newMedia = await context.Medias.AddAsync(new Dal.Model.MediaHeader
-                    {
-                        Name = requestedMedia.Name,
-                        Description = requestedMedia.Description,
-                        ReferenceLink = new Uri(requestedMedia.ReferenceLink),
-                        UserId = loggedUser.UserId
-                    });
-                    await context.SaveChangesAsync();                           // Save to get MediaId.
-                    requestedMedia.MediaHeaderId = newMedia.Entity.MediaHeaderId;         // Populate id in request structure, so it can be used later if needed.
+                    var addedMediaHeader = await AddHeaderAsync(requestedHeader, loggedUser);
 
-                    // Header tags
-                    if (requestedMedia.Tags != null)
-                        foreach (var reqHeaderTag in requestedMedia.Tags)
-                        {
-                            var oldTag = await context.MediaTags.SingleOrDefaultAsync(t => t.Name == reqHeaderTag.Name);
-                            if (oldTag == null)
-                            {
-                                var newTag = new Dal.Model.MediaTag { Name = reqHeaderTag.Name };
-                                var savedTag = await context.MediaTags.AddAsync(newTag);
-                                await context.SaveChangesAsync();
-                                reqHeaderTag.MediaTagId = savedTag.Entity.MediaTagId;
-                            }
-                            else
-                            {
-                                reqHeaderTag.MediaTagId = oldTag.MediaTagId;
-                            }
-
-                            // Header-Tag link
-                            await context.MediaHeaderTags.AddAsync(new Dal.Model.MediaHeaderTag
-                            {
-                                MediaHeaderId = requestedMedia.MediaHeaderId,
-                                MediaTagId = reqHeaderTag.MediaTagId
-                            });
-                            await context.SaveChangesAsync();
-                        }
-
-                    // Parts
-                    if (requestedMedia.Parts != null)
-                        foreach (var reqPart in requestedMedia.Parts)
-                        {
-                            var newPart = await context.MediaParts.AddAsync(new Dal.Model.MediaPart
-                            {
-                                MediaHeaderId = newMedia.Entity.MediaHeaderId,
-                                Season = reqPart.Season,
-                                Episode = reqPart.Episode,
-                                Name = reqPart.Name,
-                                Description = reqPart.Description,
-                                ReferenceLink = new Uri(reqPart.ReferenceLink),
-                                UserId = loggedUser.UserId,
-                                Created = DateTime.Now
-                            });
-                            await context.SaveChangesAsync();
-                            reqPart.MediaPartId = newPart.Entity.MediaPartId;
-
-                            // Part tags
-                            if (reqPart.Tags != null)
-                            {
-                                foreach (var reqPartTag in reqPart.Tags)
-                                {
-                                    var oldTag = await context.MediaTags.SingleOrDefaultAsync(t => t.Name == reqPartTag.Name);
-                                    if (oldTag == null)
-                                    {
-                                        var newTag = new Dal.Model.MediaTag { Name = reqPartTag.Name };
-                                        var savedTag = await context.MediaTags.AddAsync(newTag);
-                                        await context.SaveChangesAsync();
-                                        reqPartTag.MediaTagId = savedTag.Entity.MediaTagId;
-                                    }
-                                    else
-                                    {
-                                        reqPartTag.MediaTagId = oldTag.MediaTagId;
-                                    }
-
-                                    // Part-Tag link
-                                    await context.MediaPartTags.AddAsync(new Dal.Model.MediaPartTag
-                                    {
-                                        MediaPartId = reqPart.MediaPartId,
-                                        MediaTagId = reqPartTag.MediaTagId
-                                    });
-                                    await context.SaveChangesAsync();
-                                }
-                            }
-
-                            // Media versions
-                            var newVersion = await context.MediaVersions.AddAsync(new Dal.Model.MediaVersion
-                            {
-                                MediaPartId = newPart.Entity.MediaPartId,
-                                VersionComment = reqPart.Version.VersionComment,
-                                UserId = loggedUser.UserId,
-                                Created = DateTime.Now
-                            });
-                            await context.SaveChangesAsync();
-                            reqPart.Version.MediaVersionId = newVersion.Entity.MediaVersionId;
-
-                            // Media version tags
-                            if (reqPart.Version.Tags != null)
-                            {
-                                foreach (var reqVersionTag in reqPart.Version.Tags)
-                                {
-                                    var oldTag = await context.MediaTags.SingleOrDefaultAsync(t => t.Name == reqVersionTag.Name);
-                                    if (oldTag == null)
-                                    {
-                                        var newTag = new Dal.Model.MediaTag { Name = reqVersionTag.Name };
-                                        var savedTag = await context.MediaTags.AddAsync(newTag);
-                                        await context.SaveChangesAsync();
-                                        reqVersionTag.MediaTagId = savedTag.Entity.MediaTagId;
-                                    }
-                                    else
-                                    {
-                                        reqVersionTag.MediaTagId = oldTag.MediaTagId;
-                                    }
-
-                                    // Part-Tag link
-                                    await context.MediaVersionTags.AddAsync(new Dal.Model.MediaVersionTag
-                                    {
-                                        MediaVersionId = reqPart.Version.MediaVersionId,
-                                        MediaTagId = reqVersionTag.MediaTagId
-                                    });
-                                    await context.SaveChangesAsync();
-                                }
-                            }
-
-                            // Links
-                            if (reqPart.Version.Links != null)
-                            {
-                                int linkIndex = 1;
-                                foreach (var reqLink in reqPart.Version.Links)
-                                {
-                                    var newLink = context.MediaLinks.Add(new Dal.Model.MediaLink
-                                    {
-                                        MediaVersionId = reqPart.Version.MediaVersionId,
-                                        LinkOrderId = linkIndex++,
-                                        Link = new Uri(reqLink.Link),
-                                        Created = DateTime.Now,
-                                        UserId = loggedUser.UserId
-                                    });
-                                }
-                            }
-                        }
-
-
-                    return Ok(null);
+                    return Ok(await BuildResponseHeaderAsync(addedMediaHeader.MediaHeaderId));
                 }
                 catch (Exception ex)
                 {
@@ -184,159 +45,222 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         #endregion
 
         #region Methods
-
-        private async Task GroupApproach(Model.Request.MediaHeader requestedMedia, Dal.Model.User loggedUser)
+        private async Task<Dal.Model.MediaHeader> AddHeaderAsync(Model.Request.MediaHeader requestedHeader, Dal.Model.User loggedUser)
         {
-            // Add Media
-            var addedMedia = await AddMediaAsync(requestedMedia, loggedUser);
-            // Add Parts
-            var addedParts = await AddMediaPartAsync(requestedMedia.Parts, addedMedia.MediaHeaderId, loggedUser);
-            // Add Tags
-            var addedTags = await AddTagsAsync(requestedMedia.Parts);
-            // Add Version
-            var addedVersions = await AddMediaVersionAsync(requestedMedia.Parts, addedParts, loggedUser);
-            // Version-Tag link
-            //var addedVersionTags = await SaveVersionTagsAsync(requestedMedia.Parts, addedParts);
-            // Links
-            //var addedLinks = await SaveMediaLinksAsync(requestedMedia.Parts, addedParts);
-
-            // Map everything.
-            Model.Response.MediaHeader responseMedia = addedMedia.MapResponseMedia();
-            responseMedia.Parts = addedParts.Select(dbPart => dbPart.MapResponseMediaPart()).ToList();
-        }
-        private async Task<Dal.Model.MediaHeader> AddMediaAsync(Model.Request.MediaHeader requestedMedia, Dal.Model.User loggedUser)
-        {
-            var savedMedia = await context.Medias.AddAsync(new Dal.Model.MediaHeader
+            var addedHeader = await context.MediaHeaders.AddAsync(new Dal.Model.MediaHeader
             {
-                Name = requestedMedia.Name,
-                Description = requestedMedia.Description,
-                ReferenceLink = new Uri(requestedMedia.ReferenceLink),
+                Name = requestedHeader.Name,
+                Description = requestedHeader.Description,
+                ReferenceLink = !string.IsNullOrWhiteSpace(requestedHeader.ReferenceLink) ? new Uri(requestedHeader.ReferenceLink) : null,
                 UserId = loggedUser.UserId
             });
-            await context.SaveChangesAsync();                           // Save to get MediaId.
-            requestedMedia.MediaHeaderId = savedMedia.Entity.MediaHeaderId;         // Populate id in request structure, so it can be used later if needed.
-            return savedMedia.Entity;
+            await context.SaveChangesAsync();                                   // Save to get MediaId.
+            requestedHeader.MediaHeaderId = addedHeader.Entity.MediaHeaderId;   // Populate id in request structure, so it can be used later if needed.
+
+            // Header tags
+            await AddHeaderTagsAsync(requestedHeader);
+
+            // Parts
+            await AddPartsAsync(requestedHeader, addedHeader.Entity, loggedUser);
+
+            return addedHeader.Entity;
         }
 
-        private async Task<IEnumerable<Dal.Model.MediaPart>> AddMediaPartAsync(IEnumerable<Model.Request.MediaPart> requestedParts, int mediaId,
-            Dal.Model.User loggedUser)
+        private async Task AddHeaderTagsAsync(Model.Request.MediaHeader requestedHeader)
         {
-            Dictionary<int, int> requestedAndSavedLink = new();
-            List<Dal.Model.MediaPart> savedParts = new();
-
-            foreach (var reqPart in requestedParts)
-            {
-                var newPart = await context.MediaParts.AddAsync(new Dal.Model.MediaPart
+            if (requestedHeader.Tags != null)
+                foreach (var reqHeaderTag in requestedHeader.Tags)
                 {
-                    MediaHeaderId = mediaId,
-                    Season = reqPart.Season,
-                    Episode = reqPart.Episode,
-                    Name = reqPart.Name,
-                    Description = reqPart.Description,
-                    ReferenceLink = new Uri(reqPart.ReferenceLink),
-                    UserId = loggedUser.UserId,
-                    Created = DateTime.Now
-                });
-                savedParts.Add(newPart.Entity);
-                requestedAndSavedLink.Add(reqPart.GetHashCode(), newPart.Entity.GetHashCode());
-            }
-            await context.SaveChangesAsync();
-
-            // Update MediaPartId in request, because link between request and DB object will be needed later.
-            foreach (var reqPart in requestedParts)
-                reqPart.MediaPartId = savedParts.Single(p => p.GetHashCode() == requestedAndSavedLink[reqPart.GetHashCode()]).MediaPartId;
-
-            return savedParts;
-        }
-
-        private async Task<IEnumerable<Dal.Model.MediaTag>> AddTagsAsync(IEnumerable<Model.Request.MediaPart> reqParts)
-        {
-            // Extricate new tags (that do not exists in DB), and save.
-            var requestedTags = reqParts.SelectMany(part => part.Version.Tags)
-                .GroupBy(tag => tag.Name)
-                .Select(sameTags => sameTags.FirstOrDefault()).ToList();
-            List<Dal.Model.MediaTag> existingTags = new();
-            foreach (var requestedTag in requestedTags)
-            {
-                var foundTag = await context.MediaTags.SingleOrDefaultAsync(t => t.Name == requestedTag.Name);
-                if (foundTag != null)
-                    existingTags.Add(foundTag);
-            }
-            var tagsToSave = requestedTags.Where(rt => !existingTags.Any(et => et.Name == rt.Name));
-            var savedTags = tagsToSave.Select(t => new Dal.Model.MediaTag { Name = t.Name });
-            await context.MediaTags.AddRangeAsync(savedTags);
-            await context.SaveChangesAsync();
-
-            return existingTags.Union(savedTags).ToList();
-        }
-
-        private async Task<IEnumerable<Dal.Model.MediaVersion>> AddMediaVersionAsync(IEnumerable<Model.Request.MediaPart> requestParts,
-            IEnumerable<Dal.Model.MediaPart> savedParts, Dal.Model.User loggedUser)
-        {
-            var savedVersions = savedParts.Select(savedPart =>
-                new Dal.Model.MediaVersion
-                {
-                    MediaPartId = savedPart.MediaPartId,
-                    VersionComment = requestParts.SingleOrDefault(p => p.Season == savedPart.Season && p.Episode == savedPart.Episode).Version.VersionComment,
-                    UserId = loggedUser.UserId,
-                    Created = DateTime.Now
-                });
-            await context.MediaVersions.AddRangeAsync(savedVersions);
-            await context.SaveChangesAsync();
-            return savedVersions;
-        }
-
-        private async Task<IEnumerable<Dal.Model.MediaVersionTag>> SaveVersionTagsAsync(IEnumerable<Model.Request.MediaPart> reqParts,
-            IEnumerable<Dal.Model.MediaPart> savedParts, IEnumerable<Dal.Model.MediaVersion> savedVersions,
-            IEnumerable<Dal.Model.MediaTag> savedTags)
-        {
-            var savedVersionTags = savedVersions.Join(savedParts, v => v.MediaPartId, p => p.MediaPartId, (v, p) => new Dal.Model.MediaVersionTag
-            {
-                MediaVersionId = v.MediaVersionId,
-                MediaTagId = 1
-            });
-            await context.MediaVersionTags.AddRangeAsync(savedVersionTags);
-            await context.SaveChangesAsync();
-            return savedVersionTags;
-        }
-
-        private void MapMediaVersion()
-        {
-
-        }
-
-        private async Task<IEnumerable<Dal.Model.MediaLink>> SaveMediaLinksAsync(IEnumerable<Model.Request.MediaPart> newMediaParts, IEnumerable<Dal.Model.MediaPart> mediaParts)
-        {
-            /*
-            var existingMediaLinks = context.MediaLinks.Where(l => mediaParts.Any(p => p.MediaPartId == 1 ));
-            //int maxVersion = existingMediaLinks.Any() ? existingMediaLinks.Max(mp => mp.MediaLinkVersionId) : 1;
-
-            foreach (var mediaPart in mediaParts)
-                await context.MediaLinks.AddRangeAsync(newMediaParts.Where(p => p.Season == mediaPart.Season && p.Episode == mediaPart.Episode).FirstOrDefault().Links.Select(l =>
-                    new Dal.Model.MediaLink
+                    var oldTag = await context.MediaTags.SingleOrDefaultAsync(t => t.Name == reqHeaderTag.Name);
+                    if (oldTag == null)
                     {
-                        //MediaPartId = mediaPart.MediaPartId,
-                        //MediaLinkVersionId = maxVersion,
-                        LinkOrderId = l.LinkId,
-                        Link = new Uri(l.Link),
-                        Created = DateTime.Now,
-                        UserId = User.GetUserId()
-                    }));
-            await context.SaveChangesAsync();
+                        var newTag = new Dal.Model.MediaTag { Name = reqHeaderTag.Name };
+                        var savedTag = await context.MediaTags.AddAsync(newTag);
+                        await context.SaveChangesAsync();
+                        reqHeaderTag.MediaTagId = savedTag.Entity.MediaTagId;
+                    }
+                    else
+                    {
+                        reqHeaderTag.MediaTagId = oldTag.MediaTagId;
+                    }
 
-            return context.MediaLinks.Where(l => mediaParts.Any(p => p.MediaPartId == 1));
-            */
-            throw new NotImplementedException();
+                    // Header-Tag link
+                    await context.MediaHeaderTags.AddAsync(new Dal.Model.MediaHeaderTag
+                    {
+                        MediaHeaderId = requestedHeader.MediaHeaderId,
+                        MediaTagId = reqHeaderTag.MediaTagId
+                    });
+                    await context.SaveChangesAsync();
+                }
         }
 
-        private static IEnumerable<Model.Response.MediaLink> MapMediaLinks(IEnumerable<Dal.Model.MediaLink> mediaLinks)
+        private async Task AddPartsAsync(Model.Request.MediaHeader requestedHeader,
+            Dal.Model.MediaHeader addedHeader, Dal.Model.User loggedUser)
         {
-            return mediaLinks.Select(link => new Model.Response.MediaLink
+            if (requestedHeader.Parts != null)
+                foreach (var requestedPart in requestedHeader.Parts)
+                {
+                    var addedPart = await context.MediaParts.AddAsync(new Dal.Model.MediaPart
+                    {
+                        MediaHeaderId = addedHeader.MediaHeaderId,
+                        Season = requestedPart.Season,
+                        Episode = requestedPart.Episode,
+                        Name = requestedPart.Name,
+                        Description = requestedPart.Description,
+                        ReferenceLink = !string.IsNullOrWhiteSpace(requestedPart.ReferenceLink) ? new Uri(requestedPart.ReferenceLink) : null,
+                        UserId = loggedUser.UserId,
+                        Created = DateTime.Now
+                    });
+                    await context.SaveChangesAsync();
+                    requestedPart.MediaPartId = addedPart.Entity.MediaPartId;
+
+                    // Part tags
+                    await AddPartTagsAsync(requestedPart);
+
+                    // Media versions and tags
+                    await AddVersionAsync(requestedPart, addedPart.Entity, loggedUser);
+                }
+        }
+
+        private async Task AddPartTagsAsync(Model.Request.MediaPart reqPart)
+        {
+            if (reqPart.Tags != null)
             {
-                MediaLinkId = link.MediaLinkId,
-                LinkId = link.LinkOrderId,
-                Link = link.Link.AbsoluteUri
-            }).ToList();
+                foreach (var reqPartTag in reqPart.Tags)
+                {
+                    var oldTag = await context.MediaTags.SingleOrDefaultAsync(t => t.Name == reqPartTag.Name);
+                    if (oldTag == null)
+                    {
+                        var newTag = new Dal.Model.MediaTag { Name = reqPartTag.Name };
+                        var savedTag = await context.MediaTags.AddAsync(newTag);
+                        await context.SaveChangesAsync();
+                        reqPartTag.MediaTagId = savedTag.Entity.MediaTagId;
+                    }
+                    else
+                    {
+                        reqPartTag.MediaTagId = oldTag.MediaTagId;
+                    }
+
+                    // Part-Tag link
+                    await context.MediaPartTags.AddAsync(new Dal.Model.MediaPartTag
+                    {
+                        MediaPartId = reqPart.MediaPartId,
+                        MediaTagId = reqPartTag.MediaTagId
+                    });
+                    await context.SaveChangesAsync();
+                }
+            }
+        }
+
+        private async Task AddVersionAsync(Model.Request.MediaPart requestedPart,
+            Dal.Model.MediaPart addedPart, Dal.Model.User loggedUser)
+        {
+            var newVersion = await context.MediaVersions.AddAsync(new Dal.Model.MediaVersion
+            {
+                MediaPartId = addedPart.MediaPartId,
+                VersionComment = requestedPart.Version.VersionComment,
+                UserId = loggedUser.UserId,
+                Created = DateTime.Now
+            });
+            await context.SaveChangesAsync();
+            requestedPart.Version.MediaVersionId = newVersion.Entity.MediaVersionId;
+
+            // Media version tags
+            await AddVersionTagsAsync(requestedPart);
+
+            // Links
+            await AddLinksAsync(requestedPart.Version, loggedUser);
+        }
+
+        private async Task AddVersionTagsAsync(Model.Request.MediaPart requestedPart)
+        {
+            if (requestedPart.Version.Tags != null)
+            {
+                foreach (var reqVersionTag in requestedPart.Version.Tags)
+                {
+                    var oldTag = await context.MediaTags.SingleOrDefaultAsync(t => t.Name == reqVersionTag.Name);
+                    if (oldTag == null)
+                    {
+                        var newTag = new Dal.Model.MediaTag { Name = reqVersionTag.Name };
+                        var savedTag = await context.MediaTags.AddAsync(newTag);
+                        await context.SaveChangesAsync();
+                        reqVersionTag.MediaTagId = savedTag.Entity.MediaTagId;
+                    }
+                    else
+                    {
+                        reqVersionTag.MediaTagId = oldTag.MediaTagId;
+                    }
+
+                    // Part-Tag link
+                    await context.MediaVersionTags.AddAsync(new Dal.Model.MediaVersionTag
+                    {
+                        MediaVersionId = requestedPart.Version.MediaVersionId,
+                        MediaTagId = reqVersionTag.MediaTagId
+                    });
+                    await context.SaveChangesAsync();
+                }
+            }
+        }
+
+        private async Task AddLinksAsync(Model.Request.MediaVersion requestedVersion, Dal.Model.User loggedUser)
+        {
+            if (requestedVersion.Links != null)
+            {
+                int linkIndex = 1;
+                foreach (var requestedLink in requestedVersion.Links)
+                {
+                    var newLink = context.MediaLinks.Add(new Dal.Model.MediaLink
+                    {
+                        MediaVersionId = requestedVersion.MediaVersionId,
+                        LinkOrderId = linkIndex++,
+                        Link = new Uri(requestedLink.Link),
+                        Created = DateTime.Now,
+                        UserId = loggedUser.UserId
+                    });
+                    await context.SaveChangesAsync();
+                    requestedLink.MediaLinkId = newLink.Entity.MediaLinkId;
+                }
+            }
+        }
+
+        private async Task<Model.Response.MediaHeader> BuildResponseHeaderAsync(int mediaHeaderId)
+        {
+            Model.Response.MediaHeader responseHeader = new();
+
+            // Header
+            var header = await context.MediaHeaders.SingleOrDefaultAsync(h => h.MediaHeaderId == mediaHeaderId);
+            header.MapResponseMedia(ref responseHeader);
+
+            //Parts
+            responseHeader.Parts = new List<Model.Response.MediaPart>();
+            var parts = await context.MediaParts.Where(p => p.MediaHeaderId == header.MediaHeaderId).ToListAsync();
+            foreach (var part in parts)
+            {
+                Model.Response.MediaPart newResponsePart = new();
+                part.MapResponseMediaPart(ref newResponsePart);
+                ((List<Model.Response.MediaPart>)responseHeader.Parts).Add(newResponsePart);
+
+                // Versions
+                newResponsePart.Versions = new List<Model.Response.MediaVersion>();
+                var versions = await context.MediaVersions.Where(v => v.MediaPartId == part.MediaPartId).ToListAsync();
+                foreach (var version in versions)
+                {
+                    Model.Response.MediaVersion newResponseVersion = new();
+                    version.MapResponseMediaVersion(ref newResponseVersion);
+                    ((List<Model.Response.MediaVersion>)newResponsePart.Versions).Add(newResponseVersion);
+
+                    // Links
+                    newResponseVersion.Links = new List<Model.Response.MediaLink>();
+                    var links = await context.MediaLinks.Where(l => l.MediaVersionId == version.MediaVersionId).ToListAsync();
+                    foreach (var link in links)
+                    {
+                        Model.Response.MediaLink newResponseLink = new();
+                        link.MapResponseMediaLink(ref newResponseLink);
+                        ((List<Model.Response.MediaLink>)newResponseVersion.Links).Add(newResponseLink);
+                    }
+                }
+            }
+            return responseHeader;
         }
         #endregion
     }

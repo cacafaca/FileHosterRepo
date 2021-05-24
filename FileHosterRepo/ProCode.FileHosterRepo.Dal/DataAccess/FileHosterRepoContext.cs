@@ -12,7 +12,7 @@ namespace ProCode.FileHosterRepo.Dal.DataAccess
         public DbSet<Model.User> Users { get; set; }
 
         // Basic media tables.
-        public DbSet<Model.MediaHeader> Medias { get; set; }
+        public DbSet<Model.MediaHeader> MediaHeaders { get; set; }
         public DbSet<Model.MediaPart> MediaParts { get; set; }
         public DbSet<Model.MediaVersion> MediaVersions { get; set; }
         public DbSet<Model.MediaLink> MediaLinks { get; set; }

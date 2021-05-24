@@ -13,14 +13,17 @@ namespace ProCode.FileHosterRepo.Api.Model.Response
         public IEnumerable<MediaTag> Tags { get; set; }
     }
 
-    public class MediaTag
+    public class MediaPart
     {
+        public int MediaPartId { get; set; }
+        public int Season { get; set; }
+        public int Episode { get; set; }
         public string Name { get; set; }
-        
-        public override string ToString()
-        {
-            return Name;
-        }
+        public string Description { get; set; }
+        public string ReferenceLink { get; set; }
+        public User User { get; set; }
+        public IEnumerable<MediaVersion> Versions { get; set; }
+        public IEnumerable<MediaTag> Tags { get; set; }
     }
 
     public class MediaVersion
@@ -31,25 +34,21 @@ namespace ProCode.FileHosterRepo.Api.Model.Response
         public IEnumerable<MediaTag> Tags { get; set; }
     }
 
-    public class MediaPart
-    {
-        public int MediaPartId { get; set; }
-        public int Season { get; set; }
-        public int Episode { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string ReferenceLink { get; set; }
-        public User User { get; set; }
-        public IEnumerable<MediaVersion >Version { get; set; }
-        public IEnumerable<MediaTag> Tags { get; set; }
-    }
-
     public class MediaLink
     {
         public int MediaLinkId { get; set; }
-        public MediaVersion Version { get; set; }
-        public int LinkId { get; set; }
+        public int LinkOrderId { get; set; }
         public string Link { get; set; }
         public IEnumerable<MediaTag> Tags { get; set; }
+    }
+
+    public class MediaTag
+    {
+        public string Name { get; set; }
+        
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }

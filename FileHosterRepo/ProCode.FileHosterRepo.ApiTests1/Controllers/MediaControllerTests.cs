@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 {
@@ -45,6 +46,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 Encoding.UTF8, Config.HttpMediaTypeJson)).Result;
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             this.token = response.Content.ReadAsStringAsync().Result;
+            Config.Client.SetToken(this.token);                             // All test here assumes that user is logged.
         }
         #endregion
 
@@ -56,7 +58,83 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             // Always set token first.
             Config.Client.SetToken(this.token);
 
-            Model.Request.MediaHeader newMedia = new Model.Request.MediaHeader
+            HttpResponseMessage response = await Config.Client.PostAsync("/Media/Add",
+                new StringContent(
+                    JsonSerializer.Serialize(ExampleRequest_BreakingBad()),
+                    Encoding.UTF8, Config.HttpMediaTypeJson));
+            var responseMessage = await response.Content.ReadAsStringAsync();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
+            Model.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
+            Assert.IsNotNull(responseHeader);
+
+            // Header
+            Assert.AreEqual("Breaking Bad (2008)", responseHeader.Name);
+            Assert.IsNotNull(responseHeader.Description);
+            Assert.IsTrue(responseHeader.Description.Length > 0);
+
+            // Parts
+            Assert.AreEqual(2, responseHeader.Parts.Count());
+            Assert.AreEqual("Pilot", responseHeader.Parts.ToArray()[0].Name);
+            Assert.AreEqual("Cat's in the Bag...", responseHeader.Parts.ToArray()[1].Name);
+
+            // Part[0] / Versions
+            Assert.AreEqual(1, responseHeader.Parts.ToArray()[0].Versions.Count());
+            Assert.AreEqual(2, responseHeader.Parts.ToArray()[0].Versions.ToArray()[0].Links.Count());
+            // Part[1] / Versions
+            Assert.AreEqual(1, responseHeader.Parts.ToArray()[1].Versions.Count());
+            Assert.AreEqual(2, responseHeader.Parts.ToArray()[1].Versions.ToArray()[0].Links.Count());
+        }
+
+        [TestMethod()]
+        public async Task Add_Two_Medias()
+        {
+            // Add "Breaking Bad" Series
+            HttpResponseMessage response = await Config.Client.PostAsync("/Media/Add",
+                new StringContent(
+                    JsonSerializer.Serialize(ExampleRequest_BreakingBad()),
+                    Encoding.UTF8, Config.HttpMediaTypeJson));
+            var responseMessage = await response.Content.ReadAsStringAsync();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
+            Model.Response.MediaHeader responseMedia = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
+            Assert.IsNotNull(responseMedia);
+
+            // Add "American Beauty" movie.
+            response = await Config.Client.PostAsync("/Media/Add",
+                new StringContent(
+                    JsonSerializer.Serialize(ExampleRequest_AmericanBeauty()),
+                    Encoding.UTF8, Config.HttpMediaTypeJson));
+            responseMessage = await response.Content.ReadAsStringAsync();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
+            responseMedia = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
+            Assert.IsNotNull(responseMedia);
+        }
+
+        [TestMethod()]
+        public async Task Add_Same_Media_Twice()
+        {
+            // Add "Breaking Bad" Series
+            HttpResponseMessage response = await Config.Client.PostAsync("/Media/Add",
+                new StringContent(
+                    JsonSerializer.Serialize(ExampleRequest_BreakingBad()),
+                    Encoding.UTF8, Config.HttpMediaTypeJson));
+            var responseMessage = await response .Content.ReadAsStringAsync();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
+            Model.Response.MediaHeader responseMedia = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
+            Assert.IsNotNull(responseMedia);
+
+            // Add "American Beauty" movie.
+            response = await Config.Client.PostAsync("/Media/Add",
+                new StringContent(
+                    JsonSerializer.Serialize(ExampleRequest_BreakingBad()),
+                    Encoding.UTF8, Config.HttpMediaTypeJson));
+            responseMessage = await response.Content.ReadAsStringAsync();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
+            responseMedia = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
+            Assert.IsNotNull(responseMedia);
+        }
+        private static Model.Request.MediaHeader ExampleRequest_BreakingBad()
+        {
+            return new Model.Request.MediaHeader
             {
                 Name = "Breaking Bad (2008)",
                 Description = "A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine in order to secure his family's future.",
@@ -84,12 +162,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                             {
                                 new Model.Request.MediaLink
                                 {
-                                    LinkId = 1,
+                                    LinkOrderId = 1,
                                     Link = "https://www.imdb.com/title/tt0959621/?ref_=ttep_ep1"
                                 },
                                 new Model.Request.MediaLink
                                 {
-                                    LinkId = 2,
+                                    LinkOrderId = 2,
                                     Link = "https://m.media-amazon.com/images/M/MV5BNTZlMGY1OWItZWJiMy00MTZlLThhMGItNDQ2ODM3YzNkOWU5XkEyXkFqcGdeQXVyNzgyOTQ4MDc@._V1_UY268_CR147,0,182,268_AL_.jpg"
                                 }
                             },
@@ -119,12 +197,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                             {
                                 new Model.Request.MediaLink
                                 {
-                                    LinkId = 1,
+                                    LinkOrderId = 1,
                                     Link = "https://www.imdb.com/title/tt1054724/?ref_=ttep_ep2"
                                 },
                                 new Model.Request.MediaLink
                                 {
-                                    LinkId = 2,
+                                    LinkOrderId = 2,
                                     Link = "https://m.media-amazon.com/images/M/MV5BNmI5MTU3OTAtYTczMC00MDE5LTg3YjMtMjA3NWEyMmYyZWQwXkEyXkFqcGdeQXVyNjk1MzkzMzM@._V1_UY268_CR87,0,182,268_AL_.jpg"
                                 }
                             },
@@ -137,29 +215,58 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     }
                 }
             };
-            HttpResponseMessage response = await Config.Client.PostAsync("/Media/Add",
-                new StringContent(
-                    JsonSerializer.Serialize(newMedia),
-                    Encoding.UTF8, Config.HttpMediaTypeJson));
-            var responseMessage = response.Content.ReadAsStringAsync().Result;
-            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
-            Model.Response.MediaHeader responseMedia = JsonSerializer.Deserialize<Api.Model.Response.MediaHeader>(responseMessage);
-            Assert.IsNotNull(responseMedia);
-
-            Assert.AreEqual(1, responseMedia.Parts.ToArray()[0].MediaPartId);
-            //Assert.AreEqual(1, responseMedia.Parts.ToArray()[0].Links.ToArray()[0].LinkId);
-            //Assert.AreEqual(2, responseMedia.Parts.ToArray()[0].Links.ToArray()[1].LinkId);
-
-            //Assert.AreEqual(2, responseMedia.Parts.ToArray()[1].MediaPartId);
-            //Assert.AreEqual(1, responseMedia.Parts.ToArray()[1].Links.ToArray()[0].LinkId);
-            //Assert.AreEqual(2, responseMedia.Parts.ToArray()[1].Links.ToArray()[1].LinkId);
         }
 
-        [TestMethod()]
-        public async Task Add_Twice()
+        private static Model.Request.MediaHeader ExampleRequest_AmericanBeauty()
         {
-            object x = new object();
-            object y = new object();
+            return new Model.Request.MediaHeader
+            {
+                Name = "America Beauty (1999)",
+                Description = "A sexually frustrated suburban father has a mid-life crisis after becoming infatuated with his daughter's best friend.",
+                ReferenceLink = "https://www.imdb.com/title/tt0169547",
+                Tags = new List<Model.Request.MediaTag>
+                {
+                    new Model.Request.MediaTag { Name = "Drama" }
+                },
+                Parts = new List<Model.Request.MediaPart>
+                {
+                    new Model.Request.MediaPart
+                    {
+                        Season = 0,
+                        Episode = 0,
+                        Name = "",
+                        Description = "",
+                        ReferenceLink = "",
+                        Version = new Model.Request.MediaVersion
+                        {
+                            VersionComment = "Re-upload upon requests.",
+                            Links = new List<Model.Request.MediaLink>
+                            {
+                                new Model.Request.MediaLink
+                                {
+                                    LinkOrderId = 1,
+                                    Link = "https://m.media-amazon.com/images/M/MV5BMTY1NzMyODc3Nl5BMl5BanBnXkFtZTgwNzE2MzA1NDM@._V1_UY44_CR11,0,32,44_AL_.jpg"
+                                },
+                                new Model.Request.MediaLink
+                                {
+                                    LinkOrderId = 2,
+                                    Link = "https://m.media-amazon.com/images/M/MV5BMTc4ODQ1ODM5Ml5BMl5BanBnXkFtZTcwOTU2NDk3OQ@@._V1_UX32_CR0,0,32,44_AL_.jpg"
+                                }
+                            },
+                            Tags = new List<Model.Request.MediaTag>
+                            {
+                                new Model.Request.MediaTag { Name = "BRRip" },
+                                new Model.Request.MediaTag { Name = "YIFY" },
+                                new Model.Request.MediaTag { Name = "x264" }
+                            }
+                        },
+                        Tags = new List<Model.Request.MediaTag>
+                        {
+                            new Model.Request.MediaTag { Name = "Awesome" },
+                        }
+                    }
+                }
+            };
         }
     }
 }
