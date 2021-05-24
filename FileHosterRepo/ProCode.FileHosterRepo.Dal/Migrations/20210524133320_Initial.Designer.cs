@@ -9,7 +9,7 @@ using ProCode.FileHosterRepo.Dal.DataAccess;
 namespace ProCode.FileHosterRepo.Dal.Migrations
 {
     [DbContext(typeof(FileHosterRepoContext))]
-    [Migration("20210523041231_Initial")]
+    [Migration("20210524133320_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -82,9 +82,6 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
-
-                    b.Property<string>("VersionComment")
-                        .HasColumnType("text");
 
                     b.HasKey("MediaLinkId");
 
@@ -307,7 +304,7 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
 
             modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaPart", b =>
                 {
-                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.MediaHeader", "Media")
+                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.MediaHeader", "MediaHeader")
                         .WithMany()
                         .HasForeignKey("MediaHeaderId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -319,7 +316,7 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Media");
+                    b.Navigation("MediaHeader");
 
                     b.Navigation("User");
                 });

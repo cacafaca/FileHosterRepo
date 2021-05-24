@@ -71,18 +71,22 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.AreEqual("Breaking Bad (2008)", responseHeader.Name);
             Assert.IsNotNull(responseHeader.Description);
             Assert.IsTrue(responseHeader.Description.Length > 0);
+            Assert.AreEqual(4, responseHeader.Tags.Count());
 
             // Parts
             Assert.AreEqual(2, responseHeader.Parts.Count());
             Assert.AreEqual("Pilot", responseHeader.Parts.ToArray()[0].Name);
             Assert.AreEqual("Cat's in the Bag...", responseHeader.Parts.ToArray()[1].Name);
+            Assert.AreEqual(1, responseHeader.Parts.ToArray()[0].Tags.Count());
 
             // Part[0] / Versions
             Assert.AreEqual(1, responseHeader.Parts.ToArray()[0].Versions.Count());
             Assert.AreEqual(2, responseHeader.Parts.ToArray()[0].Versions.ToArray()[0].Links.Count());
+            Assert.AreEqual(3, responseHeader.Parts.ToArray()[0].Versions.ToArray()[0].Tags.Count());
             // Part[1] / Versions
             Assert.AreEqual(1, responseHeader.Parts.ToArray()[1].Versions.Count());
             Assert.AreEqual(2, responseHeader.Parts.ToArray()[1].Versions.ToArray()[0].Links.Count());
+            Assert.AreEqual(2, responseHeader.Parts.ToArray()[1].Versions.ToArray()[0].Tags.Count());
         }
 
         [TestMethod()]
@@ -117,7 +121,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 new StringContent(
                     JsonSerializer.Serialize(ExampleRequest_BreakingBad()),
                     Encoding.UTF8, Config.HttpMediaTypeJson));
-            var responseMessage = await response .Content.ReadAsStringAsync();
+            var responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
             Model.Response.MediaHeader responseMedia = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseMedia);
@@ -132,6 +136,111 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             responseMedia = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseMedia);
         }
+
+        [TestMethod()]
+        public async Task Add_And_Read()
+        {
+            // For the sake of sanity I'll use request object and convert it to JSON before calling API.
+
+            // Always set token first.
+            Config.Client.SetToken(this.token);
+
+            // Add something to update in second step.
+            HttpResponseMessage response = await Config.Client.PostAsync("/Media/Add",
+                new StringContent(
+                    JsonSerializer.Serialize(ExampleRequest_BreakingBad()),
+                    Encoding.UTF8, Config.HttpMediaTypeJson));
+            var responseMessage = await response.Content.ReadAsStringAsync();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
+            Model.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
+            Assert.IsNotNull(responseHeader);
+
+            // Update. Supply id's.
+            response = await Config.Client.GetAsync($"/Media/Get/{responseHeader.MediaHeaderId}");
+            responseMessage = await response.Content.ReadAsStringAsync();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
+            responseHeader = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
+            Assert.IsNotNull(responseHeader);
+
+            // Header
+            Assert.AreEqual("Breaking Bad (2008)", responseHeader.Name);
+            Assert.IsNotNull(responseHeader.Description);
+            Assert.IsTrue(responseHeader.Description.Length > 0);
+            Assert.AreEqual(4, responseHeader.Tags.Count());
+
+            // Parts
+            Assert.AreEqual(2, responseHeader.Parts.Count());
+            Assert.AreEqual("Pilot", responseHeader.Parts.ToArray()[0].Name);
+            Assert.AreEqual("Cat's in the Bag...", responseHeader.Parts.ToArray()[1].Name);
+            Assert.AreEqual(1, responseHeader.Parts.ToArray()[0].Tags.Count());
+
+            // Part[0] / Versions
+            Assert.AreEqual(1, responseHeader.Parts.ToArray()[0].Versions.Count());
+            Assert.AreEqual(2, responseHeader.Parts.ToArray()[0].Versions.ToArray()[0].Links.Count());
+            Assert.AreEqual(3, responseHeader.Parts.ToArray()[0].Versions.ToArray()[0].Tags.Count());
+            // Part[1] / Versions
+            Assert.AreEqual(1, responseHeader.Parts.ToArray()[1].Versions.Count());
+            Assert.AreEqual(2, responseHeader.Parts.ToArray()[1].Versions.ToArray()[0].Links.Count());
+            Assert.AreEqual(2, responseHeader.Parts.ToArray()[1].Versions.ToArray()[0].Tags.Count());
+        }
+
+        [TestMethod()]
+        public async Task Add_And_Update()
+        {
+            // For the sake of sanity I'll use request object and convert it to JSON before calling API.
+
+            // Always set token first.
+            Config.Client.SetToken(this.token);
+
+            // Make some changes so we can correct it later with update command.
+            var wrongRequest = ExampleRequest_BreakingBad();
+            wrongRequest.Name += " ~some wrong text~";
+            wrongRequest.Parts.ToArray()[0].Name += " ~some wrong text~";
+
+            // Add wrong data.
+            HttpResponseMessage response = await Config.Client.PostAsync("/Media/Add",
+                new StringContent(
+                    JsonSerializer.Serialize(wrongRequest),
+                    Encoding.UTF8, Config.HttpMediaTypeJson));
+            var responseMessage = await response.Content.ReadAsStringAsync();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
+            Model.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
+            Assert.IsNotNull(responseHeader);
+
+            // Generate new request
+            Model.Request.MediaHeader correctedRequestHeader = ResponseToRequest(responseHeader);
+            correctedRequestHeader.Name = "Breaking Bad(2008)";
+            correctedRequestHeader.Parts.ToArray()[0].Name += "Pilot";
+
+            // Update. Structures must have id's.
+            response = await Config.Client.PostAsync("/Media/Update",
+                new StringContent(
+                    JsonSerializer.Serialize(correctedRequestHeader),
+                    Encoding.UTF8, Config.HttpMediaTypeJson));
+            responseMessage = await response.Content.ReadAsStringAsync();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
+            responseHeader = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
+            Assert.IsNotNull(responseHeader);
+
+
+            // Header
+            Assert.AreEqual("Breaking Bad (2008)", responseHeader.Name);
+            Assert.IsNotNull(responseHeader.Description);
+            Assert.IsTrue(responseHeader.Description.Length > 0);
+
+            // Parts
+            Assert.AreEqual(2, responseHeader.Parts.Count());
+            Assert.AreEqual("Pilot", responseHeader.Parts.ToArray()[0].Name);
+            Assert.AreEqual("Cat's in the Bag...", responseHeader.Parts.ToArray()[1].Name);
+
+            // Part[0] / Versions
+            Assert.AreEqual(1, responseHeader.Parts.ToArray()[0].Versions.Count());
+            Assert.AreEqual(2, responseHeader.Parts.ToArray()[0].Versions.ToArray()[0].Links.Count());
+            // Part[1] / Versions
+            Assert.AreEqual(1, responseHeader.Parts.ToArray()[1].Versions.Count());
+            Assert.AreEqual(2, responseHeader.Parts.ToArray()[1].Versions.ToArray()[0].Links.Count());
+        }
+
         private static Model.Request.MediaHeader ExampleRequest_BreakingBad()
         {
             return new Model.Request.MediaHeader
@@ -266,6 +375,49 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                         }
                     }
                 }
+            };
+        }
+
+        private Model.Request.MediaHeader ResponseToRequest(Model.Response.MediaHeader responseHeader)
+        {
+            return new()
+            {
+                MediaHeaderId = responseHeader.MediaHeaderId,
+                Name = responseHeader.Name,
+                Description = responseHeader.Description,
+                ReferenceLink = responseHeader.ReferenceLink,
+                Parts = responseHeader.Parts.Select(p => new Model.Request.MediaPart
+                {
+                    MediaPartId = p.MediaPartId,
+                    Season = p.Season,
+                    Episode = p.Episode,
+                    Name = p.Name,
+                    Description = p.Description,
+                    ReferenceLink = p.ReferenceLink,
+                    Version = new Model.Request.MediaVersion
+                    {
+                        MediaVersionId = p.Versions.FirstOrDefault().MediaVersionId,
+                        VersionComment = p.Versions.FirstOrDefault().VersionComment,
+                        Links = p.Versions.FirstOrDefault().Links.Select(l => new Model.Request.MediaLink
+                        {
+                            MediaLinkId = l.MediaLinkId,
+                            LinkOrderId = l.LinkOrderId,
+                            Link = l.Link
+                        }).ToList(),
+                        Tags = p.Versions.FirstOrDefault().Tags.Select(t => new Model.Request.MediaTag
+                        {
+                            Name = t.Name
+                        }).ToList()
+                    },
+                    Tags = p.Tags.Select(t => new Model.Request.MediaTag
+                    {
+                        Name = t.Name
+                    }).ToList()
+                }).ToList(),
+                Tags = responseHeader.Tags.Select(t => new Model.Request.MediaTag
+                {
+                    Name = t.Name
+                })
             };
         }
     }

@@ -40,7 +40,7 @@ namespace ProCode.FileHosterRepo.Dal.DataAccess
                 .UseCollation("SQL_Latin1_General_CP1_CI_AS");                      // Case insensitive
 
             builder.Entity<Model.MediaHeaderTag>()
-                .HasKey(vt => new { vt.MediaHeaderId, vt.MediaTagId });            // Composite PK
+                .HasKey(ht => new { ht.MediaHeaderId, ht.MediaTagId });            // Composite PK
             
             builder.Entity<Model.MediaPartTag>()
                 .HasKey(vt => new { vt.MediaPartId, vt.MediaTagId });            // Composite PK

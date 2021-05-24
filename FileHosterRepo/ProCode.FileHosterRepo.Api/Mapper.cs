@@ -40,7 +40,7 @@ namespace ProCode.FileHosterRepo.Api
 
         public static void MapResponseMediaVersion(this Dal.Model.MediaVersion mediaVersion, ref Model.Response.MediaVersion responseVersion)
         {
-            responseVersion.MediaLinkVersionId = mediaVersion.MediaVersionId;
+            responseVersion.MediaVersionId = mediaVersion.MediaVersionId;
             responseVersion.VersionComment = mediaVersion.VersionComment;
         }
 

@@ -28,8 +28,52 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             {
                 try
                 {
-                    var addedMediaHeader = await AddHeaderAsync(requestedHeader, loggedUser);
+                    var addedMediaHeader = await AddOrUpdateHeaderAsync(requestedHeader, loggedUser);
+                    return Ok(await BuildResponseHeaderAsync(addedMediaHeader.MediaHeaderId));
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex.Message);
+                }
+            }
+            else
+            {
+                return GetUnauthorizedLoginResponse();
+            }
+        }
 
+        [HttpGet("Get/{mediaHeaderId}")]
+        public async Task<ActionResult<Model.Response.MediaHeader>> Get(int mediaHeaderId)
+        {
+            // Always check at beginning!
+            var loggedUser = await GetLoggedUserAsync();
+            if (loggedUser != null)
+            {
+                try
+                {
+                    return Ok(await BuildResponseHeaderAsync(mediaHeaderId));
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex.Message);
+                }
+            }
+            else
+            {
+                return GetUnauthorizedLoginResponse();
+            }
+        }
+
+        [HttpPost("Update")]
+        public async Task<ActionResult<Model.Response.MediaHeader>> Update(Model.Request.MediaHeader requestedHeader)
+        {
+            // Always check at beginning!
+            var loggedUser = await GetLoggedUserAsync();
+            if (loggedUser != null)
+            {
+                try
+                {
+                    var addedMediaHeader = await AddOrUpdateHeaderAsync(requestedHeader, loggedUser);
                     return Ok(await BuildResponseHeaderAsync(addedMediaHeader.MediaHeaderId));
                 }
                 catch (Exception ex)
@@ -45,25 +89,29 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         #endregion
 
         #region Methods
-        private async Task<Dal.Model.MediaHeader> AddHeaderAsync(Model.Request.MediaHeader requestedHeader, Dal.Model.User loggedUser)
+        private async Task<Dal.Model.MediaHeader> AddOrUpdateHeaderAsync(Model.Request.MediaHeader requestedHeader, Dal.Model.User loggedUser)
         {
-            var addedHeader = await context.MediaHeaders.AddAsync(new Dal.Model.MediaHeader
-            {
-                Name = requestedHeader.Name,
-                Description = requestedHeader.Description,
-                ReferenceLink = !string.IsNullOrWhiteSpace(requestedHeader.ReferenceLink) ? new Uri(requestedHeader.ReferenceLink) : null,
-                UserId = loggedUser.UserId
-            });
-            await context.SaveChangesAsync();                                   // Save to get MediaId.
-            requestedHeader.MediaHeaderId = addedHeader.Entity.MediaHeaderId;   // Populate id in request structure, so it can be used later if needed.
+            Dal.Model.MediaHeader header = requestedHeader.MediaHeaderId == null ? new Dal.Model.MediaHeader() :
+                await context.MediaHeaders.SingleOrDefaultAsync(h => h.MediaHeaderId == (int)requestedHeader.MediaHeaderId);
+
+            // Change all values except PK (MediaHeaderId)
+            header.Name = requestedHeader.Name;
+            header.Description = requestedHeader.Description;
+            header.ReferenceLink = !string.IsNullOrWhiteSpace(requestedHeader.ReferenceLink) ? new Uri(requestedHeader.ReferenceLink) : null;
+            header.UserId = loggedUser.UserId;
+
+            if (requestedHeader.MediaHeaderId == null)
+                await context.MediaHeaders.AddAsync(header);
+            await context.SaveChangesAsync();                       // Save to get MediaId.
+            requestedHeader.MediaHeaderId = header.MediaHeaderId;   // Populate id in request structure, so it can be used later if needed.
 
             // Header tags
             await AddHeaderTagsAsync(requestedHeader);
 
             // Parts
-            await AddPartsAsync(requestedHeader, addedHeader.Entity, loggedUser);
+            await AddPartsAsync(requestedHeader, header, loggedUser);
 
-            return addedHeader.Entity;
+            return header;
         }
 
         private async Task AddHeaderTagsAsync(Model.Request.MediaHeader requestedHeader)
@@ -71,24 +119,25 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             if (requestedHeader.Tags != null)
                 foreach (var reqHeaderTag in requestedHeader.Tags)
                 {
+                    int mediaTagId;
                     var oldTag = await context.MediaTags.SingleOrDefaultAsync(t => t.Name == reqHeaderTag.Name);
                     if (oldTag == null)
                     {
                         var newTag = new Dal.Model.MediaTag { Name = reqHeaderTag.Name };
                         var savedTag = await context.MediaTags.AddAsync(newTag);
                         await context.SaveChangesAsync();
-                        reqHeaderTag.MediaTagId = savedTag.Entity.MediaTagId;
+                        mediaTagId = savedTag.Entity.MediaTagId;
                     }
                     else
                     {
-                        reqHeaderTag.MediaTagId = oldTag.MediaTagId;
+                        mediaTagId = oldTag.MediaTagId;
                     }
 
                     // Header-Tag link
                     await context.MediaHeaderTags.AddAsync(new Dal.Model.MediaHeaderTag
                     {
-                        MediaHeaderId = requestedHeader.MediaHeaderId,
-                        MediaTagId = reqHeaderTag.MediaTagId
+                        MediaHeaderId = (int)requestedHeader.MediaHeaderId,
+                        MediaTagId = mediaTagId
                     });
                     await context.SaveChangesAsync();
                 }
@@ -100,25 +149,28 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             if (requestedHeader.Parts != null)
                 foreach (var requestedPart in requestedHeader.Parts)
                 {
-                    var addedPart = await context.MediaParts.AddAsync(new Dal.Model.MediaPart
-                    {
-                        MediaHeaderId = addedHeader.MediaHeaderId,
-                        Season = requestedPart.Season,
-                        Episode = requestedPart.Episode,
-                        Name = requestedPart.Name,
-                        Description = requestedPart.Description,
-                        ReferenceLink = !string.IsNullOrWhiteSpace(requestedPart.ReferenceLink) ? new Uri(requestedPart.ReferenceLink) : null,
-                        UserId = loggedUser.UserId,
-                        Created = DateTime.Now
-                    });
+                    Dal.Model.MediaPart part = requestedPart.MediaPartId == null ? new Dal.Model.MediaPart() :
+                        await context.MediaParts.SingleOrDefaultAsync(p => p.MediaPartId == requestedPart.MediaPartId);
+
+                    part.MediaHeaderId = addedHeader.MediaHeaderId;
+                    part.Season = requestedPart.Season;
+                    part.Episode = requestedPart.Episode;
+                    part.Name = requestedPart.Name;
+                    part.Description = requestedPart.Description;
+                    part.ReferenceLink = !string.IsNullOrWhiteSpace(requestedPart.ReferenceLink) ? new Uri(requestedPart.ReferenceLink) : null;
+                    part.UserId = loggedUser.UserId;
+                    part.Created = DateTime.Now;
+
+                    if (requestedPart.MediaPartId == null)
+                        await context.MediaParts.AddAsync(part);
                     await context.SaveChangesAsync();
-                    requestedPart.MediaPartId = addedPart.Entity.MediaPartId;
+                    requestedPart.MediaPartId = part.MediaPartId;
 
                     // Part tags
                     await AddPartTagsAsync(requestedPart);
 
                     // Media versions and tags
-                    await AddVersionAsync(requestedPart, addedPart.Entity, loggedUser);
+                    await AddVersionAsync(requestedPart, part, loggedUser);
                 }
         }
 
@@ -128,24 +180,25 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             {
                 foreach (var reqPartTag in reqPart.Tags)
                 {
+                    int mediaTagId;
                     var oldTag = await context.MediaTags.SingleOrDefaultAsync(t => t.Name == reqPartTag.Name);
                     if (oldTag == null)
                     {
                         var newTag = new Dal.Model.MediaTag { Name = reqPartTag.Name };
                         var savedTag = await context.MediaTags.AddAsync(newTag);
                         await context.SaveChangesAsync();
-                        reqPartTag.MediaTagId = savedTag.Entity.MediaTagId;
+                        mediaTagId = savedTag.Entity.MediaTagId;
                     }
                     else
                     {
-                        reqPartTag.MediaTagId = oldTag.MediaTagId;
+                        mediaTagId = oldTag.MediaTagId;
                     }
 
                     // Part-Tag link
                     await context.MediaPartTags.AddAsync(new Dal.Model.MediaPartTag
                     {
-                        MediaPartId = reqPart.MediaPartId,
-                        MediaTagId = reqPartTag.MediaTagId
+                        MediaPartId = (int)reqPart.MediaPartId,
+                        MediaTagId = mediaTagId
                     });
                     await context.SaveChangesAsync();
                 }
@@ -178,24 +231,25 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             {
                 foreach (var reqVersionTag in requestedPart.Version.Tags)
                 {
+                    int mediaTagId;
                     var oldTag = await context.MediaTags.SingleOrDefaultAsync(t => t.Name == reqVersionTag.Name);
                     if (oldTag == null)
                     {
                         var newTag = new Dal.Model.MediaTag { Name = reqVersionTag.Name };
                         var savedTag = await context.MediaTags.AddAsync(newTag);
                         await context.SaveChangesAsync();
-                        reqVersionTag.MediaTagId = savedTag.Entity.MediaTagId;
+                        mediaTagId = savedTag.Entity.MediaTagId;
                     }
                     else
                     {
-                        reqVersionTag.MediaTagId = oldTag.MediaTagId;
+                        mediaTagId = oldTag.MediaTagId;
                     }
 
                     // Part-Tag link
                     await context.MediaVersionTags.AddAsync(new Dal.Model.MediaVersionTag
                     {
-                        MediaVersionId = requestedPart.Version.MediaVersionId,
-                        MediaTagId = reqVersionTag.MediaTagId
+                        MediaVersionId = (int)requestedPart.Version.MediaVersionId,
+                        MediaTagId = mediaTagId
                     });
                     await context.SaveChangesAsync();
                 }
@@ -211,7 +265,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 {
                     var newLink = context.MediaLinks.Add(new Dal.Model.MediaLink
                     {
-                        MediaVersionId = requestedVersion.MediaVersionId,
+                        MediaVersionId = (int)requestedVersion.MediaVersionId,
                         LinkOrderId = linkIndex++,
                         Link = new Uri(requestedLink.Link),
                         Created = DateTime.Now,
@@ -230,6 +284,13 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             // Header
             var header = await context.MediaHeaders.SingleOrDefaultAsync(h => h.MediaHeaderId == mediaHeaderId);
             header.MapResponseMedia(ref responseHeader);
+            // Header tags
+            responseHeader.Tags = new List<Model.Response.MediaTag>();
+            foreach (var headerTag in await context.MediaHeaderTags.Where(ht => ht.MediaHeaderId == mediaHeaderId).ToListAsync())
+            {
+                Model.Response.MediaTag newResponseHeaderTag = new Model.Response.MediaTag { Name = (await context.MediaTags.SingleOrDefaultAsync(t => t.MediaTagId == headerTag.MediaTagId)).Name };
+                ((List<Model.Response.MediaTag>)responseHeader.Tags).Add(newResponseHeaderTag);
+            }
 
             //Parts
             responseHeader.Parts = new List<Model.Response.MediaPart>();
@@ -239,6 +300,13 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 Model.Response.MediaPart newResponsePart = new();
                 part.MapResponseMediaPart(ref newResponsePart);
                 ((List<Model.Response.MediaPart>)responseHeader.Parts).Add(newResponsePart);
+                // Part tags
+                newResponsePart.Tags = new List<Model.Response.MediaTag>();
+                foreach (var partTag in await context.MediaPartTags.Where(pt => pt.MediaPartId == part.MediaPartId).ToListAsync())
+                {
+                    Model.Response.MediaTag newResponsePartTag = new Model.Response.MediaTag { Name = (await context.MediaTags.SingleOrDefaultAsync(t => t.MediaTagId == partTag.MediaTagId)).Name };
+                    ((List<Model.Response.MediaTag>)newResponsePart.Tags).Add(newResponsePartTag);
+                }
 
                 // Versions
                 newResponsePart.Versions = new List<Model.Response.MediaVersion>();
@@ -248,6 +316,13 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                     Model.Response.MediaVersion newResponseVersion = new();
                     version.MapResponseMediaVersion(ref newResponseVersion);
                     ((List<Model.Response.MediaVersion>)newResponsePart.Versions).Add(newResponseVersion);
+                    // Version tags
+                    newResponseVersion.Tags = new List<Model.Response.MediaTag>();
+                    foreach (var versionTag in await context.MediaVersionTags.Where(pt => pt.MediaVersionId == version.MediaVersionId).ToListAsync())
+                    {
+                        Model.Response.MediaTag newResponseVersionTag = new Model.Response.MediaTag { Name = (await context.MediaTags.SingleOrDefaultAsync(t => t.MediaTagId == versionTag.MediaTagId)).Name };
+                        ((List<Model.Response.MediaTag>)newResponseVersion.Tags).Add(newResponseVersionTag);
+                    }
 
                     // Links
                     newResponseVersion.Links = new List<Model.Response.MediaLink>();

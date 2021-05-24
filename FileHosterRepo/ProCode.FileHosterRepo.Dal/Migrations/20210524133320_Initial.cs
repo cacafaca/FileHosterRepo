@@ -179,8 +179,7 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     LinkOrderId = table.Column<int>(type: "int", nullable: false),
                     Link = table.Column<string>(type: "text", nullable: false),
                     Created = table.Column<DateTime>(type: "datetime", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    VersionComment = table.Column<string>(type: "text", nullable: true)
+                    UserId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -81,9 +81,6 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<string>("VersionComment")
-                        .HasColumnType("text");
-
                     b.HasKey("MediaLinkId");
 
                     b.HasIndex("UserId");
@@ -305,7 +302,7 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
 
             modelBuilder.Entity("ProCode.FileHosterRepo.Dal.Model.MediaPart", b =>
                 {
-                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.MediaHeader", "Media")
+                    b.HasOne("ProCode.FileHosterRepo.Dal.Model.MediaHeader", "MediaHeader")
                         .WithMany()
                         .HasForeignKey("MediaHeaderId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -317,7 +314,7 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Media");
+                    b.Navigation("MediaHeader");
 
                     b.Navigation("User");
                 });
