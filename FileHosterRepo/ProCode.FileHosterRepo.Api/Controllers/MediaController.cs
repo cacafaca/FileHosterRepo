@@ -117,30 +117,35 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         private async Task AddHeaderTagsAsync(Model.Request.MediaHeader requestedHeader)
         {
             if (requestedHeader.Tags != null)
+            {
+                List<Dal.Model.MediaTag> tagsInRequestHeader = new();
                 foreach (var reqHeaderTag in requestedHeader.Tags)
                 {
-                    int mediaTagId;
-                    var oldTag = await context.MediaTags.SingleOrDefaultAsync(t => t.Name == reqHeaderTag.Name);
-                    if (oldTag == null)
+                    var tag = await context.MediaTags.SingleOrDefaultAsync(t => t.Name == reqHeaderTag.Name);
+                    if (tag == null)
                     {
-                        var newTag = new Dal.Model.MediaTag { Name = reqHeaderTag.Name };
-                        var savedTag = await context.MediaTags.AddAsync(newTag);
+                        tag = new Dal.Model.MediaTag { Name = reqHeaderTag.Name };
+                        await context.MediaTags.AddAsync(tag);
                         await context.SaveChangesAsync();
-                        mediaTagId = savedTag.Entity.MediaTagId;
-                    }
-                    else
-                    {
-                        mediaTagId = oldTag.MediaTagId;
                     }
 
                     // Header-Tag link
-                    await context.MediaHeaderTags.AddAsync(new Dal.Model.MediaHeaderTag
+                    if (!await context.MediaHeaderTags.AnyAsync(ht => ht.MediaHeaderId == (int)requestedHeader.MediaHeaderId && ht.MediaTagId == tag.MediaTagId))
                     {
-                        MediaHeaderId = (int)requestedHeader.MediaHeaderId,
-                        MediaTagId = mediaTagId
-                    });
-                    await context.SaveChangesAsync();
+                        await context.MediaHeaderTags.AddAsync(new Dal.Model.MediaHeaderTag
+                        {
+                            MediaHeaderId = (int)requestedHeader.MediaHeaderId,
+                            MediaTagId = tag.MediaTagId
+                        });
+                        await context.SaveChangesAsync();
+                    }
                 }
+
+                // Remove tags that are not in request.
+                var allTagsForHeader = await context.MediaHeaderTags.Where(ht => ht.MediaHeaderId == (int)requestedHeader.MediaHeaderId).ToListAsync();
+                context.MediaHeaderTags.RemoveRange(allTagsForHeader.Where(headerTag => !tagsInRequestHeader.Any(requestTag => requestTag.MediaTagId == headerTag.MediaTagId)));
+                await context.SaveChangesAsync();
+            }
         }
 
         private async Task AddPartsAsync(Model.Request.MediaHeader requestedHeader,
@@ -163,6 +168,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
                     if (requestedPart.MediaPartId == null)
                         await context.MediaParts.AddAsync(part);
+
                     await context.SaveChangesAsync();
                     requestedPart.MediaPartId = part.MediaPartId;
 
@@ -174,49 +180,57 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 }
         }
 
-        private async Task AddPartTagsAsync(Model.Request.MediaPart reqPart)
+        private async Task AddPartTagsAsync(Model.Request.MediaPart requestedPart)
         {
-            if (reqPart.Tags != null)
+            if (requestedPart.Tags != null)
             {
-                foreach (var reqPartTag in reqPart.Tags)
+                List<Dal.Model.MediaTag> tagsInRequestPart = new();
+                foreach (var reqPartTag in requestedPart.Tags)
                 {
-                    int mediaTagId;
-                    var oldTag = await context.MediaTags.SingleOrDefaultAsync(t => t.Name == reqPartTag.Name);
-                    if (oldTag == null)
+                    var tag = await context.MediaTags.SingleOrDefaultAsync(t => t.Name == reqPartTag.Name);
+                    if (tag == null)
                     {
-                        var newTag = new Dal.Model.MediaTag { Name = reqPartTag.Name };
-                        var savedTag = await context.MediaTags.AddAsync(newTag);
+                        tag = new Dal.Model.MediaTag { Name = reqPartTag.Name };
+                        await context.MediaTags.AddAsync(tag);
                         await context.SaveChangesAsync();
-                        mediaTagId = savedTag.Entity.MediaTagId;
                     }
-                    else
-                    {
-                        mediaTagId = oldTag.MediaTagId;
-                    }
+                    tagsInRequestPart.Add(tag);
 
                     // Part-Tag link
-                    await context.MediaPartTags.AddAsync(new Dal.Model.MediaPartTag
+                    if (!await context.MediaPartTags.AnyAsync(pt => pt.MediaPartId == (int)requestedPart.MediaPartId && pt.MediaTagId == tag.MediaTagId))
                     {
-                        MediaPartId = (int)reqPart.MediaPartId,
-                        MediaTagId = mediaTagId
-                    });
-                    await context.SaveChangesAsync();
+                        await context.MediaPartTags.AddAsync(new Dal.Model.MediaPartTag
+                        {
+                            MediaPartId = (int)requestedPart.MediaPartId,
+                            MediaTagId = tag.MediaTagId
+                        });
+                        await context.SaveChangesAsync();
+                    }
                 }
+
+                // Remove tags that are not in request.
+                var allTagsForPart = await context.MediaPartTags.Where(pt => pt.MediaPartId == (int)requestedPart.MediaPartId).ToListAsync();
+                context.MediaPartTags.RemoveRange(allTagsForPart.Where(partTag => !tagsInRequestPart.Any(requestTag => requestTag.MediaTagId == partTag.MediaTagId)));
+                await context.SaveChangesAsync();
             }
         }
 
         private async Task AddVersionAsync(Model.Request.MediaPart requestedPart,
             Dal.Model.MediaPart addedPart, Dal.Model.User loggedUser)
         {
-            var newVersion = await context.MediaVersions.AddAsync(new Dal.Model.MediaVersion
-            {
-                MediaPartId = addedPart.MediaPartId,
-                VersionComment = requestedPart.Version.VersionComment,
-                UserId = loggedUser.UserId,
-                Created = DateTime.Now
-            });
+            var version = requestedPart.Version.MediaVersionId == null ? new Dal.Model.MediaVersion() :
+                await context.MediaVersions.SingleOrDefaultAsync(v => v.MediaVersionId == requestedPart.Version.MediaVersionId);
+
+            version.MediaPartId = addedPart.MediaPartId;
+            version.VersionComment = requestedPart.Version.VersionComment;
+            version.UserId = loggedUser.UserId;
+            version.Created = DateTime.Now;
+
+            if (requestedPart.Version.MediaVersionId == null)
+                await context.MediaVersions.AddAsync(version);
+
             await context.SaveChangesAsync();
-            requestedPart.Version.MediaVersionId = newVersion.Entity.MediaVersionId;
+            requestedPart.Version.MediaVersionId = version.MediaVersionId;
 
             // Media version tags
             await AddVersionTagsAsync(requestedPart);
@@ -229,30 +243,34 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         {
             if (requestedPart.Version.Tags != null)
             {
+                List<Dal.Model.MediaTag> tagsInRequestVersion = new();
                 foreach (var reqVersionTag in requestedPart.Version.Tags)
                 {
-                    int mediaTagId;
-                    var oldTag = await context.MediaTags.SingleOrDefaultAsync(t => t.Name == reqVersionTag.Name);
-                    if (oldTag == null)
+                    var tag = await context.MediaTags.SingleOrDefaultAsync(t => t.Name == reqVersionTag.Name);
+                    if (tag == null)
                     {
-                        var newTag = new Dal.Model.MediaTag { Name = reqVersionTag.Name };
-                        var savedTag = await context.MediaTags.AddAsync(newTag);
+                        tag = new Dal.Model.MediaTag { Name = reqVersionTag.Name };
+                        await context.MediaTags.AddAsync(tag);
                         await context.SaveChangesAsync();
-                        mediaTagId = savedTag.Entity.MediaTagId;
                     }
-                    else
-                    {
-                        mediaTagId = oldTag.MediaTagId;
-                    }
+                    tagsInRequestVersion.Add(tag);
 
-                    // Part-Tag link
-                    await context.MediaVersionTags.AddAsync(new Dal.Model.MediaVersionTag
+                    // Version-Tag link
+                    if (!await context.MediaVersionTags.AnyAsync(vt => vt.MediaVersionId == (int)requestedPart.Version.MediaVersionId && vt.MediaTagId == tag.MediaTagId))
                     {
-                        MediaVersionId = (int)requestedPart.Version.MediaVersionId,
-                        MediaTagId = mediaTagId
-                    });
-                    await context.SaveChangesAsync();
+                        await context.MediaVersionTags.AddAsync(new Dal.Model.MediaVersionTag
+                        {
+                            MediaVersionId = (int)requestedPart.Version.MediaVersionId,
+                            MediaTagId = tag.MediaTagId
+                        });
+                        await context.SaveChangesAsync();
+                    }
                 }
+
+                // Remove tags that are not in request.
+                var allTagsForVersion = await context.MediaVersionTags.Where(vt => vt.MediaVersionId == (int)requestedPart.Version.MediaVersionId).ToListAsync();
+                context.MediaVersionTags.RemoveRange(allTagsForVersion.Where(versionTag => !tagsInRequestVersion.Any(requestTag => requestTag.MediaTagId == versionTag.MediaTagId)));
+                await context.SaveChangesAsync();
             }
         }
 
@@ -263,16 +281,20 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 int linkIndex = 1;
                 foreach (var requestedLink in requestedVersion.Links)
                 {
-                    var newLink = context.MediaLinks.Add(new Dal.Model.MediaLink
-                    {
-                        MediaVersionId = (int)requestedVersion.MediaVersionId,
-                        LinkOrderId = linkIndex++,
-                        Link = new Uri(requestedLink.Link),
-                        Created = DateTime.Now,
-                        UserId = loggedUser.UserId
-                    });
+                    var link = requestedLink.MediaLinkId == null ? new Dal.Model.MediaLink() :
+                        await context.MediaLinks.SingleOrDefaultAsync(l => l.MediaLinkId == requestedLink.MediaLinkId);
+
+                    link.MediaVersionId = (int)requestedVersion.MediaVersionId;
+                    link.LinkOrderId = linkIndex++;
+                    link.Link = new Uri(requestedLink.Link);
+                    link.Created = DateTime.Now;
+                    link.UserId = loggedUser.UserId;
+
+                    if (requestedLink.MediaLinkId == null)
+                        await context.MediaLinks.AddAsync(link);
+
                     await context.SaveChangesAsync();
-                    requestedLink.MediaLinkId = newLink.Entity.MediaLinkId;
+                    requestedLink.MediaLinkId = link.MediaLinkId;
                 }
             }
         }
@@ -288,7 +310,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             responseHeader.Tags = new List<Model.Response.MediaTag>();
             foreach (var headerTag in await context.MediaHeaderTags.Where(ht => ht.MediaHeaderId == mediaHeaderId).ToListAsync())
             {
-                Model.Response.MediaTag newResponseHeaderTag = new Model.Response.MediaTag { Name = (await context.MediaTags.SingleOrDefaultAsync(t => t.MediaTagId == headerTag.MediaTagId)).Name };
+                Model.Response.MediaTag newResponseHeaderTag = new() { Name = (await context.MediaTags.SingleOrDefaultAsync(t => t.MediaTagId == headerTag.MediaTagId)).Name };
                 ((List<Model.Response.MediaTag>)responseHeader.Tags).Add(newResponseHeaderTag);
             }
 
@@ -304,7 +326,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 newResponsePart.Tags = new List<Model.Response.MediaTag>();
                 foreach (var partTag in await context.MediaPartTags.Where(pt => pt.MediaPartId == part.MediaPartId).ToListAsync())
                 {
-                    Model.Response.MediaTag newResponsePartTag = new Model.Response.MediaTag { Name = (await context.MediaTags.SingleOrDefaultAsync(t => t.MediaTagId == partTag.MediaTagId)).Name };
+                    Model.Response.MediaTag newResponsePartTag = new() { Name = (await context.MediaTags.SingleOrDefaultAsync(t => t.MediaTagId == partTag.MediaTagId)).Name };
                     ((List<Model.Response.MediaTag>)newResponsePart.Tags).Add(newResponsePartTag);
                 }
 
@@ -320,7 +342,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                     newResponseVersion.Tags = new List<Model.Response.MediaTag>();
                     foreach (var versionTag in await context.MediaVersionTags.Where(pt => pt.MediaVersionId == version.MediaVersionId).ToListAsync())
                     {
-                        Model.Response.MediaTag newResponseVersionTag = new Model.Response.MediaTag { Name = (await context.MediaTags.SingleOrDefaultAsync(t => t.MediaTagId == versionTag.MediaTagId)).Name };
+                        Model.Response.MediaTag newResponseVersionTag = new() { Name = (await context.MediaTags.SingleOrDefaultAsync(t => t.MediaTagId == versionTag.MediaTagId)).Name };
                         ((List<Model.Response.MediaTag>)newResponseVersion.Tags).Add(newResponseVersionTag);
                     }
 

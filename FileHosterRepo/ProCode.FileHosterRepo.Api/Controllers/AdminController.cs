@@ -13,8 +13,8 @@ namespace ProCode.FileHosterRepo.Api.Controllers
     [Route("[controller]")] // Adds "/Users" to link. Instead "/Login" we get "/Users/Login".
     public class AdminController : BaseController
     {
+
         #region Constants
-        const string claimTypeNameUserId = "userId";
         const string adminNickname = "Admin";
         #endregion
 

@@ -55,7 +55,7 @@ namespace ProCode.FileHosterRepo.Api.Model.Request
 
         public override string ToString()
         {
-            return $"{LinkOrderId.ToString("00")}:{Link}";
+            return $"{LinkOrderId:00}:{Link}";
         }
     }
 

@@ -207,10 +207,10 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Model.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseHeader);
 
-            // Generate new request
+            // Change request data, with correct values.
             Model.Request.MediaHeader correctedRequestHeader = ResponseToRequest(responseHeader);
-            correctedRequestHeader.Name = "Breaking Bad(2008)";
-            correctedRequestHeader.Parts.ToArray()[0].Name += "Pilot";
+            correctedRequestHeader.Name = "Breaking Bad (2008)";
+            correctedRequestHeader.Parts.ToArray()[0].Name = "Pilot";
 
             // Update. Structures must have id's.
             response = await Config.Client.PostAsync("/Media/Update",
@@ -241,6 +241,74 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.AreEqual(2, responseHeader.Parts.ToArray()[1].Versions.ToArray()[0].Links.Count());
         }
 
+        [TestMethod()]
+        public async Task Remove_One_Version_Tag()
+        {
+            // For the sake of sanity I'll use request object and convert it to JSON before calling API.
+
+            // Add wrong data.
+            HttpResponseMessage response = await Config.Client.PostAsync("/Media/Add",
+                new StringContent(
+                    JsonSerializer.Serialize(ExampleRequest_BreakingBad()),
+                    Encoding.UTF8, Config.HttpMediaTypeJson));
+            var responseMessage = await response.Content.ReadAsStringAsync();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
+            Model.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
+            Assert.IsNotNull(responseHeader);
+
+            // Delete one tag from first part.
+            Model.Request.MediaHeader updatedRequest = ResponseToRequest(responseHeader);
+            var ver1Tags = (List<Model.Request.MediaTag>)((List<Model.Request.MediaPart>)updatedRequest.Parts).First().Version.Tags;
+            var oldVersionTagCount = ver1Tags.Count;
+            ver1Tags.Remove(ver1Tags.LastOrDefault());
+
+            // Update. Structures must have id's.
+            response = await Config.Client.PostAsync("/Media/Update",
+                new StringContent(
+                    JsonSerializer.Serialize(updatedRequest),
+                    Encoding.UTF8, Config.HttpMediaTypeJson));
+            responseMessage = await response.Content.ReadAsStringAsync();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
+            responseHeader = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
+            Assert.IsNotNull(responseHeader);
+
+            Assert.AreEqual(--oldVersionTagCount, ((IList<Model.Response.MediaTag>)((IList<Model.Response.MediaVersion>)((IList<Model.Response.MediaPart>)responseHeader.Parts).First().Versions).First().Tags).Count());
+        }
+
+        [TestMethod]
+        public async Task Remove_One_Part_Tag()
+        {
+            // For the sake of sanity I'll use request object and convert it to JSON before calling API.
+
+            // Add wrong data.
+            HttpResponseMessage response = await Config.Client.PostAsync("/Media/Add",
+                new StringContent(
+                    JsonSerializer.Serialize(ExampleRequest_BreakingBad()),
+                    Encoding.UTF8, Config.HttpMediaTypeJson));
+            var responseMessage = await response.Content.ReadAsStringAsync();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
+            Model.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
+            Assert.IsNotNull(responseHeader);
+
+            // Delete one tag from first part.
+            Model.Request.MediaHeader updatedRequest = ResponseToRequest(responseHeader);
+            var part1Tags = ((List<Model.Request.MediaTag>)((List<Model.Request.MediaPart>)updatedRequest.Parts).First().Tags);
+            var oldPart1TagCount = part1Tags.Count;
+            part1Tags.Remove(part1Tags.LastOrDefault());
+
+            // Update. Structures must have id's.
+            response = await Config.Client.PostAsync("/Media/Update",
+                new StringContent(
+                    JsonSerializer.Serialize(updatedRequest),
+                    Encoding.UTF8, Config.HttpMediaTypeJson));
+            responseMessage = await response.Content.ReadAsStringAsync();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
+            responseHeader = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
+            Assert.IsNotNull(responseHeader);
+
+            Assert.AreEqual(--oldPart1TagCount, ((IList<Model.Response.MediaTag>)((IList<Model.Response.MediaPart>)responseHeader.Parts).First().Tags).Count());
+        }
+
         private static Model.Request.MediaHeader ExampleRequest_BreakingBad()
         {
             return new Model.Request.MediaHeader
@@ -266,7 +334,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                         ReferenceLink = "https://www.imdb.com/title/tt0959621/?ref_=ttep_ep1",
                         Version = new Model.Request.MediaVersion
                         {
-                            VersionComment = "Comment for first part, for this version.",
+                            VersionComment = "Has English title in package.",
                             Links = new List<Model.Request.MediaLink>
                             {
                                 new Model.Request.MediaLink
@@ -301,7 +369,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                         ReferenceLink = "https://www.imdb.com/title/tt1054724/?ref_=ttep_ep2",
                         Version = new Model.Request.MediaVersion
                         {
-                            VersionComment = "Comment for second part, for this version.",
+                            VersionComment = "High audio quality 5.1.",
                             Links = new List<Model.Request.MediaLink>
                             {
                                 new Model.Request.MediaLink
@@ -378,7 +446,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             };
         }
 
-        private Model.Request.MediaHeader ResponseToRequest(Model.Response.MediaHeader responseHeader)
+        private static Model.Request.MediaHeader ResponseToRequest(Model.Response.MediaHeader responseHeader)
         {
             return new()
             {
