@@ -22,7 +22,8 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         #region Actions
         [AllowAnonymous]
-        [HttpPost("Register")]
+        [HttpPost]
+        [Route("/[controller]/[action]")]
         public async Task<ActionResult<string>> Register(Model.Request.UserRegister newUser)
         {
             // Check if there is an administrator first. Can't allow user to register before Administrator.

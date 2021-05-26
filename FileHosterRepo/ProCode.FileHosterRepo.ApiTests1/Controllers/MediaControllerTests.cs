@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading;
 
 namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 {
@@ -50,67 +51,51 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         }
         #endregion
 
+        #region Tests
         [TestMethod()]
-        public async Task Add_Single_Media()
+        public async Task Add_Single_Media_And_Check_All_Content()
         {
-            // For the sake of sanity I'll use request object and convert it to JSON before calling API.
-
-            // Always set token first.
-            Config.Client.SetToken(this.token);
+            // For the sake of simplicity I'll use request object and convert it to JSON before calling API.
+            var requestMedia = ExampleRequest_BreakingBad();
 
             HttpResponseMessage response = await Config.Client.PostAsync("/Media/Add",
                 new StringContent(
-                    JsonSerializer.Serialize(ExampleRequest_BreakingBad()),
-                    Encoding.UTF8, Config.HttpMediaTypeJson));
-            var responseMessage = await response.Content.ReadAsStringAsync();
-            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
-            Model.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
-            Assert.IsNotNull(responseHeader);
-
-            // Header
-            Assert.AreEqual("Breaking Bad (2008)", responseHeader.Name);
-            Assert.IsNotNull(responseHeader.Description);
-            Assert.IsTrue(responseHeader.Description.Length > 0);
-            Assert.AreEqual(4, responseHeader.Tags.Count());
-
-            // Parts
-            Assert.AreEqual(2, responseHeader.Parts.Count());
-            Assert.AreEqual("Pilot", responseHeader.Parts.ToArray()[0].Name);
-            Assert.AreEqual("Cat's in the Bag...", responseHeader.Parts.ToArray()[1].Name);
-            Assert.AreEqual(1, responseHeader.Parts.ToArray()[0].Tags.Count());
-
-            // Part[0] / Versions
-            Assert.AreEqual(1, responseHeader.Parts.ToArray()[0].Versions.Count());
-            Assert.AreEqual(2, responseHeader.Parts.ToArray()[0].Versions.ToArray()[0].Links.Count());
-            Assert.AreEqual(3, responseHeader.Parts.ToArray()[0].Versions.ToArray()[0].Tags.Count());
-            // Part[1] / Versions
-            Assert.AreEqual(1, responseHeader.Parts.ToArray()[1].Versions.Count());
-            Assert.AreEqual(2, responseHeader.Parts.ToArray()[1].Versions.ToArray()[0].Links.Count());
-            Assert.AreEqual(2, responseHeader.Parts.ToArray()[1].Versions.ToArray()[0].Tags.Count());
-        }
-
-        [TestMethod()]
-        public async Task Add_Two_Medias()
-        {
-            // Add "Breaking Bad" Series
-            HttpResponseMessage response = await Config.Client.PostAsync("/Media/Add",
-                new StringContent(
-                    JsonSerializer.Serialize(ExampleRequest_BreakingBad()),
+                    JsonSerializer.Serialize(requestMedia),
                     Encoding.UTF8, Config.HttpMediaTypeJson));
             var responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
             Model.Response.MediaHeader responseMedia = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseMedia);
 
+            CompareRequestAndResponse(requestMedia, responseMedia);
+        }
+
+        [TestMethod()]
+        public async Task Add_Two_Medias()
+        {
+            // Add "Breaking Bad" Series
+            var requestMedia = ExampleRequest_BreakingBad();
+            HttpResponseMessage response = await Config.Client.PostAsync("/Media/Add",
+                new StringContent(
+                    JsonSerializer.Serialize(requestMedia),
+                    Encoding.UTF8, Config.HttpMediaTypeJson));
+            var responseMessage = await response.Content.ReadAsStringAsync();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
+            Model.Response.MediaHeader responseMedia = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
+            Assert.IsNotNull(responseMedia);
+            CompareRequestAndResponse(requestMedia, responseMedia);
+
             // Add "American Beauty" movie.
+            requestMedia = ExampleRequest_AmericanBeauty();
             response = await Config.Client.PostAsync("/Media/Add",
                 new StringContent(
-                    JsonSerializer.Serialize(ExampleRequest_AmericanBeauty()),
+                    JsonSerializer.Serialize(requestMedia),
                     Encoding.UTF8, Config.HttpMediaTypeJson));
             responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
             responseMedia = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseMedia);
+            CompareRequestAndResponse(requestMedia, responseMedia);
         }
 
         [TestMethod()]
@@ -138,54 +123,31 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         }
 
         [TestMethod()]
-        public async Task Add_And_Read()
+        public async Task Get_Single()
         {
-            // For the sake of sanity I'll use request object and convert it to JSON before calling API.
-
-            // Always set token first.
-            Config.Client.SetToken(this.token);
-
             // Add something to update in second step.
+            var requestHeader = ExampleRequest_BreakingBad();
             HttpResponseMessage response = await Config.Client.PostAsync("/Media/Add",
                 new StringContent(
-                    JsonSerializer.Serialize(ExampleRequest_BreakingBad()),
+                    JsonSerializer.Serialize(requestHeader),
                     Encoding.UTF8, Config.HttpMediaTypeJson));
             var responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
             Model.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseHeader);
 
-            // Update. Supply id's.
+            // Get by id.
             response = await Config.Client.GetAsync($"/Media/Get/{responseHeader.MediaHeaderId}");
             responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
             responseHeader = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseHeader);
 
-            // Header
-            Assert.AreEqual("Breaking Bad (2008)", responseHeader.Name);
-            Assert.IsNotNull(responseHeader.Description);
-            Assert.IsTrue(responseHeader.Description.Length > 0);
-            Assert.AreEqual(4, responseHeader.Tags.Count());
-
-            // Parts
-            Assert.AreEqual(2, responseHeader.Parts.Count());
-            Assert.AreEqual("Pilot", responseHeader.Parts.ToArray()[0].Name);
-            Assert.AreEqual("Cat's in the Bag...", responseHeader.Parts.ToArray()[1].Name);
-            Assert.AreEqual(1, responseHeader.Parts.ToArray()[0].Tags.Count());
-
-            // Part[0] / Versions
-            Assert.AreEqual(1, responseHeader.Parts.ToArray()[0].Versions.Count());
-            Assert.AreEqual(2, responseHeader.Parts.ToArray()[0].Versions.ToArray()[0].Links.Count());
-            Assert.AreEqual(3, responseHeader.Parts.ToArray()[0].Versions.ToArray()[0].Tags.Count());
-            // Part[1] / Versions
-            Assert.AreEqual(1, responseHeader.Parts.ToArray()[1].Versions.Count());
-            Assert.AreEqual(2, responseHeader.Parts.ToArray()[1].Versions.ToArray()[0].Links.Count());
-            Assert.AreEqual(2, responseHeader.Parts.ToArray()[1].Versions.ToArray()[0].Tags.Count());
+            CompareRequestAndResponse(requestHeader, responseHeader);
         }
 
         [TestMethod()]
-        public async Task Add_And_Update()
+        public async Task Update_Single_Media()
         {
             // For the sake of sanity I'll use request object and convert it to JSON before calling API.
 
@@ -276,6 +238,39 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         }
 
         [TestMethod]
+        public async Task Remove_One_Header_Tag()
+        {
+            // For the sake of sanity I'll use request object and convert it to JSON before calling API.
+
+            // Add wrong data.
+            HttpResponseMessage response = await Config.Client.PostAsync("/Media/Add",
+                new StringContent(
+                    JsonSerializer.Serialize(ExampleRequest_BreakingBad()),
+                    Encoding.UTF8, Config.HttpMediaTypeJson));
+            var responseMessage = await response.Content.ReadAsStringAsync();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
+            Model.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
+            Assert.IsNotNull(responseHeader);
+
+            // Delete one tag from header.
+            Model.Request.MediaHeader updatedRequest = ResponseToRequest(responseHeader);
+            var oldHeaderTagsCount = updatedRequest.Tags.Count();
+            ((IList<Model.Request.MediaTag>)updatedRequest.Tags).RemoveAt(updatedRequest.Tags.Count() - 1);
+
+            // Update. Structures must have id's.
+            response = await Config.Client.PostAsync("/Media/Update",
+                 new StringContent(
+                     JsonSerializer.Serialize(updatedRequest),
+                     Encoding.UTF8, Config.HttpMediaTypeJson));
+            responseMessage = await response.Content.ReadAsStringAsync();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
+            responseHeader = JsonSerializer.Deserialize<Model.Response.MediaHeader>(responseMessage);
+            Assert.IsNotNull(responseHeader);
+
+            Assert.AreEqual(--oldHeaderTagsCount, responseHeader.Tags.Count());
+        }
+
+        [TestMethod]
         public async Task Remove_One_Part_Tag()
         {
             // For the sake of sanity I'll use request object and convert it to JSON before calling API.
@@ -308,6 +303,34 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 
             Assert.AreEqual(--oldPart1TagCount, ((IList<Model.Response.MediaTag>)((IList<Model.Response.MediaPart>)responseHeader.Parts).First().Tags).Count());
         }
+        [TestMethod()]
+
+        public async Task List()
+        {
+            HttpResponseMessage response;
+
+            // Add 20 records.
+            for (int i = 0; i < 20; i++)
+            {
+                var requestHeader = i % 2 == 0 ? ExampleRequest_BreakingBad() : ExampleRequest_AmericanBeauty();
+                response = await Config.Client.PostAsync("/Media/Add",
+                    new StringContent(
+                        JsonSerializer.Serialize(requestHeader),
+                        Encoding.UTF8, Config.HttpMediaTypeJson));
+                Thread.Sleep(500);
+                Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            }
+
+
+            // Get by id.
+            response = await Config.Client.GetAsync("/Media/List");
+            var responseMessage = await response.Content.ReadAsStringAsync();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
+            var responseHeaderList = JsonSerializer.Deserialize<IEnumerable<Model.Response.MediaHeader>>(responseMessage);
+            Assert.IsNotNull(responseHeaderList);
+            Assert.AreEqual(10, responseHeaderList.GroupBy(h=>h.MediaHeaderId).Count());    // Expect 10 unique header ids.
+        }
+        #endregion
 
         private static Model.Request.MediaHeader ExampleRequest_BreakingBad()
         {
@@ -398,7 +421,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             return new Model.Request.MediaHeader
             {
-                Name = "America Beauty (1999)",
+                Name = "American Beauty (1999)",
                 Description = "A sexually frustrated suburban father has a mid-life crisis after becoming infatuated with his daughter's best friend.",
                 ReferenceLink = "https://www.imdb.com/title/tt0169547",
                 Tags = new List<Model.Request.MediaTag>
@@ -411,9 +434,9 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     {
                         Season = 0,
                         Episode = 0,
-                        Name = "",
-                        Description = "",
-                        ReferenceLink = "",
+                        Name = null,
+                        Description = null,
+                        ReferenceLink = null,
                         Version = new Model.Request.MediaVersion
                         {
                             VersionComment = "Re-upload upon requests.",
@@ -485,8 +508,69 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 Tags = responseHeader.Tags.Select(t => new Model.Request.MediaTag
                 {
                     Name = t.Name
-                })
+                }).ToList()
             };
         }
+
+        private static void CompareRequestAndResponse(Model.Request.MediaHeader requestMedia, Model.Response.MediaHeader responseMedia)
+        {
+            // Header
+            Assert.AreEqual(requestMedia.Name, responseMedia.Name);
+            Assert.AreEqual(requestMedia.Description, responseMedia.Description);
+            Assert.AreEqual(requestMedia.ReferenceLink, responseMedia.ReferenceLink);
+            if (requestMedia.Tags != null)
+            {
+                Assert.AreEqual(requestMedia.Tags.Count(), responseMedia.Tags.Count());
+                foreach (var requestTag in requestMedia.Tags)
+                    Assert.IsTrue((responseMedia.Tags as IList<Model.Response.MediaTag>).Any(responseTag => responseTag.Name == requestTag.Name));
+            }
+
+            // Parts
+            if (requestMedia.Parts != null)
+            {
+                Assert.AreEqual(requestMedia.Parts.Count(), responseMedia.Parts.Count());
+                foreach (var requestPart in requestMedia.Parts)
+                {
+                    var responsePart = responseMedia.Parts.SingleOrDefault(p => p.Season == requestPart.Season && p.Episode == requestPart.Episode);
+                    Assert.IsNotNull(responsePart, "Can't find response part.");
+
+                    if (requestPart.Name != null)
+                        Assert.AreEqual(requestPart.Name, responsePart.Name);
+                    if (requestPart.Description != null)
+                        Assert.AreEqual(requestPart.Description, responsePart.Description);
+                    if (requestPart.ReferenceLink != null)
+                        Assert.AreEqual(requestPart.ReferenceLink, responsePart.ReferenceLink);
+
+                    // Part Tags
+                    if (requestPart.Tags != null)
+                    {
+                        Assert.AreEqual(requestPart.Tags.Count(), responsePart.Tags.Count());
+                        foreach (var requestTag in requestPart.Tags)
+                            Assert.IsTrue((responsePart.Tags as IList<Model.Response.MediaTag>).Any(responseTag => responseTag.Name == requestTag.Name));
+                    }
+
+                    // Version
+                    Assert.AreEqual(requestPart.Version.VersionComment, responsePart.Versions.FirstOrDefault().VersionComment);
+
+                    // Version Tags
+                    if (requestPart.Version.Tags != null)
+                    {
+                        Assert.AreEqual(requestPart.Version.Tags.Count(), responsePart.Versions.FirstOrDefault().Tags.Count());
+                        foreach (var requestTag in requestPart.Version.Tags)
+                            Assert.IsTrue((responsePart.Versions.FirstOrDefault().Tags as IList<Model.Response.MediaTag>).Any(responseTag => responseTag.Name == requestTag.Name));
+                    }
+
+                    // Links
+                    Assert.AreEqual(requestPart.Version.Links.Count(), responsePart.Versions.FirstOrDefault().Links.Count());
+                    foreach (var requestLink in requestPart.Version.Links)
+                    {
+                        var responseLink = responsePart.Versions.FirstOrDefault().Links.SingleOrDefault(l => l.LinkOrderId == requestLink.LinkOrderId);
+                        Assert.IsNotNull(responseLink);
+                        Assert.AreEqual(requestLink.Link, responseLink.Link);
+                    }
+                }
+            }
+        }
+
     }
 }

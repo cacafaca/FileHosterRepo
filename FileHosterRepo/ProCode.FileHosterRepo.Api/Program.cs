@@ -16,6 +16,7 @@ namespace ProCode.FileHosterRepo.Api
             CreateHostBuilder(args).Build().Run();
         }
 
+        // Can't remember why I need this??
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>

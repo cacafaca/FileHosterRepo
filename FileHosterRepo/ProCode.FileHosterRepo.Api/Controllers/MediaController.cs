@@ -86,6 +86,49 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 return GetUnauthorizedLoginResponse();
             }
         }
+
+        /// <summary>
+        /// Returns last 10 medias.
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("List")]
+        public async Task<ActionResult<IEnumerable<Model.Response.MediaHeader>>> List()
+        {
+            // Always check at beginning!
+            var loggedUser = await GetLoggedUserAsync();
+            if (loggedUser != null)
+            {
+                try
+                {
+                    // This probably needs optimization! :)
+                    var lastHeaders = context.MediaHeaders.Join(context.MediaParts,
+                        h => h.MediaHeaderId,
+                        p => p.MediaHeaderId,
+                        (h, p) => new { MediaHeaderId = h.MediaHeaderId, MediaPartId = p.MediaPartId })
+                        .Join(context.MediaVersions,
+                            hp => hp.MediaPartId,
+                            v => v.MediaPartId,
+                            (hp, v) => new { MediaHeaderId = hp.MediaHeaderId, VersionCreated = v.Created })
+                        .OrderByDescending(x => x.VersionCreated)
+                        .AsEnumerable()
+                        .GroupBy(id => id.MediaHeaderId)
+                        .Select(h => BuildResponseHeaderAsync(h.Key).Result)
+                        .Take(10)
+                        .ToList();
+
+
+                    return Ok(lastHeaders);
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex.Message);
+                }
+            }
+            else
+            {
+                return GetUnauthorizedLoginResponse();
+            }
+        }
         #endregion
 
         #region Methods
@@ -128,6 +171,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                         await context.MediaTags.AddAsync(tag);
                         await context.SaveChangesAsync();
                     }
+                    tagsInRequestHeader.Add(tag);
 
                     // Header-Tag link
                     if (!await context.MediaHeaderTags.AnyAsync(ht => ht.MediaHeaderId == (int)requestedHeader.MediaHeaderId && ht.MediaTagId == tag.MediaTagId))
@@ -149,7 +193,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         private async Task AddPartsAsync(Model.Request.MediaHeader requestedHeader,
-            Dal.Model.MediaHeader addedHeader, Dal.Model.User loggedUser)
+        Dal.Model.MediaHeader addedHeader, Dal.Model.User loggedUser)
         {
             if (requestedHeader.Parts != null)
                 foreach (var requestedPart in requestedHeader.Parts)
@@ -287,7 +331,6 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                     link.MediaVersionId = (int)requestedVersion.MediaVersionId;
                     link.LinkOrderId = linkIndex++;
                     link.Link = new Uri(requestedLink.Link);
-                    link.Created = DateTime.Now;
                     link.UserId = loggedUser.UserId;
 
                     if (requestedLink.MediaLinkId == null)

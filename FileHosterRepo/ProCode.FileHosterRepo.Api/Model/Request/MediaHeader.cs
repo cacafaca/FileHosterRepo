@@ -2,7 +2,12 @@
 
 namespace ProCode.FileHosterRepo.Api.Model.Request
 {
-    public class MediaHeader
+    public interface IMediaTags
+    {
+        public IEnumerable<MediaTag> Tags { get; set; }
+    }
+
+    public class MediaHeader : IMediaTags
     {
         public int? MediaHeaderId { get; set; }
         public string Name { get; set; }
@@ -17,7 +22,7 @@ namespace ProCode.FileHosterRepo.Api.Model.Request
         }
     }
 
-    public class MediaPart
+    public class MediaPart : IMediaTags
     {
         public int? MediaPartId { get; set; }
         public int Season { get; set; }
@@ -34,7 +39,7 @@ namespace ProCode.FileHosterRepo.Api.Model.Request
         }
     }
 
-    public class MediaVersion
+    public class MediaVersion : IMediaTags
     {
         public int? MediaVersionId { get; set; }
         public string VersionComment { get; set; }

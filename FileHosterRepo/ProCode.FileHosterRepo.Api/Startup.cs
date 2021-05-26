@@ -41,6 +41,7 @@ namespace ProCode.FileHosterRepo.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Camel case for JSON.
             services.AddControllers()
                 .AddJsonOptions(opt =>
                 {
@@ -50,7 +51,6 @@ namespace ProCode.FileHosterRepo.Api
 
             services.AddDbContext<Dal.DataAccess.FileHosterRepoContext>(options =>
                 options.UseMySQL(Configuration.GetConnectionString(_connectionStringName))
-                //options.UseMySQL("server=localhost;user id=filehoster_app;password=development;persistsecurityinfo=True;database=filehoster;")
             );
 
             var authManager = new JwtAuthenticationManager(Configuration["Jwt:Key"]);

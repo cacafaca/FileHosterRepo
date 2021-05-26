@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ProCode.FileHosterRepo.Api.Model.Response
 {
@@ -11,6 +12,14 @@ namespace ProCode.FileHosterRepo.Api.Model.Response
         public User User { get; set; }
         public IEnumerable<MediaPart> Parts { get; set; }
         public IEnumerable<MediaTag> Tags { get; set; }
+
+        public override string ToString()
+        {
+            int partCount = 0;
+            foreach (var p in Parts)
+                partCount++;
+            return $"{Name} (Parts:{partCount})";
+        }
     }
 
     public class MediaPart
@@ -24,6 +33,15 @@ namespace ProCode.FileHosterRepo.Api.Model.Response
         public User User { get; set; }
         public IEnumerable<MediaVersion> Versions { get; set; }
         public IEnumerable<MediaTag> Tags { get; set; }
+        public DateTime Created { get; set; }
+
+        public override string ToString()
+        {
+            int versionCount = 0;
+            foreach (var p in Versions)
+                versionCount++;
+            return $"{Name} (Versions:{versionCount})";
+        }
     }
 
     public class MediaVersion
@@ -32,6 +50,16 @@ namespace ProCode.FileHosterRepo.Api.Model.Response
         public string VersionComment { get; set; }
         public IEnumerable<MediaLink> Links { get; set; }
         public IEnumerable<MediaTag> Tags { get; set; }
+        public User User { get; set; }
+        public DateTime Created { get; set; }
+
+        public override string ToString()
+        {
+            int linkCount = 0;
+            foreach (var p in Links)
+                linkCount++;
+            return $"{VersionComment} (Links:{linkCount})";
+        }
     }
 
     public class MediaLink
