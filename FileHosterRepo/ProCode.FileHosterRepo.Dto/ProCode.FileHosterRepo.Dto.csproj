@@ -2,6 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <Configurations>Debug;Release;Debug WebApp</Configurations>
+    <Company>ProCode</Company>
+    <Product>File Hoster Repository</Product>
+    <Authors>Nemanja Simović</Authors>
+    <PackageTags>dto model</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,16 +1,12 @@
-﻿using FakeItEasy;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ProCode.FileHosterRepo.ApiTests;
-using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
 using System.Threading;
 
 namespace ProCode.FileHosterRepo.Api.Controllers.Tests

@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Configurations>Debug;Release;Debug WebApp</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="ApiModel\MediaHeader.cs" />
+    <Compile Remove="ApiModel\User.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.6" PrivateAssets="all" />
+    <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ApiModel\" />
+    <Folder Include="Pages\Login\User\" />
+  </ItemGroup>
+
+</Project>
