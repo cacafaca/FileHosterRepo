@@ -12,7 +12,8 @@
 
 @if (errorMessage != null)
 {
-    <p>@errorMessage</p>
+    <p>Error: @errorMessage</p>
+    <p>@DateTime.Now</p>
 }
 
 @code {
@@ -31,7 +32,7 @@
         };
         try
         {
-            var response = await Http.PostAsJsonAsync("Admin/Register", admin);
+            var response = await Http.PostAsJsonAsync("https://localhost:44300/Admin/Register", admin);
             var responseMessage = await response.Content.ReadFromJsonAsync<string>();
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
@@ -44,7 +45,7 @@
         }
         catch (Exception ex)
         {
-            errorMessage = ex.Message;
+            errorMessage = $"Exception: {ex.GetType().Name}, Message: {ex.Message}";
         }
     }
 }

@@ -91,14 +91,13 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         /// Returns last 10 medias.
         /// </summary>
         /// <returns></returns>
-        [AllowAnonymous]
         [HttpGet("List")]
         public async Task<ActionResult<IEnumerable<Dto.Api.Response.MediaHeader>>> List()
         {
             // Always check at beginning!
-            //var loggedUser = await GetLoggedUserAsync();
-            //if (loggedUser != null)
-            //{
+            var loggedUser = await GetLoggedUserAsync();
+            if (loggedUser != null)
+            {
                 try
                 {
                     // This probably needs optimization! :)
@@ -124,11 +123,51 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 {
                     return BadRequest(ex.Message);
                 }
-            //}
-            //else
-            //{
-            //    return GetUnauthorizedLoginResponse();
-            //}
+            }
+            else
+            {
+                return GetUnauthorizedLoginResponse();
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet("List10")]
+        public async Task<ActionResult<IEnumerable<Dto.Api.Response.MediaHeader>>> List10()
+        {
+            try
+            {
+                // This probably needs optimization! :)
+                var lastHeaders = context.MediaHeaders.Join(context.MediaParts,
+                    h => h.MediaHeaderId,
+                    p => p.MediaHeaderId,
+                    (h, p) => new { h.MediaHeaderId, p.MediaPartId })
+                    .Join(context.MediaVersions,
+                        hp => hp.MediaPartId,
+                        v => v.MediaPartId,
+                        (hp, v) => new { hp.MediaHeaderId, VersionCreated = v.Created })
+                    .OrderByDescending(x => x.VersionCreated)
+                    .AsEnumerable()
+                    .GroupBy(id => id.MediaHeaderId)
+                    .Select(h => BuildResponseHeaderAsync(h.Key).Result)
+                    .Take(10)
+                    .ToList();
+                
+                if (lastHeaders == null)
+                    lastHeaders = new List<Dto.Api.Response.MediaHeader>();
+
+                if (lastHeaders.Count == 0)
+                    lastHeaders.Add(new Dto.Api.Response.MediaHeader
+                    {
+                        Name = "Test name",
+                        Description = "Test desctiption"
+                    });
+                
+                return Ok(lastHeaders);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
         #endregion
 

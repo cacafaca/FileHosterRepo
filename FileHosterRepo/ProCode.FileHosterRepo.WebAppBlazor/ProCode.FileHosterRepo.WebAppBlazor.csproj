@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Configurations>Debug;Release;Debug WebApp</Configurations>
+    <Authors>Nemanja Simović</Authors>
+    <Company>ProCode</Company>
+    <Product>File Hoster Repository</Product>
   </PropertyGroup>
 
   <ItemGroup>

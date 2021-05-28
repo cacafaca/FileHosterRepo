@@ -3,42 +3,41 @@
 
 @if (headers != null)
 {
-    <h1>Last 10 medias</h1>
+<h1>Last 10 medias</h1>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Description</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var header in headers)
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var header in headers)
             {
-                <tr>
-                    <td>@header.Name</td>
-                    <td>@header.Description</td>
-                </tr>
+        <tr>
+            <td>@header.Name</td>
+            <td>@header.Description</td>
+        </tr>
             }
-        </tbody>
-    </table>
+    </tbody>
+</table>
 }
 else if (error != null)
 {
-    <h1>Error</h1>
-    <h3>@error</h3>
+<h1>Error</h1>
+<h3>@error</h3>
 }
 
-
 @code {
-    private IList<Dto.Api.Response.MediaHeader> headers;
+    private Dto.Api.Response.MediaHeader[] headers;
     private string error = null;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            headers = await Http.GetFromJsonAsync<IList<Dto.Api.Response.MediaHeader>>("https://localhost:44300/Media/List");
+            headers = await Http.GetFromJsonAsync<Dto.Api.Response.MediaHeader[]>("https://localhost:44300/Media/List10");
         }
         catch (Exception ex)
         {
