@@ -1,8 +1,48 @@
 ﻿@page "/"
 @inject HttpClient Http
 
-<h1>Last 10 medias</h1>
+@if (headers != null)
+{
+    <h1>Last 10 medias</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var header in headers)
+            {
+                <tr>
+                    <td>@header.Name</td>
+                    <td>@header.Description</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else if (error != null)
+{
+    <h1>Error</h1>
+    <h3>@error</h3>
+}
 
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code {
+    private IList<Dto.Api.Response.MediaHeader> headers;
+    private string error = null;
 
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            headers = await Http.GetFromJsonAsync<IList<Dto.Api.Response.MediaHeader>>("https://localhost:44300/Media/List");
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+    }
+}

@@ -91,13 +91,14 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         /// Returns last 10 medias.
         /// </summary>
         /// <returns></returns>
+        [AllowAnonymous]
         [HttpGet("List")]
         public async Task<ActionResult<IEnumerable<Dto.Api.Response.MediaHeader>>> List()
         {
             // Always check at beginning!
-            var loggedUser = await GetLoggedUserAsync();
-            if (loggedUser != null)
-            {
+            //var loggedUser = await GetLoggedUserAsync();
+            //if (loggedUser != null)
+            //{
                 try
                 {
                     // This probably needs optimization! :)
@@ -123,11 +124,11 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 {
                     return BadRequest(ex.Message);
                 }
-            }
-            else
-            {
-                return GetUnauthorizedLoginResponse();
-            }
+            //}
+            //else
+            //{
+            //    return GetUnauthorizedLoginResponse();
+            //}
         }
         #endregion
 
