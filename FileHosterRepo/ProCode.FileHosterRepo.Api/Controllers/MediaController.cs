@@ -104,11 +104,11 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                     var lastHeaders = context.MediaHeaders.Join(context.MediaParts,
                         h => h.MediaHeaderId,
                         p => p.MediaHeaderId,
-                        (h, p) => new { MediaHeaderId = h.MediaHeaderId, MediaPartId = p.MediaPartId })
+                        (h, p) => new { h.MediaHeaderId, p.MediaPartId })
                         .Join(context.MediaVersions,
                             hp => hp.MediaPartId,
                             v => v.MediaPartId,
-                            (hp, v) => new { MediaHeaderId = hp.MediaHeaderId, VersionCreated = v.Created })
+                            (hp, v) => new { hp.MediaHeaderId, VersionCreated = v.Created })
                         .OrderByDescending(x => x.VersionCreated)
                         .AsEnumerable()
                         .GroupBy(id => id.MediaHeaderId)

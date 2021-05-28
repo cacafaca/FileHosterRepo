@@ -1,7 +1,5 @@
-﻿using FakeItEasy;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ProCode.FileHosterRepo.ApiTests;
-using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -46,7 +44,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
             Assert.IsTrue(!string.IsNullOrWhiteSpace(token));
-            Assert.AreEqual(1, Config.DbContext.Users.Where(u => u.Role != Dal.Model.UserRole.Admin).Count());  // Expect one user.
+            Assert.AreEqual(1, Config.DbContext.Users.Where(u => u.Role != Dto.Common.UserRole.Admin).Count());  // Expect one user.
         }
 
         [TestMethod()]
@@ -179,7 +177,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             // Update user's nickname and password.
             var userBefore = (await Config.DbContext.Users.SingleOrDefaultAsync(
                 u => u.Email == "user@user.com" &&
-                u.Role != Dal.Model.UserRole.Admin));
+                u.Role != Dto.Common.UserRole.Admin));
             Config.Client.SetToken(token);
             response = await Config.Client.PatchAsync("/Users/Update",
                 new StringContent(
@@ -192,7 +190,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             var userAfter = (await Config.DbContext.Users.AsNoTracking()
                 .SingleOrDefaultAsync(u =>
                     u.Email == "user@user.com" &&
-                    u.Role != Dal.Model.UserRole.Admin));
+                    u.Role != Dto.Common.UserRole.Admin));
             Assert.AreNotEqual(userBefore.Nickname, userAfter.Nickname);
             Assert.AreNotEqual(userBefore.Password, userAfter.Password);
         }
@@ -227,7 +225,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             response = await Config.Client.GetAsync("/Users/Info");
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var userInfoJson = await response.Content.ReadAsStringAsync();
-            var userInfo = JsonSerializer.Deserialize<Api.Model.Response.User>(userInfoJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var userInfo = JsonSerializer.Deserialize<Dto.Api.Response.User>(userInfoJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             Assert.IsNotNull(userInfo);
             Assert.AreEqual("User", userInfo.Nickname);
         }

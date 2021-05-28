@@ -1,13 +1,8 @@
-﻿using FakeItEasy;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ProCode.FileHosterRepo.ApiTests;
-using ProCode.FileHosterRepo.Dal.DataAccess;
-using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -42,7 +37,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             var responseToken = await response.Content.ReadAsStringAsync();
             Assert.IsTrue(!string.IsNullOrWhiteSpace(responseToken));
             Assert.AreEqual(1, Config.DbContext.Users.Count());  // Expect one user.
-            Assert.AreEqual(1, Config.DbContext.Users.Where(u => u.Role == Dal.Model.UserRole.Admin).Count()); // Expect one administrator.
+            Assert.AreEqual(1, Config.DbContext.Users.Where(u => u.Role == Dto.Common.UserRole.Admin).Count()); // Expect one administrator.
         }
 
         [TestMethod()]
@@ -199,7 +194,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 
             // Update administrator password.
             var passwordBefore = (await Config.DbContext.Users.
-                SingleOrDefaultAsync(u => u.Role == Dal.Model.UserRole.Admin)).Password;
+                SingleOrDefaultAsync(u => u.Role == Dto.Common.UserRole.Admin)).Password;
             Config.Client.SetToken(token);
             response = await Config.Client.PatchAsync("/Admin/Update",
                 new StringContent(
@@ -209,7 +204,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var passwordAfter = (await Config.DbContext.Users.AsNoTracking()
-                .SingleOrDefaultAsync(u => u.Role == Dal.Model.UserRole.Admin)).Password;
+                .SingleOrDefaultAsync(u => u.Role == Dto.Common.UserRole.Admin)).Password;
             Assert.AreNotEqual(passwordBefore, passwordAfter);
         }
 
@@ -232,12 +227,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             response = await Config.Client.GetAsync("/Admin/Info");
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var responseInfoStr = await response.Content.ReadAsStringAsync();
-            Model.Response.User responseUser = JsonSerializer.Deserialize<Model.Response.User>(responseInfoStr, new JsonSerializerOptions
+            Dto.Api.Response.User responseUser = JsonSerializer.Deserialize<Dto.Api.Response.User>(responseInfoStr, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
             Assert.AreEqual("Admin", responseUser.Nickname);
-            Assert.AreEqual(Dal.Model.UserRole.Admin, responseUser.Role);
+            Assert.AreEqual(Dto.Common.UserRole.Admin, responseUser.Role);
             Assert.AreEqual(1, responseUser.UserId);
         }
     }
