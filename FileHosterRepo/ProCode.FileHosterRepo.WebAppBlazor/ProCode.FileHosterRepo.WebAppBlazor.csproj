@@ -21,4 +21,8 @@
     <Folder Include="Pages\Login\User\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ProCode.FileHosterRepo.Bl\ProCode.FileHosterRepo.Dto.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -20,7 +20,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         #region Actions
         [HttpPost("Add")]
-        public async Task<ActionResult<Model.Response.MediaHeader>> Add(Model.Request.MediaHeader requestedHeader)
+        public async Task<ActionResult<Dto.Api.Response.MediaHeader>> Add(Dto.Api.Request.MediaHeader requestedHeader)
         {
             // Always check at beginning!
             var loggedUser = await GetLoggedUserAsync();
@@ -43,7 +43,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpGet("Get/{mediaHeaderId}")]
-        public async Task<ActionResult<Model.Response.MediaHeader>> Get(int mediaHeaderId)
+        public async Task<ActionResult<ProCode.FileHosterRepo.Dto.Api.Response.MediaHeader>> Get(int mediaHeaderId)
         {
             // Always check at beginning!
             var loggedUser = await GetLoggedUserAsync();
@@ -65,7 +65,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpPost("Update")]
-        public async Task<ActionResult<Model.Response.MediaHeader>> Update(Model.Request.MediaHeader requestedHeader)
+        public async Task<ActionResult<Dto.Api.Response.MediaHeader>> Update(Dto.Api.Request.MediaHeader requestedHeader)
         {
             // Always check at beginning!
             var loggedUser = await GetLoggedUserAsync();
@@ -92,7 +92,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("List")]
-        public async Task<ActionResult<IEnumerable<Model.Response.MediaHeader>>> List()
+        public async Task<ActionResult<IEnumerable<Dto.Api.Response.MediaHeader>>> List()
         {
             // Always check at beginning!
             var loggedUser = await GetLoggedUserAsync();
@@ -132,7 +132,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         #endregion
 
         #region Methods
-        private async Task<Dal.Model.MediaHeader> AddOrUpdateHeaderAsync(Model.Request.MediaHeader requestedHeader, Dal.Model.User loggedUser)
+        private async Task<Dal.Model.MediaHeader> AddOrUpdateHeaderAsync(Dto.Api.Request.MediaHeader requestedHeader, Dal.Model.User loggedUser)
         {
             Dal.Model.MediaHeader header = requestedHeader.MediaHeaderId == null ? new Dal.Model.MediaHeader() :
                 await context.MediaHeaders.SingleOrDefaultAsync(h => h.MediaHeaderId == (int)requestedHeader.MediaHeaderId);
@@ -157,7 +157,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             return header;
         }
 
-        private async Task AddHeaderTagsAsync(Model.Request.MediaHeader requestedHeader)
+        private async Task AddHeaderTagsAsync(Dto.Api.Request.MediaHeader requestedHeader)
         {
             if (requestedHeader.Tags != null)
             {
@@ -192,7 +192,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             }
         }
 
-        private async Task AddPartsAsync(Model.Request.MediaHeader requestedHeader,
+        private async Task AddPartsAsync(Dto.Api.Request.MediaHeader requestedHeader,
         Dal.Model.MediaHeader addedHeader, Dal.Model.User loggedUser)
         {
             if (requestedHeader.Parts != null)
@@ -224,7 +224,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 }
         }
 
-        private async Task AddPartTagsAsync(Model.Request.MediaPart requestedPart)
+        private async Task AddPartTagsAsync(Dto.Api.Request.MediaPart requestedPart)
         {
             if (requestedPart.Tags != null)
             {
@@ -259,7 +259,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             }
         }
 
-        private async Task AddVersionAsync(Model.Request.MediaPart requestedPart,
+        private async Task AddVersionAsync(Dto.Api.Request.MediaPart requestedPart,
             Dal.Model.MediaPart addedPart, Dal.Model.User loggedUser)
         {
             var version = requestedPart.Version.MediaVersionId == null ? new Dal.Model.MediaVersion() :
@@ -283,7 +283,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             await AddLinksAsync(requestedPart.Version, loggedUser);
         }
 
-        private async Task AddVersionTagsAsync(Model.Request.MediaPart requestedPart)
+        private async Task AddVersionTagsAsync(Dto.Api.Request.MediaPart requestedPart)
         {
             if (requestedPart.Version.Tags != null)
             {
@@ -318,7 +318,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             }
         }
 
-        private async Task AddLinksAsync(Model.Request.MediaVersion requestedVersion, Dal.Model.User loggedUser)
+        private async Task AddLinksAsync(Dto.Api.Request.MediaVersion requestedVersion, Dal.Model.User loggedUser)
         {
             if (requestedVersion.Links != null)
             {
@@ -342,61 +342,61 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             }
         }
 
-        private async Task<Model.Response.MediaHeader> BuildResponseHeaderAsync(int mediaHeaderId)
+        private async Task<Dto.Api.Response.MediaHeader> BuildResponseHeaderAsync(int mediaHeaderId)
         {
-            Model.Response.MediaHeader responseHeader = new();
+            Dto.Api.Response.MediaHeader responseHeader = new();
 
             // Header
             var header = await context.MediaHeaders.SingleOrDefaultAsync(h => h.MediaHeaderId == mediaHeaderId);
             header.MapResponseMedia(ref responseHeader);
             // Header tags
-            responseHeader.Tags = new List<Model.Response.MediaTag>();
+            responseHeader.Tags = new List<Dto.Api.Response.MediaTag>();
             foreach (var headerTag in await context.MediaHeaderTags.Where(ht => ht.MediaHeaderId == mediaHeaderId).ToListAsync())
             {
-                Model.Response.MediaTag newResponseHeaderTag = new() { Name = (await context.MediaTags.SingleOrDefaultAsync(t => t.MediaTagId == headerTag.MediaTagId)).Name };
-                ((List<Model.Response.MediaTag>)responseHeader.Tags).Add(newResponseHeaderTag);
+                Dto.Api.Response.MediaTag newResponseHeaderTag = new() { Name = (await context.MediaTags.SingleOrDefaultAsync(t => t.MediaTagId == headerTag.MediaTagId)).Name };
+                ((List<Dto.Api.Response.MediaTag>)responseHeader.Tags).Add(newResponseHeaderTag);
             }
 
             //Parts
-            responseHeader.Parts = new List<Model.Response.MediaPart>();
+            responseHeader.Parts = new List<Dto.Api.Response.MediaPart>();
             var parts = await context.MediaParts.Where(p => p.MediaHeaderId == header.MediaHeaderId).ToListAsync();
             foreach (var part in parts)
             {
-                Model.Response.MediaPart newResponsePart = new();
+                Dto.Api.Response.MediaPart newResponsePart = new();
                 part.MapResponseMediaPart(ref newResponsePart);
-                ((List<Model.Response.MediaPart>)responseHeader.Parts).Add(newResponsePart);
+                ((List<Dto.Api.Response.MediaPart>)responseHeader.Parts).Add(newResponsePart);
                 // Part tags
-                newResponsePart.Tags = new List<Model.Response.MediaTag>();
+                newResponsePart.Tags = new List<Dto.Api.Response.MediaTag>();
                 foreach (var partTag in await context.MediaPartTags.Where(pt => pt.MediaPartId == part.MediaPartId).ToListAsync())
                 {
-                    Model.Response.MediaTag newResponsePartTag = new() { Name = (await context.MediaTags.SingleOrDefaultAsync(t => t.MediaTagId == partTag.MediaTagId)).Name };
-                    ((List<Model.Response.MediaTag>)newResponsePart.Tags).Add(newResponsePartTag);
+                    Dto.Api.Response.MediaTag newResponsePartTag = new() { Name = (await context.MediaTags.SingleOrDefaultAsync(t => t.MediaTagId == partTag.MediaTagId)).Name };
+                    ((List<Dto.Api.Response.MediaTag>)newResponsePart.Tags).Add(newResponsePartTag);
                 }
 
                 // Versions
-                newResponsePart.Versions = new List<Model.Response.MediaVersion>();
+                newResponsePart.Versions = new List<Dto.Api.Response.MediaVersion>();
                 var versions = await context.MediaVersions.Where(v => v.MediaPartId == part.MediaPartId).ToListAsync();
                 foreach (var version in versions)
                 {
-                    Model.Response.MediaVersion newResponseVersion = new();
+                    Dto.Api.Response.MediaVersion newResponseVersion = new();
                     version.MapResponseMediaVersion(ref newResponseVersion);
-                    ((List<Model.Response.MediaVersion>)newResponsePart.Versions).Add(newResponseVersion);
+                    ((List<Dto.Api.Response.MediaVersion>)newResponsePart.Versions).Add(newResponseVersion);
                     // Version tags
-                    newResponseVersion.Tags = new List<Model.Response.MediaTag>();
+                    newResponseVersion.Tags = new List<Dto.Api.Response.MediaTag>();
                     foreach (var versionTag in await context.MediaVersionTags.Where(pt => pt.MediaVersionId == version.MediaVersionId).ToListAsync())
                     {
-                        Model.Response.MediaTag newResponseVersionTag = new() { Name = (await context.MediaTags.SingleOrDefaultAsync(t => t.MediaTagId == versionTag.MediaTagId)).Name };
-                        ((List<Model.Response.MediaTag>)newResponseVersion.Tags).Add(newResponseVersionTag);
+                        Dto.Api.Response.MediaTag newResponseVersionTag = new() { Name = (await context.MediaTags.SingleOrDefaultAsync(t => t.MediaTagId == versionTag.MediaTagId)).Name };
+                        ((List<Dto.Api.Response.MediaTag>)newResponseVersion.Tags).Add(newResponseVersionTag);
                     }
 
                     // Links
-                    newResponseVersion.Links = new List<Model.Response.MediaLink>();
+                    newResponseVersion.Links = new List<Dto.Api.Response.MediaLink>();
                     var links = await context.MediaLinks.Where(l => l.MediaVersionId == version.MediaVersionId).ToListAsync();
                     foreach (var link in links)
                     {
-                        Model.Response.MediaLink newResponseLink = new();
+                        Dto.Api.Response.MediaLink newResponseLink = new();
                         link.MapResponseMediaLink(ref newResponseLink);
-                        ((List<Model.Response.MediaLink>)newResponseVersion.Links).Add(newResponseLink);
+                        ((List<Dto.Api.Response.MediaLink>)newResponseVersion.Links).Add(newResponseLink);
                     }
                 }
             }

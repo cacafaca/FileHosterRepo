@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace ProCode.FileHosterRepo.Dal.Model
+namespace ProCode.FileHosterRepo.Dto.Common
 {
     public enum UserRole
     {

@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace ProCode.FileHosterRepo.Api
+﻿namespace ProCode.FileHosterRepo.Api
 {
     public static class Mapper
     {
-        public static Model.Response.User MapReponseUser(this Dal.Model.User user)
+        public static Dto.Api.Response.User MapReponseUser(this Dal.Model.User user)
         {
-            return new Model.Response.User
+            return new Dto.Api.Response.User
             {
                 UserId = user.UserId,
                 Nickname = user.Nickname,
@@ -18,7 +13,7 @@ namespace ProCode.FileHosterRepo.Api
             };
         }
 
-        public static void MapResponseMedia(this Dal.Model.MediaHeader media, ref Model.Response.MediaHeader responseHeader)
+        public static void MapResponseMedia(this Dal.Model.MediaHeader media, ref Dto.Api.Response.MediaHeader responseHeader)
         {
             responseHeader.MediaHeaderId = media.MediaHeaderId;
             responseHeader.Name = media.Name;
@@ -27,7 +22,7 @@ namespace ProCode.FileHosterRepo.Api
             responseHeader.User = media.User.MapReponseUser();
         }
 
-        public static void MapResponseMediaPart(this Dal.Model.MediaPart mediaPart, ref Model.Response.MediaPart responsePart)
+        public static void MapResponseMediaPart(this Dal.Model.MediaPart mediaPart, ref Dto.Api.Response.MediaPart responsePart)
         {
             responsePart.MediaPartId = mediaPart.MediaPartId;
             responsePart.Season = mediaPart.Season;
@@ -39,14 +34,14 @@ namespace ProCode.FileHosterRepo.Api
             responsePart.Created = mediaPart.Created;
         }
 
-        public static void MapResponseMediaVersion(this Dal.Model.MediaVersion mediaVersion, ref Model.Response.MediaVersion responseVersion)
+        public static void MapResponseMediaVersion(this Dal.Model.MediaVersion mediaVersion, ref Dto.Api.Response.MediaVersion responseVersion)
         {
             responseVersion.MediaVersionId = mediaVersion.MediaVersionId;
             responseVersion.VersionComment = mediaVersion.VersionComment;
             responseVersion.Created = mediaVersion.Created;
         }
 
-        public static void MapResponseMediaLink(this Dal.Model.MediaLink link, ref Model.Response.MediaLink responseLink)
+        public static void MapResponseMediaLink(this Dal.Model.MediaLink link, ref Dto.Api.Response.MediaLink responseLink)
         {
             responseLink.MediaLinkId = link.MediaLinkId;
             responseLink.LinkOrderId = link.LinkOrderId;

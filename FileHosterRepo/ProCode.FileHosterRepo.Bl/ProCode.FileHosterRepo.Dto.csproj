@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ProCode.FileHosterRepo.Dal\ProCode.FileHosterRepo.Dal.csproj" />
+    <Compile Remove="MediaHeader.cs" />
   </ItemGroup>
 
 </Project>

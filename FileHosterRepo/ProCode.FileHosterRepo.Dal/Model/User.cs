@@ -20,7 +20,7 @@ namespace ProCode.FileHosterRepo.Dal.Model
         [StringLength(50)]
         public string Nickname { get; set; }
         public DateTime? Created { get; set; }
-        public UserRole Role { get; set; }
+        public Dto.Common.UserRole Role { get; set; }
         public bool Logged { get; set; }
 
         public override string ToString()

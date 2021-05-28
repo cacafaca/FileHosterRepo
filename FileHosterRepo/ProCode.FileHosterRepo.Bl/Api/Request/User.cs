@@ -1,4 +1,4 @@
-﻿namespace ProCode.FileHosterRepo.Api.Model.Request
+﻿namespace ProCode.FileHosterRepo.Dto.Api.Request
 {
     public class User
     {

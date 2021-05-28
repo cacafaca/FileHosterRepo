@@ -22,7 +22,7 @@ namespace ProCode.FileHosterRepo.Api
         }
         #endregion
 
-        public string Generate(int userId, string email, Dal.Model.UserRole role)
+        public string Generate(int userId, string email, Dto.Common.UserRole role)
         {
             var tokenDescriptor = new SecurityTokenDescriptor
             {

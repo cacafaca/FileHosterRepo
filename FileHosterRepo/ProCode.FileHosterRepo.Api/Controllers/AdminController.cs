@@ -26,7 +26,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         #region Actions
         [AllowAnonymous]
         [HttpPost("Register")]
-        public async Task<ActionResult<string>> Register(Model.Request.UserRegister newUser)
+        public async Task<ActionResult<string>> Register(Dto.Api.Request.UserRegister newUser)
         {
             //Validate new user data.
             if (newUser == null)
@@ -37,7 +37,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 return BadRequest("Please send password.");
 
             // Check if administrator exists. At this point it can be only one administrator.
-            var adminsFound = await context.Users.Where(u => u.Role == Dal.Model.UserRole.Admin).ToListAsync();
+            var adminsFound = await context.Users.Where(u => u.Role == Dto.Common.UserRole.Admin).ToListAsync();
 
             if (adminsFound.Count == 0)
             {
@@ -47,12 +47,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                     Password = EncryptPassword(newUser.Password),
                     Nickname = adminNickname,   // Administrator has fixed nickname.
                     Created = DateTime.Now,
-                    Role = Dal.Model.UserRole.Admin,
+                    Role = Dto.Common.UserRole.Admin,
                     Logged = true
                 };
                 context.Users.Add(newAdminDb);
                 await context.SaveChangesAsync();
-                return Ok(token.Generate(newAdminDb.UserId, newAdminDb.Email, Dal.Model.UserRole.Admin));
+                return Ok(token.Generate(newAdminDb.UserId, newAdminDb.Email, Dto.Common.UserRole.Admin));
             }
             else
             {
@@ -62,9 +62,9 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         [AllowAnonymous]
         [HttpPost("Login")]
-        public async Task<ActionResult<string>> Login(Model.Request.User loginUser)
+        public async Task<ActionResult<string>> Login(Dto.Api.Request.User loginUser)
         {
-            var usersFound = await context.Users.Where(u => u.Email == loginUser.Email && u.Role == Dal.Model.UserRole.Admin).ToListAsync();
+            var usersFound = await context.Users.Where(u => u.Email == loginUser.Email && u.Role == Dto.Common.UserRole.Admin).ToListAsync();
             switch (usersFound.Count)
             {
                 case 0:
@@ -103,13 +103,13 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpGet("Info")]
-        public async Task<ActionResult<Model.Response.User>> Info()
+        public async Task<ActionResult<Dto.Api.Response.User>> Info()
         {
             // Always check at beginning!
             var loggedAdmin = await GetLoggedUserAsync();
             if (loggedAdmin != null)
             {
-                return new Model.Response.User()
+                return new Dto.Api.Response.User()
                 {
                     UserId = loggedAdmin.UserId,
                     Nickname = loggedAdmin.Nickname,
@@ -124,7 +124,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpPatch("Update")]
-        public async Task<ActionResult<bool>> Update(Model.Request.UserRegister updateUser)
+        public async Task<ActionResult<bool>> Update(Dto.Api.Request.UserRegister updateUser)
         {
             // Validate password.
             if (string.IsNullOrWhiteSpace(updateUser.Password))

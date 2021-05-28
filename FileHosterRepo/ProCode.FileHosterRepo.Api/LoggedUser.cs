@@ -43,12 +43,12 @@ namespace ProCode.FileHosterRepo.Api
             }
         }
 
-        public static Dal.Model.UserRole GetRole(this ClaimsPrincipal user)
+        public static Dto.Common.UserRole GetRole(this ClaimsPrincipal user)
         {
             var userRoleClaim = user.Claims.Where(c => c.Type == ClaimTypes.Role).FirstOrDefault();
             if (userRoleClaim != null)
             {
-                if (!Enum.TryParse(userRoleClaim.Value, out Dal.Model.UserRole userRole) && !Enum.IsDefined(typeof(Dal.Model.UserRole), userRole))
+                if (!Enum.TryParse(userRoleClaim.Value, out Dto.Common.UserRole userRole) && !Enum.IsDefined(typeof(Dto.Common.UserRole), userRole))
                 {
                     throw new ArgumentException($"Claim value {userRoleClaim.Value} is not an integer.");
                 }

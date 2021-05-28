@@ -24,10 +24,10 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         [AllowAnonymous]
         [HttpPost]
         [Route("/[controller]/[action]")]
-        public async Task<ActionResult<string>> Register(Model.Request.UserRegister newUser)
+        public async Task<ActionResult<string>> Register(Dto.Api.Request.UserRegister newUser)
         {
             // Check if there is an administrator first. Can't allow user to register before Administrator.
-            var adminUser = await context.Users.Where(u => u.Role == Dal.Model.UserRole.Admin).ToListAsync();
+            var adminUser = await context.Users.Where(u => u.Role == Dto.Common.UserRole.Admin).ToListAsync();
             if (adminUser.Count == 0)
                 return Conflict("There is no administrator. System needs administrator in order to work.");
 
@@ -42,12 +42,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                     Password = EncryptPassword(newUser.Password),
                     Nickname = newUser.Nickname,
                     Created = DateTime.Now,
-                    Role = Dal.Model.UserRole.User,
+                    Role = Dto.Common.UserRole.User,
                     Logged = true
                 };
                 context.Users.Add(newUserDb);
                 await context.SaveChangesAsync();
-                return Ok(token.Generate(newUserDb.UserId, newUserDb.Email, Dal.Model.UserRole.User));
+                return Ok(token.Generate(newUserDb.UserId, newUserDb.Email, Dto.Common.UserRole.User));
             }
             else
             {
@@ -57,9 +57,9 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         [AllowAnonymous]
         [HttpPost("Login")]
-        public async Task<ActionResult<string>> Login(Model.Request.User loginUser)
+        public async Task<ActionResult<string>> Login(Dto.Api.Request.User loginUser)
         {
-            var usersFound = await context.Users.Where(u => u.Email == loginUser.Email && u.Role != Dal.Model.UserRole.Admin).ToListAsync();
+            var usersFound = await context.Users.Where(u => u.Email == loginUser.Email && u.Role != Dto.Common.UserRole.Admin).ToListAsync();
             switch (usersFound.Count)
             {
                 case 0:
@@ -76,7 +76,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                         return Unauthorized();
                     }
                 default:
-                    var admin = await context.Users.SingleOrDefaultAsync(u => u.Role == Dal.Model.UserRole.Admin);
+                    var admin = await context.Users.SingleOrDefaultAsync(u => u.Role == Dto.Common.UserRole.Admin);
                     return Conflict($"Multiple accounts error for email {loginUser.Email}. Please report this to {admin?.Email}.");
             }
         }
@@ -98,7 +98,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpGet("Info")]
-        public async Task<ActionResult<Model.Response.User>> Info(int? userId)
+        public async Task<ActionResult<Dto.Api.Response.User>> Info(int? userId)
         {
             // Always check at beginning!
             var loggedUser = await GetLoggedUserAsync();
@@ -107,7 +107,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 var user = userId == null ? loggedUser : await context.Users.SingleOrDefaultAsync(u => u.UserId == (int)userId);
                 if (user != null)
                 {
-                    return new Model.Response.User()
+                    return new Dto.Api.Response.User()
                     {
                         UserId = user.UserId,
                         Nickname = user.Nickname,
@@ -127,7 +127,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpPatch("Update")]
-        public async Task<ActionResult<bool>> Update(Model.Request.UserRegister updateUser)
+        public async Task<ActionResult<bool>> Update(Dto.Api.Request.UserRegister updateUser)
         {
             // Always check at beginning!
             var loggedUser = await GetLoggedUserAsync();
