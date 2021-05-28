@@ -101,7 +101,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 try
                 {
                     // This probably needs optimization! :)
-                    var lastHeaders = context.MediaHeaders.Join(context.MediaParts,
+                    var lastHeaderIds = context.MediaHeaders.Join(context.MediaParts,
                         h => h.MediaHeaderId,
                         p => p.MediaHeaderId,
                         (h, p) => new { h.MediaHeaderId, p.MediaPartId })
@@ -112,10 +112,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                         .OrderByDescending(x => x.VersionCreated)
                         .AsEnumerable()
                         .GroupBy(id => id.MediaHeaderId)
-                        .Select(h => BuildResponseHeaderAsync(h.Key).Result)
+                        .Select(h => h.Key)
                         .Take(10)
                         .ToList();
-
+                    var lastHeaders = new List<Dto.Api.Response.MediaHeader>();
+                    foreach (var id in lastHeaderIds)
+                        lastHeaders.Add(await BuildResponseHeaderAsync(id));
 
                     return Ok(lastHeaders);
                 }
@@ -137,7 +139,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             try
             {
                 // This probably needs optimization! :)
-                var lastHeaders = context.MediaHeaders.Join(context.MediaParts,
+                var lastHeaderIds = context.MediaHeaders.Join(context.MediaParts,
                     h => h.MediaHeaderId,
                     p => p.MediaHeaderId,
                     (h, p) => new { h.MediaHeaderId, p.MediaPartId })
@@ -148,10 +150,13 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                     .OrderByDescending(x => x.VersionCreated)
                     .AsEnumerable()
                     .GroupBy(id => id.MediaHeaderId)
-                    .Select(h => BuildResponseHeaderAsync(h.Key).Result)
+                    .Select(h => h.Key)
                     .Take(10)
                     .ToList();
-                
+                var lastHeaders = new List<Dto.Api.Response.MediaHeader>();
+                foreach (var id in lastHeaderIds)
+                    lastHeaders.Add(await BuildResponseHeaderAsync(id));
+
                 if (lastHeaders == null)
                     lastHeaders = new List<Dto.Api.Response.MediaHeader>();
 
@@ -159,9 +164,9 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                     lastHeaders.Add(new Dto.Api.Response.MediaHeader
                     {
                         Name = "Test name",
-                        Description = "Test desctiption"
+                        Description = "Test description"
                     });
-                
+
                 return Ok(lastHeaders);
             }
             catch (Exception ex)

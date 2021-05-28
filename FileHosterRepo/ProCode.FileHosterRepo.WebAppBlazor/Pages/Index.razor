@@ -1,5 +1,7 @@
 ﻿@page "/"
-@inject HttpClient Http
+@using WebAppBlazor.ViewModel
+@using System.Security.Claims
+@inject IIndexViewModel indexViewModel
 
 @if (headers != null)
 {
@@ -30,14 +32,18 @@ else if (error != null)
 }
 
 @code {
-    private Dto.Api.Response.MediaHeader[] headers;
+    private IList<Dto.Api.Response.MediaHeader> headers;
     private string error = null;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            headers = await Http.GetFromJsonAsync<Dto.Api.Response.MediaHeader[]>("https://localhost:44300/Media/List10");
+            //Http.DefaultRequestHeaders.Host = ""
+            //Http.DefaultRequestHeaders.Remove("Access-Control-Allow-Credentials");
+            //Http.DefaultRequestHeaders.Add("Access-Control-Allow-Credentials", "true");
+            //headers = await indexViewModel.GetLast10Async();
+            error = await indexViewModel.GetLast10StringAsync();
         }
         catch (Exception ex)
         {

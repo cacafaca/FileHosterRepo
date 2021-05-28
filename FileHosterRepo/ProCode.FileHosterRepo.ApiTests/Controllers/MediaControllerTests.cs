@@ -25,22 +25,20 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 
             // Register administrator. In order to register user, an administrator needs to be registered.
             Config.Client.PostAsync("/Admin/Register",
-                new StringContent(
-                    @"{ 
-                        ""Email"": ""admin@admin.com"",
-                        ""Password"": ""admin""
-                    }",
-                Encoding.UTF8, Config.HttpMediaTypeJson)).Wait();
+                new StringContent(JsonSerializer.Serialize(new Dto.Api.Request.UserRegister
+                {
+                    Email = "admin@admin.com",
+                    Password = "admin"
+                }), Encoding.UTF8, Config.HttpMediaTypeJson)).Wait();
 
             // Register user.
             HttpResponseMessage response = Config.Client.PostAsync("/Users/Register",
-                new StringContent(
-                    @"{ 
-                        ""Email"": ""user@user.com"",
-                        ""Password"": ""user"",
-                        ""Nickname"": ""User""
-                    }",
-                Encoding.UTF8, Config.HttpMediaTypeJson)).Result;
+                new StringContent(JsonSerializer.Serialize(new Dto.Api.Request.UserRegister
+                {
+                    Email = "user@user.com",
+                    Password = "user",
+                    Nickname = "User"
+                }), Encoding.UTF8, Config.HttpMediaTypeJson)).Result;
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             this.token = response.Content.ReadAsStringAsync().Result;
             Config.Client.SetToken(this.token);                             // All test here assumes that user is logged.
@@ -55,9 +53,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             var requestMedia = ExampleRequest_BreakingBad();
 
             HttpResponseMessage response = await Config.Client.PostAsync("/Media/Add",
-                new StringContent(
-                    JsonSerializer.Serialize(requestMedia),
-                    Encoding.UTF8, Config.HttpMediaTypeJson));
+                new StringContent(JsonSerializer.Serialize(requestMedia),Encoding.UTF8, Config.HttpMediaTypeJson));
             var responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
             Dto.Api.Response.MediaHeader responseMedia = JsonSerializer.Deserialize<Dto.Api.Response.MediaHeader>(responseMessage);

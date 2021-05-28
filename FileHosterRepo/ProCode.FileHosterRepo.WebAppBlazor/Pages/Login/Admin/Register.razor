@@ -16,11 +16,21 @@
     <p>@DateTime.Now</p>
 }
 
+<p>Trace stack:</p>
+@if (traceStack != null)
+{
+    foreach (var trace in traceStack)
+    {
+        <p>@trace</p>
+    }
+}
+
 @code {
     private string email;
     private string password;
     private string nickname;
     private string errorMessage;
+    private List<string> traceStack = new();
 
     private async Task RegisterAdmin()
     {
@@ -32,8 +42,14 @@
         };
         try
         {
-            var response = await Http.PostAsJsonAsync("https://localhost:44300/Admin/Register", admin);
+            string data = @"{ ""Email"": ""admin"", ""Password"": ""admin"", ""Nickname"": ""admin"" }";
+            traceStack.Add(data);
+            traceStack.Add("Before Post.");
+            //var response = await Http.PostAsJsonAsync("https://localhost:44300/Admin/Register", admin);
+            var response = await Http.PostAsJsonAsync("https://localhost:44300/Admin/Register", data);
+            traceStack.Add("After Post.");
             var responseMessage = await response.Content.ReadFromJsonAsync<string>();
+            traceStack.Add("After Json.");
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 string token = responseMessage;
