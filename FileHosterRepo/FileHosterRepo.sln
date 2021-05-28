@@ -9,16 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProCode.FileHosterRepo.Dal"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProCode.FileHosterRepo.DalTests", "ProCode.FileHosterRepo.DalTests\ProCode.FileHosterRepo.DalTests.csproj", "{5A175DF6-9925-42A5-80BA-8B8726112B73}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProCode.FileHosterRepo.Dto", "ProCode.FileHosterRepo.Bl\ProCode.FileHosterRepo.Dto.csproj", "{E2C6E454-2FD4-4E4C-BD88-F580B8E7D80F}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProCode.FileHosterRepo.Api", "ProCode.FileHosterRepo.Api\ProCode.FileHosterRepo.Api.csproj", "{6B4241DD-3885-45E9-80E2-FEAFB6EA02CF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProCode.FileHosterRepo.WebAppBlazor", "ProCode.FileHosterRepo.WebAppBlazor\ProCode.FileHosterRepo.WebAppBlazor.csproj", "{10419B41-73E4-4AD4-A25F-4045DD943099}"
-	ProjectSection(ProjectDependencies) = postProject
-		{E2C6E454-2FD4-4E4C-BD88-F580B8E7D80F} = {E2C6E454-2FD4-4E4C-BD88-F580B8E7D80F}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProCode.FileHosterRepo.ApiTests", "ProCode.FileHosterRepo.ApiTests\ProCode.FileHosterRepo.ApiTests.csproj", "{3252F114-337A-414F-8FFB-E4B361A2C2EC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProCode.FileHosterRepo.Dto", "ProCode.FileHosterRepo.Dto\ProCode.FileHosterRepo.Dto.csproj", "{A5887CA4-011B-4F00-8620-7AB970B89C07}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,12 +35,6 @@ Global
 		{5A175DF6-9925-42A5-80BA-8B8726112B73}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A175DF6-9925-42A5-80BA-8B8726112B73}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A175DF6-9925-42A5-80BA-8B8726112B73}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E2C6E454-2FD4-4E4C-BD88-F580B8E7D80F}.Debug WebApp|Any CPU.ActiveCfg = Debug WebApp|Any CPU
-		{E2C6E454-2FD4-4E4C-BD88-F580B8E7D80F}.Debug WebApp|Any CPU.Build.0 = Debug WebApp|Any CPU
-		{E2C6E454-2FD4-4E4C-BD88-F580B8E7D80F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E2C6E454-2FD4-4E4C-BD88-F580B8E7D80F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E2C6E454-2FD4-4E4C-BD88-F580B8E7D80F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E2C6E454-2FD4-4E4C-BD88-F580B8E7D80F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6B4241DD-3885-45E9-80E2-FEAFB6EA02CF}.Debug WebApp|Any CPU.ActiveCfg = Debug WebApp|Any CPU
 		{6B4241DD-3885-45E9-80E2-FEAFB6EA02CF}.Debug WebApp|Any CPU.Build.0 = Debug WebApp|Any CPU
 		{6B4241DD-3885-45E9-80E2-FEAFB6EA02CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -62,6 +53,12 @@ Global
 		{3252F114-337A-414F-8FFB-E4B361A2C2EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3252F114-337A-414F-8FFB-E4B361A2C2EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3252F114-337A-414F-8FFB-E4B361A2C2EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5887CA4-011B-4F00-8620-7AB970B89C07}.Debug WebApp|Any CPU.ActiveCfg = Debug WebApp|Any CPU
+		{A5887CA4-011B-4F00-8620-7AB970B89C07}.Debug WebApp|Any CPU.Build.0 = Debug WebApp|Any CPU
+		{A5887CA4-011B-4F00-8620-7AB970B89C07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5887CA4-011B-4F00-8620-7AB970B89C07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5887CA4-011B-4F00-8620-7AB970B89C07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5887CA4-011B-4F00-8620-7AB970B89C07}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

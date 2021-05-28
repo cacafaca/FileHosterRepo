@@ -15,8 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ProCode.FileHosterRepo.Bl\ProCode.FileHosterRepo.Dto.csproj" />
     <ProjectReference Include="..\ProCode.FileHosterRepo.Dal\ProCode.FileHosterRepo.Dal.csproj" />
+    <ProjectReference Include="..\ProCode.FileHosterRepo.Dto\ProCode.FileHosterRepo.Dto.csproj" />
   </ItemGroup>
 
 </Project>
