@@ -26,20 +26,5 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel
         {
             return await httpClient.GetFromJsonAsync<IList<Dto.Api.Response.MediaHeader>>("/Media/List10");
         }
-        public async Task<string> GetLast10StringAsync()
-        {
-            //return await httpClient.GetFromJsonAsync<string>("/Media/List10");
-            try
-            {
-                var resp = await httpClient.GetAsync("/Media/List10");
-                var respStr = await resp.Content.ReadAsStringAsync();
-                return respStr;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(httpClient.BaseAddress + ex.Message);
-            }
-            //return httpClient.BaseAddress.AbsoluteUri;
-        }
     }
 }

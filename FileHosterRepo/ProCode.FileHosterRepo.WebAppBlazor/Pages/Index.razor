@@ -5,30 +5,30 @@
 
 @if (headers != null)
 {
-<h1>Last 10 medias</h1>
+    <h1>Last 10 medias</h1>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var header in headers)
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var header in headers)
             {
-        <tr>
-            <td>@header.Name</td>
-            <td>@header.Description</td>
-        </tr>
+                <tr>
+                    <td>@header.Name</td>
+                    <td><p>@header.Description</p><p>@header.User.Nickname</p></td>
+                </tr>
             }
-    </tbody>
-</table>
+        </tbody>
+    </table>
 }
 else if (error != null)
 {
-<h1>Error</h1>
-<h3>@error</h3>
+    <h1>Error</h1>
+    <h3>@error</h3>
 }
 
 @code {
@@ -39,11 +39,7 @@ else if (error != null)
     {
         try
         {
-            //Http.DefaultRequestHeaders.Host = ""
-            //Http.DefaultRequestHeaders.Remove("Access-Control-Allow-Credentials");
-            //Http.DefaultRequestHeaders.Add("Access-Control-Allow-Credentials", "true");
-            //headers = await indexViewModel.GetLast10Async();
-            error = await indexViewModel.GetLast10StringAsync();
+            headers = await indexViewModel.GetLast10Async();
         }
         catch (Exception ex)
         {

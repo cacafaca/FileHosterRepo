@@ -19,13 +19,15 @@ namespace ProCode.FileHosterRepo.Dal.Model
         // FKs
         public int MediaPartId { get; set; }
         [ForeignKey("MediaPartId")]
-        public MediaPart MediaPart { get; set; }
+        public virtual MediaPart MediaPart { get; set; }
 
         // Useful data
         public string VersionComment { get; set; }
+        
         public int UserId { get; set; }
         [ForeignKey("UserId")]
-        public User User { get; set; }
+        public virtual User User { get; set; }
+        
         public DateTime Created { get; set; }
     }
 }

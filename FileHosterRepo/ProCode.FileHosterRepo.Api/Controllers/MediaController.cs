@@ -160,12 +160,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 if (lastHeaders == null)
                     lastHeaders = new List<Dto.Api.Response.MediaHeader>();
 
-                if (lastHeaders.Count == 0)
+                /*if (lastHeaders.Count == 0)
                     lastHeaders.Add(new Dto.Api.Response.MediaHeader
                     {
                         Name = "Test name",
                         Description = "Test description"
-                    });
+                    });*/
 
                 return Ok(lastHeaders);
             }
@@ -392,7 +392,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             Dto.Api.Response.MediaHeader responseHeader = new();
 
             // Header
-            var header = await context.MediaHeaders.SingleOrDefaultAsync(h => h.MediaHeaderId == mediaHeaderId);
+            var header = await context.MediaHeaders.Include("User").SingleOrDefaultAsync(h => h.MediaHeaderId == mediaHeaderId);            
             header.MapResponseMedia(ref responseHeader);
             // Header tags
             responseHeader.Tags = new List<Dto.Api.Response.MediaTag>();

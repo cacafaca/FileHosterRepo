@@ -17,7 +17,7 @@ namespace ProCode.FileHosterRepo.Dal.Model
         // Unique keyS
         public int MediaVersionId { get; set; }
         [ForeignKey("MediaVersionId")]
-        public MediaVersion Version { get; set; }
+        public virtual MediaVersion Version { get; set; }
         /// <summary>
         /// Order number of the link in the link list.
         /// </summary>
@@ -29,6 +29,6 @@ namespace ProCode.FileHosterRepo.Dal.Model
         public Uri Link { get; set; }
         public int UserId { get; set; }
         [ForeignKey("UserId")]
-        public User User { get; set; }
+        public virtual User User { get; set; }
     }
 }

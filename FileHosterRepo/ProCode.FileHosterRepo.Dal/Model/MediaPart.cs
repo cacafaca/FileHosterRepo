@@ -17,16 +17,16 @@ namespace ProCode.FileHosterRepo.Dal.Model
         // Unique key
         public int MediaHeaderId { get; set; }
         [ForeignKey("MediaHeaderId")]
-        public MediaHeader MediaHeader { get; set; }
+        public virtual MediaHeader MediaHeader { get; set; }
         [Required]
         public int Season { get; set; }
         [Required]
         public int Episode { get; set; }
 
-        // Non PK fields
         public int UserId { get; set; }
         [ForeignKey("UserId")]
-        public User User { get; set; }        
+        public virtual User User { get; set; }        
+        
         [StringLength(200)]
         public string Name { get; set; }
         [Column(TypeName = "text")] // <= 2^16=65535 characters

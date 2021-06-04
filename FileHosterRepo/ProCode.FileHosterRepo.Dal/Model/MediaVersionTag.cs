@@ -14,10 +14,10 @@ namespace ProCode.FileHosterRepo.Dal.Model
         // FK version
         public int MediaVersionId { get; set; }
         [ForeignKey("MediaVersionId")]
-        public MediaVersion MediaVersion { get; set; }
+        public virtual MediaVersion MediaVersion { get; set; }
         // FK tag
         public int MediaTagId { get; set; }
         [ForeignKey("MediaTagId")]
-        public MediaTag MediaTag { get; set; }
+        public virtual MediaTag MediaTag { get; set; }
     }
 }

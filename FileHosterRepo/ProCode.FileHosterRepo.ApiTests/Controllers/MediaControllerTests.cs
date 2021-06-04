@@ -24,15 +24,18 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Config.RecreateDatabaseAsync().Wait();  // Need empty database at beginning of each test method.
 
             // Register administrator. In order to register user, an administrator needs to be registered.
-            Config.Client.PostAsync("/Admin/Register",
+            HttpResponseMessage response = Config.Client.PostAsync("/Admin/Register",
                 new StringContent(JsonSerializer.Serialize(new Dto.Api.Request.UserRegister
                 {
                     Email = "admin@admin.com",
                     Password = "admin"
-                }), Encoding.UTF8, Config.HttpMediaTypeJson)).Wait();
+                }), Encoding.UTF8, Config.HttpMediaTypeJson)).Result;
+            this.token = response.Content.ReadAsStringAsync().Result;
+            Config.Client.SetToken(this.token);
+            Config.Client.GetAsync("/Admin/Logout").Wait();
 
             // Register user.
-            HttpResponseMessage response = Config.Client.PostAsync("/Users/Register",
+            response = Config.Client.PostAsync("/Users/Register",
                 new StringContent(JsonSerializer.Serialize(new Dto.Api.Request.UserRegister
                 {
                     Email = "user@user.com",

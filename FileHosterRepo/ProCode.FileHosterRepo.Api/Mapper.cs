@@ -7,7 +7,7 @@
             return new Dto.Api.Response.User
             {
                 UserId = user.UserId,
-                Nickname = user.Nickname,
+                Nickname = user?.Nickname,
                 Role = user.Role,
                 Created = user.Created
             };

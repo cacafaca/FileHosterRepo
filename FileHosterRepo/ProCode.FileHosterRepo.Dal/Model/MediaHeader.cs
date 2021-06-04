@@ -19,9 +19,10 @@ namespace ProCode.FileHosterRepo.Dal.Model
         [Column(TypeName = "text")] // <= 2^16=65535 characters
         public string Description { get; set; }
         public Uri ReferenceLink { get; set; }
+        
         public int UserId { get; set; }
         [ForeignKey("UserId")]
-        public User User { get; set; }
+        public virtual User User { get; set; }
 
     }
 }

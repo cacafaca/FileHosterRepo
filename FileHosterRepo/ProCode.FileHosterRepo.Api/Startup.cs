@@ -49,6 +49,20 @@ namespace ProCode.FileHosterRepo.Api
                     opt.JsonSerializerOptions.DictionaryKeyPolicy = null;
                 });
 
+            // Enable Blazor calls.
+            services.AddCors(option =>
+            {
+                /*option.AddPolicy(name: "PolicyName",
+                    builder =>
+                    {
+                        // Allow Blazor app.
+                        builder.WithOrigins("https://localhost:44301")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                    });*/
+                option.AddDefaultPolicy(builder => builder.AllowAnyOrigin());
+            });
+
             services.AddDbContext<Dal.DataAccess.FileHosterRepoContext>(options =>
                 options.UseMySQL(Configuration.GetConnectionString(_connectionStringName))
             );
@@ -93,6 +107,9 @@ namespace ProCode.FileHosterRepo.Api
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            // Cors has to be after UseRouting, and before UseAuthorization.
+            app.UseCors();
 
             app.UseAuthentication();
             app.UseAuthorization();
