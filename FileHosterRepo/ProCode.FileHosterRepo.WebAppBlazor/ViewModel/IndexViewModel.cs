@@ -7,20 +7,11 @@ using System.Net.Http.Json;
 
 namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel
 {
-    public class IndexViewModel : IIndexViewModel
+    public class IndexViewModel : BaseViewModel, IIndexViewModel
     {
-        #region Fields
-        private readonly HttpClient httpClient;
-        #endregion
+        public IndexViewModel() { }
 
-        public IndexViewModel()
-        {
-        }
-
-        public IndexViewModel(HttpClient httpClient)
-        {
-            this.httpClient = httpClient;
-        }
+        public IndexViewModel(HttpClient httpClient) : base(httpClient) { }
 
         public async Task<IList<Dto.Api.Response.MediaHeader>> GetLast10Async()
         {

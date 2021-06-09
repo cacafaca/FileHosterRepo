@@ -37,6 +37,11 @@ else if (error != null)
 
     protected override async Task OnInitializedAsync()
     {
+
+#if DEBUG
+        //await Task.Delay(5000);
+#endif
+
         try
         {
             headers = await indexViewModel.GetLast10Async();

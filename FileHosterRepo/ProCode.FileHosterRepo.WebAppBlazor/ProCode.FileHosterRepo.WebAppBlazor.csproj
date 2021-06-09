@@ -9,11 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="ApiModel\MediaHeader.cs" />
-    <Compile Remove="ApiModel\User.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="5.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.6" PrivateAssets="all" />
@@ -23,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ApiModel\" />
-    <Folder Include="Pages\Login\User\" />
+    <Folder Include="Pages\User\" />
+    <Folder Include="ViewModel\Login\" />
   </ItemGroup>
 
   <ItemGroup>

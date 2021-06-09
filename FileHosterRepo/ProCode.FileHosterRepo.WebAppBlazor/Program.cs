@@ -15,13 +15,16 @@ namespace ProCode.FileHosterRepo.WebAppBlazor
     {
         public static async Task Main(string[] args)
         {
+            Util.Trace("Start!");
+            Util.Debug("Start!");
+
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
 
             builder.Services.AddOptions();
             builder.Services.AddAuthorizationCore();
 
-            System.Diagnostics.Trace.WriteLine("cacafaca: " + builder.HostEnvironment.BaseAddress);
+            Util.Debug(builder.HostEnvironment.BaseAddress);
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
