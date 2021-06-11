@@ -156,7 +156,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         [HttpGet("IsRegistered")]
         public async Task<ActionResult<bool>> IsRegistered()
         {
-            return await context.Users.CountAsync(u => u.Role == Dto.Common.UserRole.Admin) > 0;
+            return Ok(await context.Users.CountAsync(u => u.Role == Dto.Common.UserRole.Admin) > 0);
         }
         #endregion
 

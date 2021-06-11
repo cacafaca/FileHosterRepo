@@ -50,7 +50,12 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel.Admin
 
         public async Task<string> Logout()
         {
-            return await HttpClient.GetFromJsonAsync<string>("Admin/Logout");
+            var x = await HttpClient.GetAsync("Admin/Logout");
+            var m = await x.Content.ReadAsStringAsync();
+            //var res = await HttpClient.GetFromJsonAsync<string>("Admin/Logout");
+            ClearToken();
+            //return res;
+            return m;
         }
     }
 }

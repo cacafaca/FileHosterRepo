@@ -3,10 +3,14 @@
 @inject IAdminViewModel adminViewModel
 @inject NavigationManager NavManager
 
+@if (logoutMsg != null)
+{
+    <p>@logoutMsg</p>
+}
+
 @if (errorMessage != null)
 {
     <p>Error: @errorMessage</p>
-    <p>@DateTime.Now</p>
 }
 
 @code {
@@ -15,17 +19,24 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (adminViewModel.IsLoggedIn())
+        try
         {
-            logoutMsg = await adminViewModel.Logout();
+            if (adminViewModel.IsLoggedIn())
+            {
+                logoutMsg = await adminViewModel.Logout();
+            }
+            else if (!adminViewModel.IsLoggedIn())
+            {
+                NavManager.NavigateTo("/Admin/Login");
+            }
+            else
+            {
+                NavManager.NavigateTo("/Admin/Info");
+            }
         }
-        else if (!adminViewModel.IsLoggedIn())
+        catch (Exception ex)
         {
-            NavManager.NavigateTo("/Admin/Login");
-        }
-        else
-        {
-            NavManager.NavigateTo("/Admin/Info");
+            errorMessage = ex.Message;
         }
     }
 }
