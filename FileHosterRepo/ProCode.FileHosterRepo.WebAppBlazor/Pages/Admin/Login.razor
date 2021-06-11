@@ -1,0 +1,51 @@
+﻿@page "/Admin/Login"
+@using WebAppBlazor.ViewModel.Admin
+@inject IAdminViewModel AdminViewModel
+@inject NavigationManager NavManager
+@inject IMenuService MenuService
+
+<h3>Administrator login</h3>
+
+<p>Welcome back dear Administrator.</p>
+
+<p>Email:<input @bind="email" placeholder="enter email" /></p>
+<p>Password:<input @bind="password" type="password" /></p>
+<button @onclick="@LoginAdminAsync">Login</button>
+
+@if (errorMessage != null)
+{
+    <p>Error: @errorMessage</p>
+    <p>@DateTime.Now</p>
+}
+
+@code {
+    private string email;
+    private string password;
+    private string errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!await AdminViewModel.IsRegisteredAsync())
+        {
+            // Redirect to admin register page if there is no admin. One time only.
+            NavManager.NavigateTo("/Admin/Register");
+        }
+    }
+
+    private async Task LoginAdminAsync()
+    {
+        try
+        {
+            if (await AdminViewModel.LoginAsync(new Dto.Api.Request.UserRegister { Email = email, Password = password }))
+            {
+                //MenuService.NotifyChanged();
+                // Redirect to Info
+                NavManager.NavigateTo("/Admin/Info");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Exception: {ex.GetType().Name}, Message: {ex.Message}";
+        }
+    }
+}

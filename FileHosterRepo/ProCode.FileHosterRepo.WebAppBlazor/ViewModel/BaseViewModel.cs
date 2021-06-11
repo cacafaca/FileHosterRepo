@@ -2,31 +2,45 @@
 
 namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel
 {
-    public class BaseViewModel
+    public class BaseViewModel : IIsLogged
     {
         #region Fields
-        protected readonly HttpClient httpClient;
+        public const string HttpClientName = "WebAPI";
+        private const string authorizationHeaderName = "Authorization";
+        private readonly HttpClient httpClient;
         #endregion
 
-        public BaseViewModel()
-        {
-        }
+        #region Constructors
+        public BaseViewModel() { }
 
-        public BaseViewModel(HttpClient httpClient)
+        public BaseViewModel(IHttpClientFactory httpClientFactory)
         {
-            this.httpClient = httpClient;
+            this.httpClient = httpClientFactory.CreateClient(HttpClientName);
         }
+        #endregion
 
+        #region Properties
+        public HttpClient HttpClient { get { return httpClient; } }
+        #endregion
+
+        #region Methods
         public void SetToken(string token = null)
         {
-            httpClient.DefaultRequestHeaders.Remove("Authorization");
+            httpClient.DefaultRequestHeaders.Remove(authorizationHeaderName);
             if (token != null)
-                httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+                httpClient.DefaultRequestHeaders.Add(authorizationHeaderName, "Bearer " + token);
         }
 
         public void ClearToken()
         {
             SetToken();
         }
+
+        public bool IsLoggedIn()
+        {
+            return httpClient.DefaultRequestHeaders.Contains(authorizationHeaderName);
+        }
+
+        #endregion
     }
 }

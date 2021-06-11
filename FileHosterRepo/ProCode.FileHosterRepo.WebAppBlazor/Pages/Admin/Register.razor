@@ -1,0 +1,65 @@
+﻿@page "/Admin/Register"
+@using WebAppBlazor.ViewModel.Admin
+@inject IAdminViewModel adminViewModel
+@inject NavigationManager NavManager
+
+<h1>Administrator register</h1>
+
+<p>Welcome to the register page for Administrator. Only one administrator can be registered on this system.</p>
+
+<p>Email:<input @bind="email" placeholder="enter email" /></p>
+<p>Password:<input @bind="password" type="password" /></p>
+<p>Confirm Password:<input @bind="confirmPassword" type="password" /></p>
+<button @onclick="@RegisterAdminAsync">Register</button>
+
+@if (errorMessage != null)
+{
+    <p>Error: @errorMessage</p>
+    <p>@DateTime.Now</p>
+}
+
+@code {
+    private string email;
+    private string password;
+    private string confirmPassword;
+    private string errorMessage;
+    private const int passwordMinimumLength = 6;
+
+    private async Task RegisterAdminAsync()
+    {
+        // Validations
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(confirmPassword))
+        {
+            errorMessage = "Please fill all fields.";
+            return;
+        }
+        if (password.Length < passwordMinimumLength)
+        {
+            errorMessage = $"Password must be at least {passwordMinimumLength} characters.";
+            return;
+        }
+        if(password!=confirmPassword)
+        {
+            errorMessage = "Silly, you must retype same password in Confirm password field. :)";
+            return;
+        }
+
+        try
+        {
+            var registerSuccessful = await adminViewModel.RegisterAsync(new Dto.Api.Request.UserRegister
+            {
+                Email = email,
+                Password = password,
+            });
+            if (registerSuccessful)
+            {
+                // Redirect to Info
+                NavManager.NavigateTo("/Admin/Info");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Exception: {ex.GetType().Name}, Message: {ex.Message}";
+        }
+    }
+}

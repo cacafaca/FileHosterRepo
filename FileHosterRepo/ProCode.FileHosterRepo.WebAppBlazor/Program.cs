@@ -15,29 +15,29 @@ namespace ProCode.FileHosterRepo.WebAppBlazor
     {
         public static async Task Main(string[] args)
         {
-            Util.Trace("Start!");
-            Util.Debug("Start!");
-
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
 
             builder.Services.AddOptions();
             builder.Services.AddAuthorizationCore();
 
-            Util.Debug(builder.HostEnvironment.BaseAddress);
-
+            // This adds client to web application. Not WebAPI.
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-            LoadHttpClients(builder);
+            builder.Services.AddHttpClient(BaseViewModel.HttpClientName, c => { c.BaseAddress = new Uri("https://localhost:44300"); });
+
+            RegisterViewModels(builder);
+
+            builder.Services.AddScoped<IMenuService, MenuService>();
 
             await builder.Build().RunAsync();
+            Util.Trace("Run!");
         }
 
-        private static void LoadHttpClients(WebAssemblyHostBuilder builder)
+        private static void RegisterViewModels(WebAssemblyHostBuilder builder)
         {
-            builder.Services.AddHttpClient<IIndexViewModel, IndexViewModel>
-                //("FileHosterRepoApiClient", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
-                ("FileHosterRepoApiClient", client => client.BaseAddress = new Uri("https://localhost:44300"));
+            builder.Services.AddScoped<IIndexViewModel>(sp => new IndexViewModel(sp.GetService<IHttpClientFactory>()));
+            builder.Services.AddSingleton<ViewModel.Admin.IAdminViewModel>(sp => new ViewModel.Admin.AdminViewModel(sp.GetService<IHttpClientFactory>()));
         }
     }
 }

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel.Admin
+namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel.User
 {
-    public interface IAdminViewModel : IIsLogged
+    public interface IUserViewModel
     {
         /// <summary>
         /// Returns a JWT token.
@@ -14,12 +14,6 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel.Admin
         /// <returns></returns>
         public Task<bool> RegisterAsync(Dto.Api.Request.UserRegister userRegister);
 
-        public Task<bool> LoginAsync(Dto.Api.Request.UserRegister userRegister);
-
         public Task<Dto.Api.Response.User> GetInfoAsync();
-
-        public Task<bool> IsRegisteredAsync();
-
-        public Task<string> Logout();
     }
 }

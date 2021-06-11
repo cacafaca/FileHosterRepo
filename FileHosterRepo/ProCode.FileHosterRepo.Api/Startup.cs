@@ -60,7 +60,11 @@ namespace ProCode.FileHosterRepo.Api
                         .AllowAnyHeader()
                         .AllowAnyMethod();
                     });*/
-                option.AddDefaultPolicy(builder => builder.AllowAnyOrigin());
+                option.AddDefaultPolicy(builder => builder
+                    .AllowAnyOrigin()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                );
             });
 
             services.AddDbContext<Dal.DataAccess.FileHosterRepoContext>(options =>

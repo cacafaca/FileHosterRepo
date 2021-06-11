@@ -1,0 +1,31 @@
+﻿@page "/Admin/Logout"
+@using WebAppBlazor.ViewModel.Admin
+@inject IAdminViewModel adminViewModel
+@inject NavigationManager NavManager
+
+@if (errorMessage != null)
+{
+    <p>Error: @errorMessage</p>
+    <p>@DateTime.Now</p>
+}
+
+@code {
+    private string logoutMsg;
+    private string errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (adminViewModel.IsLoggedIn())
+        {
+            logoutMsg = await adminViewModel.Logout();
+        }
+        else if (!adminViewModel.IsLoggedIn())
+        {
+            NavManager.NavigateTo("/Admin/Login");
+        }
+        else
+        {
+            NavManager.NavigateTo("/Admin/Info");
+        }
+    }
+}

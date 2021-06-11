@@ -1,4 +1,4 @@
-﻿@page "/Admin/InfoAdmin"
+﻿@page "/Admin/Info"
 @using WebAppBlazor.ViewModel.Admin
 @inject IAdminViewModel adminViewModel
 
@@ -6,15 +6,16 @@
 
 @if (error != null)
 {
+    <p><b>Error:&nbsp;</b>@error</p>
+
+}
+
+@if (adminInfo != null)
+{
     <p>Nickname: @adminInfo.Nickname</p>
     <p>Role: @adminInfo.Role</p>
     <p>Created: @adminInfo.Created</p>
     <p>Id: @adminInfo.UserId</p>
-}
-else
-{
-    <p>Error:</p>
-    <p>@error</p>
 }
 
 @code {

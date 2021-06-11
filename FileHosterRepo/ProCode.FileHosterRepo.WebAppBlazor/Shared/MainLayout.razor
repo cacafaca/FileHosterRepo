@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject IMenuService menuService
 
 <div class="sidebar">
     <NavMenu></NavMenu>
@@ -6,12 +8,37 @@
 
 <div class="main">
     <div class="top-row px-4">
-        <a href="User/Login" class="ml-md-auto">Login</a>|
-        <a href="User/Register" class="ml-md-auto">Register</a>|
-        <a href="Admin/Register" class="ml-md-auto">Admin Register</a>
+        <div>
+            <NavLink class="nav-link" href="User/Login">
+                <span class="oi oi-account-login" aria-hidden="true"></span> Login
+            </NavLink>
+        </div>&nbsp;|&nbsp;
+        <div>
+            <NavLink class="nav-link" href="User/Register">
+                <span class="oi oi-pencil" aria-hidden="true"></span> Register
+            </NavLink>
+        </div>
     </div>
 
     <div class="content px-4">
         @Body
     </div>
 </div>
+
+@code
+{
+    protected override void OnInitialized()
+    {
+        menuService.OnChanged += MenuChanged;
+    }
+
+    void IDisposable.Dispose()
+    {
+        menuService.OnChanged -= MenuChanged;
+    }
+
+    private void MenuChanged(object sender, EventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+}

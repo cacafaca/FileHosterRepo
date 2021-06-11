@@ -1,0 +1,37 @@
+﻿@page "/Admin"
+@using WebAppBlazor.ViewModel.Admin
+@inject IAdminViewModel adminViewModel
+@inject NavigationManager NavManager
+
+@if (errorMessage != null)
+{
+    <p>Error: @errorMessage</p>
+    <p>@DateTime.Now</p>
+}
+
+@code {
+    private string errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try {
+            if (!await adminViewModel.IsRegisteredAsync())
+            {
+                // Redirect to admin register page if there is no admin. One time only.
+                NavManager.NavigateTo("/Admin/Register");
+            }
+            else if (!adminViewModel.IsLoggedIn())
+            {
+                NavManager.NavigateTo("/Admin/Login");
+            }
+            else
+            {
+                NavManager.NavigateTo("/Admin/Info");
+            }
+        }
+        catch(Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+}

@@ -11,11 +11,11 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel
     {
         public IndexViewModel() { }
 
-        public IndexViewModel(HttpClient httpClient) : base(httpClient) { }
+        public IndexViewModel(IHttpClientFactory httpClientFactory) : base(httpClientFactory) { }
 
         public async Task<IList<Dto.Api.Response.MediaHeader>> GetLast10Async()
         {
-            return await httpClient.GetFromJsonAsync<IList<Dto.Api.Response.MediaHeader>>("/Media/List10");
+            return await HttpClient.GetFromJsonAsync<IList<Dto.Api.Response.MediaHeader>>("Media/List10");
         }
     }
 }

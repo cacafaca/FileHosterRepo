@@ -1,4 +1,7 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
+﻿@using WebAppBlazor.ViewModel.Admin
+@inject IAdminViewModel adminViewModel
+
+<div class="top-row pl-4 navbar navbar-dark">
     <a class="navbar-brand" href="">File Hoster Repository</a>
     <button class="navbar-toggler" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
@@ -23,7 +26,19 @@
             </NavLink>
         </li>
     </ul>
+    <div style="position:absolute; bottom:0;">
+        <NavLink class="nav-link" href="Admin">
+            <span class="oi oi-account-login" aria-hidden="true"></span> Admin
+        </NavLink>
+        @if (adminViewModel.IsLoggedIn())
+        {
+            <NavLink class="nav-link" href="Admin/Logout">
+                <span class="oi oi-account-logout" aria-hidden="true"></span> Logout
+            </NavLink>
+        }
+    </div>
 </div>
+
 
 @code {
     private bool collapseNavMenu = true;

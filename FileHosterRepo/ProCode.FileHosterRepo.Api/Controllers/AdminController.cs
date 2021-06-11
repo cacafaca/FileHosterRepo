@@ -45,7 +45,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 {
                     Email = newUser.Email,
                     Password = EncryptPassword(newUser.Password),
-                    Nickname = adminNickname,   // Administrator has fixed nickname.
+                    Nickname = adminNickname,                           // Administrator has fixed nickname.
                     Created = DateTime.Now,
                     Role = Dto.Common.UserRole.Admin,
                     Logged = true
@@ -150,6 +150,13 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             {
                 return GetUnauthorizedLoginResponse();
             }
+        }
+
+        [AllowAnonymous]
+        [HttpGet("IsRegistered")]
+        public async Task<ActionResult<bool>> IsRegistered()
+        {
+            return await context.Users.CountAsync(u => u.Role == Dto.Common.UserRole.Admin) > 0;
         }
         #endregion
 
