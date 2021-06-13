@@ -46,6 +46,7 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     MediaHeaderId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false),
+                    Year = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true),
                     ReferenceLink = table.Column<string>(type: "text", nullable: true),
                     UserId = table.Column<int>(type: "int", nullable: false)
@@ -178,7 +179,6 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     MediaVersionId = table.Column<int>(type: "int", nullable: false),
                     LinkOrderId = table.Column<int>(type: "int", nullable: false),
                     Link = table.Column<string>(type: "text", nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

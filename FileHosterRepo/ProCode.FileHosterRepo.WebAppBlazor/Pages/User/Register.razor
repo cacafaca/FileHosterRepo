@@ -2,6 +2,7 @@
 @using WebAppBlazor.ViewModel.User
 @inject IUserViewModel UserViewModel
 @inject NavigationManager NavManager
+@inject IMenuService MenuService
 
 @if (isLoaded)
 {
@@ -12,16 +13,16 @@
             <div class="col-sm-8"><input @bind="user.Email" placeholder="enter email" /></div>
         </div>
         <div class="row">
-            <div class="col-sm-4">Nickname:</div>
-            <div class="col-sm-8"><input @bind="user.Nickname" placeholder="enter nickname" /></div>
-        </div>
-        <div class="row">
             <div class="col-sm-4">Password:</div>
             <div class="col-sm-8"><input @bind="user.Password" type="password" /></div>
         </div>
         <div class="row">
             <div class="col-sm-4">Confirm password:</div>
             <div class="col-sm-8"><input @bind="confirmPassword" type="password" /></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">Nickname:</div>
+            <div class="col-sm-8"><input @bind="user.Nickname" placeholder="enter nickname" /></div>
         </div>
         <div class="row">
             <button @onclick="@RegisterUserAsync">Register</button>
@@ -78,6 +79,7 @@ else
             {
                 NavManager.NavigateTo("user/info");
             }
+            MenuService.NotifyChanged();
         }
         else
         {

@@ -17,6 +17,7 @@
         {
             responseHeader.MediaHeaderId = media.MediaHeaderId;
             responseHeader.Name = media.Name;
+            responseHeader.Year = media.Year;
             responseHeader.Description = media.Description;
             responseHeader.ReferenceLink = media.ReferenceLink != null ? media.ReferenceLink.AbsoluteUri : string.Empty;
             responseHeader.User = media.User.MapReponseUser();

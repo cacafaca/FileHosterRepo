@@ -222,7 +222,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         }
 
         #region Methods
-        private async Task<string> RegisterAdminAsync()
+        private static async Task<string> RegisterAdminAsync()
         {
             HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.Admin.Register,
                 new StringContent(JsonSerializer.Serialize(new Common.Api.Request.User { Email= "admin@admin.com", Password= "admin" }),

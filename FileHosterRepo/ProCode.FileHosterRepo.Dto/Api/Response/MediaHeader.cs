@@ -7,11 +7,12 @@ namespace ProCode.FileHosterRepo.Common.Api.Response
     {
         public int MediaHeaderId { get; set; }
         public string Name { get; set; }
+        public int Year { get; set; }
         public string Description { get; set; }
         public string ReferenceLink { get; set; }
         public User User { get; set; }
-        public IEnumerable<MediaPart> Parts { get; set; }
-        public IEnumerable<MediaTag> Tags { get; set; }
+        public IList<MediaPart> Parts { get; set; }
+        public IList<MediaTag> Tags { get; set; }
 
         public override string ToString()
         {
@@ -31,8 +32,8 @@ namespace ProCode.FileHosterRepo.Common.Api.Response
         public string Description { get; set; }
         public string ReferenceLink { get; set; }
         public User User { get; set; }
-        public IEnumerable<MediaVersion> Versions { get; set; }
-        public IEnumerable<MediaTag> Tags { get; set; }
+        public IList<MediaVersion> Versions { get; set; }
+        public IList<MediaTag> Tags { get; set; }
         public DateTime Created { get; set; }
 
         public override string ToString()
@@ -48,8 +49,8 @@ namespace ProCode.FileHosterRepo.Common.Api.Response
     {
         public int MediaVersionId { get; set; }
         public string VersionComment { get; set; }
-        public IEnumerable<MediaLink> Links { get; set; }
-        public IEnumerable<MediaTag> Tags { get; set; }
+        public IList<MediaLink> Links { get; set; }
+        public IList<MediaTag> Tags { get; set; }
         public User User { get; set; }
         public DateTime Created { get; set; }
 
@@ -67,7 +68,7 @@ namespace ProCode.FileHosterRepo.Common.Api.Response
         public int MediaLinkId { get; set; }
         public int LinkOrderId { get; set; }
         public string Link { get; set; }
-        public IEnumerable<MediaTag> Tags { get; set; }
+        public IList<MediaTag> Tags { get; set; }
     }
 
     public class MediaTag

@@ -6,7 +6,7 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel
     {
         #region Fields
         public const string HttpClientName = "WebAPI";
-        private const string authorizationHeaderName = "Authorization";
+        private const string authorizationSchemeName = "Bearer";
         private readonly HttpClient httpClient;
         #endregion
 
@@ -26,14 +26,13 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel
         #region Methods
         public void SetToken(string token = null)
         {
-            httpClient.DefaultRequestHeaders.Remove(authorizationHeaderName);
             if (token != null)
-                httpClient.DefaultRequestHeaders.Add(authorizationHeaderName, "Bearer " + token);
+                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(authorizationSchemeName, token);
         }
 
         public void ClearToken()
         {
-            SetToken();
+            httpClient.DefaultRequestHeaders.Authorization = null;
         }
 
         /// <summary>
@@ -42,9 +41,13 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel
         /// <returns></returns>
         public bool IsLoggedIn()
         {
-            return httpClient.DefaultRequestHeaders.Contains(authorizationHeaderName);
+            return httpClient.DefaultRequestHeaders.Authorization != null;
         }
 
+        public string GetToken()
+        {
+            return httpClient.DefaultRequestHeaders.Authorization.Parameter;
+        }
         #endregion
     }
 }

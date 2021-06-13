@@ -6,7 +6,6 @@
 @if (errorMessage != null)
 {
     <p>Error: @errorMessage</p>
-    <p>@DateTime.Now</p>
 }
 
 @code {
@@ -17,8 +16,7 @@
         try {
             if (!await adminViewModel.IsRegisteredAsync())
             {
-                // Redirect to admin register page if there is no admin. One time only.
-                NavManager.NavigateTo("/Admin/Register");
+                NavManager.NavigateTo("/Admin/Register");       // Redirect to admin register page if there is no admin. One time only.
             }
             else if (!adminViewModel.IsLoggedIn())
             {

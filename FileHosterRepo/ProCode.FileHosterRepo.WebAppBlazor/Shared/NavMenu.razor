@@ -22,14 +22,21 @@
         @if (userViewModel.IsLoggedIn())
         {
             <li class="nav-item px-3">
-                <NavLink class="nav-link" href="Media/Add">
-                    <span class="oi oi-plus" aria-hidden="true" title="Add media"></span> Add
+                <NavLink class="nav-link" href="Media/">
+                    <span class="oi oi-video" aria-hidden="true" title="Media"></span> Media
                 </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="fetchdata">
-                    <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
-                </NavLink>
+                <ul>
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" href="Media/Add">
+                            <span class="oi oi-plus" aria-hidden="true" title="Add media"></span> Add
+                        </NavLink>
+                    </li>
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" href="Media/Last10">
+                            <span class="oi oi-list-rich" aria-hidden="true"></span> Last 10
+                        </NavLink>
+                    </li>
+                </ul>
             </li>
         }
         @if (adminViewModel.IsLoggedIn())

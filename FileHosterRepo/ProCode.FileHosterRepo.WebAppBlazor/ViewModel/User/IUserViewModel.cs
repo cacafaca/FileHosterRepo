@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel.User
 {
-    public interface IUserViewModel: IUserActions, IIsLogged
+    public interface IUserViewModel: IUserActions, IIsLogged, IToken
     {
         public Task<bool> IsAdminRegistredAsync();
         public Task<bool> IsUserAdminAsync();

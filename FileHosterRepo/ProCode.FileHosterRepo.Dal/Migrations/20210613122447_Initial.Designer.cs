@@ -9,7 +9,7 @@ using ProCode.FileHosterRepo.Dal.DataAccess;
 namespace ProCode.FileHosterRepo.Dal.Migrations
 {
     [DbContext(typeof(FileHosterRepoContext))]
-    [Migration("20210524133320_Initial")]
+    [Migration("20210613122447_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -39,6 +39,9 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
                     b.HasKey("MediaHeaderId");
 
                     b.HasIndex("UserId");
@@ -66,9 +69,6 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     b.Property<int>("MediaLinkId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
 
                     b.Property<string>("Link")
                         .IsRequired()

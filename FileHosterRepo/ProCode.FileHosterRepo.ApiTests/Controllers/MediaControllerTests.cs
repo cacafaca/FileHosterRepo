@@ -187,16 +187,16 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.IsTrue(responseHeader.Description.Length > 0);
 
             // Parts
-            Assert.AreEqual(2, responseHeader.Parts.Count());
+            Assert.AreEqual(2, responseHeader.Parts.Count);
             Assert.AreEqual("Pilot", responseHeader.Parts.ToArray()[0].Name);
             Assert.AreEqual("Cat's in the Bag...", responseHeader.Parts.ToArray()[1].Name);
 
             // Part[0] / Versions
-            Assert.AreEqual(1, responseHeader.Parts.ToArray()[0].Versions.Count());
-            Assert.AreEqual(2, responseHeader.Parts.ToArray()[0].Versions.ToArray()[0].Links.Count());
+            Assert.AreEqual(1, responseHeader.Parts.ToArray()[0].Versions.Count);
+            Assert.AreEqual(2, responseHeader.Parts.ToArray()[0].Versions.ToArray()[0].Links.Count);
             // Part[1] / Versions
-            Assert.AreEqual(1, responseHeader.Parts.ToArray()[1].Versions.Count());
-            Assert.AreEqual(2, responseHeader.Parts.ToArray()[1].Versions.ToArray()[0].Links.Count());
+            Assert.AreEqual(1, responseHeader.Parts.ToArray()[1].Versions.Count);
+            Assert.AreEqual(2, responseHeader.Parts.ToArray()[1].Versions.ToArray()[0].Links.Count);
         }
 
         [TestMethod()]
@@ -230,7 +230,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             responseHeader = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseHeader);
 
-            Assert.AreEqual(--oldVersionTagCount, ((IList<Common.Api.Response.MediaTag>)((IList<Common.Api.Response.MediaVersion>)((IList<Common.Api.Response.MediaPart>)responseHeader.Parts).First().Versions).First().Tags).Count());
+            Assert.AreEqual(--oldVersionTagCount, responseHeader.Parts.First().Versions.First().Tags.Count);
         }
 
         [TestMethod]
@@ -250,8 +250,8 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 
             // Delete one tag from header.
             Common.Api.Request.MediaHeader updatedRequest = ResponseToRequest(responseHeader);
-            var oldHeaderTagsCount = updatedRequest.Tags.Count();
-            ((IList<Common.Api.Request.MediaTag>)updatedRequest.Tags).RemoveAt(updatedRequest.Tags.Count() - 1);
+            var oldHeaderTagsCount = updatedRequest.Tags.Count;
+            ((IList<Common.Api.Request.MediaTag>)updatedRequest.Tags).RemoveAt(updatedRequest.Tags.Count - 1);
 
             // Update. Structures must have id's.
             response = await Config.Client.PostAsync(Common.Routes.Media.Update,
@@ -263,7 +263,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             responseHeader = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseHeader);
 
-            Assert.AreEqual(--oldHeaderTagsCount, responseHeader.Tags.Count());
+            Assert.AreEqual(--oldHeaderTagsCount, responseHeader.Tags.Count);
         }
 
         [TestMethod]
@@ -297,7 +297,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             responseHeader = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseHeader);
 
-            Assert.AreEqual(--oldPart1TagCount, ((IList<Common.Api.Response.MediaTag>)((IList<Common.Api.Response.MediaPart>)responseHeader.Parts).First().Tags).Count());
+            Assert.AreEqual(--oldPart1TagCount, ((IList<Common.Api.Response.MediaTag>)((IList<Common.Api.Response.MediaPart>)responseHeader.Parts).First().Tags).Count);
         }
         [TestMethod()]
 
@@ -332,7 +332,8 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             return new Common.Api.Request.MediaHeader
             {
-                Name = "Breaking Bad (2008)",
+                Name = "Breaking Bad",
+                Year = 2008,
                 Description = "A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine in order to secure his family's future.",
                 ReferenceLink = "https://www.imdb.com/title/tt0903747/",
                 Tags = new List<Common.Api.Request.MediaTag>
@@ -417,7 +418,8 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             return new Common.Api.Request.MediaHeader
             {
-                Name = "American Beauty (1999)",
+                Name = "American Beauty",
+                Year = 1999,
                 Description = "A sexually frustrated suburban father has a mid-life crisis after becoming infatuated with his daughter's best friend.",
                 ReferenceLink = "https://www.imdb.com/title/tt0169547",
                 Tags = new List<Common.Api.Request.MediaTag>
@@ -512,11 +514,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             // Header
             Assert.AreEqual(requestMedia.Name, responseMedia.Name);
+            Assert.AreEqual(requestMedia.Year, responseMedia.Year);
             Assert.AreEqual(requestMedia.Description, responseMedia.Description);
             Assert.AreEqual(requestMedia.ReferenceLink, responseMedia.ReferenceLink);
             if (requestMedia.Tags != null)
             {
-                Assert.AreEqual(requestMedia.Tags.Count(), responseMedia.Tags.Count());
+                Assert.AreEqual(requestMedia.Tags.Count, responseMedia.Tags.Count);
                 foreach (var requestTag in requestMedia.Tags)
                     Assert.IsTrue((responseMedia.Tags as IList<Common.Api.Response.MediaTag>).Any(responseTag => responseTag.Name == requestTag.Name));
             }
@@ -524,7 +527,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             // Parts
             if (requestMedia.Parts != null)
             {
-                Assert.AreEqual(requestMedia.Parts.Count(), responseMedia.Parts.Count());
+                Assert.AreEqual(requestMedia.Parts.Count, responseMedia.Parts.Count);
                 foreach (var requestPart in requestMedia.Parts)
                 {
                     var responsePart = responseMedia.Parts.SingleOrDefault(p => p.Season == requestPart.Season && p.Episode == requestPart.Episode);
@@ -540,7 +543,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     // Part Tags
                     if (requestPart.Tags != null)
                     {
-                        Assert.AreEqual(requestPart.Tags.Count(), responsePart.Tags.Count());
+                        Assert.AreEqual(requestPart.Tags.Count, responsePart.Tags.Count);
                         foreach (var requestTag in requestPart.Tags)
                             Assert.IsTrue((responsePart.Tags as IList<Common.Api.Response.MediaTag>).Any(responseTag => responseTag.Name == requestTag.Name));
                     }
@@ -551,13 +554,13 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     // Version Tags
                     if (requestPart.Version.Tags != null)
                     {
-                        Assert.AreEqual(requestPart.Version.Tags.Count(), responsePart.Versions.FirstOrDefault().Tags.Count());
+                        Assert.AreEqual(requestPart.Version.Tags.Count, responsePart.Versions.FirstOrDefault().Tags.Count);
                         foreach (var requestTag in requestPart.Version.Tags)
                             Assert.IsTrue((responsePart.Versions.FirstOrDefault().Tags as IList<Common.Api.Response.MediaTag>).Any(responseTag => responseTag.Name == requestTag.Name));
                     }
 
                     // Links
-                    Assert.AreEqual(requestPart.Version.Links.Count(), responsePart.Versions.FirstOrDefault().Links.Count());
+                    Assert.AreEqual(requestPart.Version.Links.Count, responsePart.Versions.FirstOrDefault().Links.Count);
                     foreach (var requestLink in requestPart.Version.Links)
                     {
                         var responseLink = responsePart.Versions.FirstOrDefault().Links.SingleOrDefault(l => l.LinkOrderId == requestLink.LinkOrderId);

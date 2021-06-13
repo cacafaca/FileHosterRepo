@@ -1,0 +1,100 @@
+﻿@page "/Media/Get"
+@using WebAppBlazor.ViewModel.Media
+@inject IMediaViewModel MediaViewModel
+
+<h3>Media</h3>
+
+
+@if (mediaHeader != null)
+{
+    <div id="header">
+        <h3>Header</h3>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-4">Name</div>
+                <div class="col-sm-8">@mediaHeader.Name</div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">Year</div>
+                <div class="col-sm-8">@mediaHeader.Year</div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">Description</div>
+                <div class="col-sm-8">@mediaHeader.Description</div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">Reference link</div>
+                <div class="col-sm-8">@mediaHeader.ReferenceLink</div>
+            </div>
+        </div>
+    </div>
+    <div id="part">
+        <h4>Part</h4>
+        @if (mediaHeader.Parts != null)
+        {
+            @foreach (var part in mediaHeader.Parts)
+            {
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-4">Name</div>
+                        <div class="col-sm-8">@part.Name</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">Season</div>
+                        <div class="col-sm-8">@part.Season</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">Episode</div>
+                        <div class="col-sm-8">@part.Episode</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">Description</div>
+                        <div class="col-sm-8">@part.Description</div>
+                    </div>
+                    <div class="container">
+                        <h5>Versions</h5>
+                        @if (part.Versions != null)
+                        {
+                            @foreach (var version in part.Versions)
+                            {
+                                <div class="row">
+                                    <div class="col-sm-4">Version comment</div>
+                                    <div class="col-sm-8">@version.VersionComment</div>
+                                </div><div class="row">
+                                    <div class="col-sm-4">Created</div>
+                                    <div class="col-sm-8">@version.Created</div>
+                                </div>
+                                <div class="container">
+                                    <h6>Links</h6>
+                                    @if (version.Links != null)
+                                    {
+                                        @foreach (var link in version.Links.OrderBy(l => l.LinkOrderId))
+                                        {
+                                            <div class="row">
+                                                <div class="col-sm-4">Link</div>
+                                                <div class="col-sm-8">@link.Link</div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+}
+
+@code {
+    private Common.Api.Response.MediaHeader mediaHeader;
+
+    protected override void OnInitialized()
+    {
+        var cacheMediaHeader = MediaViewModel.ReadCacheMediaHeader();
+        if (cacheMediaHeader != null)
+        {
+            mediaHeader = cacheMediaHeader;
+        }
+    }
+}

@@ -10,7 +10,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route(Common.Routes.Media.ControlerName)] 
+    [Route(Common.Routes.Media.ControlerName)]
     public class MediaController : BaseController
     {
         #region Constructor
@@ -29,8 +29,17 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             {
                 try
                 {
-                    var addedMediaHeader = await AddOrUpdateHeaderAsync(requestedHeader, loggedUser);
-                    return Ok(await BuildResponseHeaderAsync(addedMediaHeader.MediaHeaderId));
+                    // Validate links before saving!!!
+                    LinksAreValid(requestedHeader, out var invalidLinks);
+                    if (invalidLinks == null || invalidLinks.Count == 0)
+                    {
+                        var addedMediaHeader = await AddOrUpdateHeaderAsync(requestedHeader, loggedUser);
+                        return Ok(await BuildResponseHeaderAsync(addedMediaHeader.MediaHeaderId));
+                    }
+                    else
+                    {
+                        return BadRequest($"You sent invalid links: \n{invalidLinks.Select(l => l.Link).Aggregate((l1, l2) => l1 + "\n" + l2)}");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -127,6 +136,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
             // Change all values except PK (MediaHeaderId)
             header.Name = requestedHeader.Name;
+            header.Year = requestedHeader.Year;
             header.Description = requestedHeader.Description;
             header.ReferenceLink = !string.IsNullOrWhiteSpace(requestedHeader.ReferenceLink) ? new Uri(requestedHeader.ReferenceLink) : null;
             header.UserId = loggedUser.UserId;
@@ -335,7 +345,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             Common.Api.Response.MediaHeader responseHeader = new();
 
             // Header
-            var header = await context.MediaHeaders.Include("User").SingleOrDefaultAsync(h => h.MediaHeaderId == mediaHeaderId);            
+            var header = await context.MediaHeaders.Include("User").SingleOrDefaultAsync(h => h.MediaHeaderId == mediaHeaderId);
             header.MapResponseMedia(ref responseHeader);
             // Header tags
             responseHeader.Tags = new List<Common.Api.Response.MediaTag>();
@@ -424,6 +434,35 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        private static void LinksAreValid(Common.Api.Request.MediaHeader requestedHeader, out IList<Common.Api.Response.MediaLink> invalidLinks)
+        {
+            invalidLinks = new List<Common.Api.Response.MediaLink>();
+            if (requestedHeader != null)
+            {
+                foreach (var part in requestedHeader.Parts)
+                {
+                    if (part != null)
+                    {
+                        foreach (var link in part.Version.Links)
+                        {
+                            if (link != null)
+                            {
+                                if (!Uri.TryCreate(link.Link, UriKind.Absolute, out _))
+                                    invalidLinks.Add(new Common.Api.Response.MediaLink
+                                    {
+                                        Link = link.Link,
+                                        LinkOrderId = link.LinkOrderId,
+                                        MediaLinkId = link.MediaLinkId != null ? (int)link.MediaLinkId : 0
+                                    });
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
         #endregion
     }
 }

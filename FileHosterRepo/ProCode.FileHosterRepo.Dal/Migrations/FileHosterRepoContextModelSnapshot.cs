@@ -37,6 +37,9 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
                     b.HasKey("MediaHeaderId");
 
                     b.HasIndex("UserId");
@@ -64,9 +67,6 @@ namespace ProCode.FileHosterRepo.Dal.Migrations
                     b.Property<int>("MediaLinkId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
 
                     b.Property<string>("Link")
                         .IsRequired()
