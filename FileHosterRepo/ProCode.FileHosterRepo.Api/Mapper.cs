@@ -2,9 +2,9 @@
 {
     public static class Mapper
     {
-        public static Dto.Api.Response.User MapReponseUser(this Dal.Model.User user)
+        public static Common.Api.Response.User MapReponseUser(this Dal.Model.User user)
         {
-            return new Dto.Api.Response.User
+            return new Common.Api.Response.User
             {
                 UserId = user.UserId,
                 Nickname = user?.Nickname,
@@ -13,7 +13,7 @@
             };
         }
 
-        public static void MapResponseMedia(this Dal.Model.MediaHeader media, ref Dto.Api.Response.MediaHeader responseHeader)
+        public static void MapResponseMedia(this Dal.Model.MediaHeader media, ref Common.Api.Response.MediaHeader responseHeader)
         {
             responseHeader.MediaHeaderId = media.MediaHeaderId;
             responseHeader.Name = media.Name;
@@ -22,7 +22,7 @@
             responseHeader.User = media.User.MapReponseUser();
         }
 
-        public static void MapResponseMediaPart(this Dal.Model.MediaPart mediaPart, ref Dto.Api.Response.MediaPart responsePart)
+        public static void MapResponseMediaPart(this Dal.Model.MediaPart mediaPart, ref Common.Api.Response.MediaPart responsePart)
         {
             responsePart.MediaPartId = mediaPart.MediaPartId;
             responsePart.Season = mediaPart.Season;
@@ -34,14 +34,14 @@
             responsePart.Created = mediaPart.Created;
         }
 
-        public static void MapResponseMediaVersion(this Dal.Model.MediaVersion mediaVersion, ref Dto.Api.Response.MediaVersion responseVersion)
+        public static void MapResponseMediaVersion(this Dal.Model.MediaVersion mediaVersion, ref Common.Api.Response.MediaVersion responseVersion)
         {
             responseVersion.MediaVersionId = mediaVersion.MediaVersionId;
             responseVersion.VersionComment = mediaVersion.VersionComment;
             responseVersion.Created = mediaVersion.Created;
         }
 
-        public static void MapResponseMediaLink(this Dal.Model.MediaLink link, ref Dto.Api.Response.MediaLink responseLink)
+        public static void MapResponseMediaLink(this Dal.Model.MediaLink link, ref Common.Api.Response.MediaLink responseLink)
         {
             responseLink.MediaLinkId = link.MediaLinkId;
             responseLink.LinkOrderId = link.LinkOrderId;

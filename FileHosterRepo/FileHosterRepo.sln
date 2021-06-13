@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProCode.FileHosterRepo.WebA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProCode.FileHosterRepo.ApiTests", "ProCode.FileHosterRepo.ApiTests\ProCode.FileHosterRepo.ApiTests.csproj", "{3252F114-337A-414F-8FFB-E4B361A2C2EC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProCode.FileHosterRepo.Dto", "ProCode.FileHosterRepo.Dto\ProCode.FileHosterRepo.Dto.csproj", "{A5887CA4-011B-4F00-8620-7AB970B89C07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProCode.FileHosterRepo.Common", "ProCode.FileHosterRepo.Dto\ProCode.FileHosterRepo.Common.csproj", "{A5887CA4-011B-4F00-8620-7AB970B89C07}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

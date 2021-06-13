@@ -1,6 +1,6 @@
-﻿@page "/admin/logout"
-@using WebAppBlazor.ViewModel.Admin
-@inject IAdminViewModel adminViewModel
+﻿@page "/User/Logout"
+@using WebAppBlazor.ViewModel.User
+@inject IUserViewModel UserViewModel
 @inject NavigationManager NavManager
 @inject IMenuService MenuService
 
@@ -22,11 +22,11 @@
     {
         try
         {
-            if (adminViewModel.IsLoggedIn())
+            if (UserViewModel.IsLoggedIn())
             {
-                logoutMsg = await adminViewModel.LogoutAsync();
+                logoutMsg = await UserViewModel.LogoutAsync();
             }
-            else if (!adminViewModel.IsLoggedIn())
+            else if (!UserViewModel.IsLoggedIn())
             {
                 NavManager.NavigateTo("/Admin/Login");
             }

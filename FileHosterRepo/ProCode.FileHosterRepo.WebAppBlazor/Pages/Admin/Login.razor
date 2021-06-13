@@ -1,4 +1,4 @@
-﻿@page "/Admin/Login"
+﻿@page "/admin/login"
 @using WebAppBlazor.ViewModel.Admin
 @inject IAdminViewModel AdminViewModel
 @inject NavigationManager NavManager
@@ -27,8 +27,11 @@
     {
         if (!await AdminViewModel.IsRegisteredAsync())
         {
-            // Redirect to admin register page if there is no admin. One time only.
-            NavManager.NavigateTo("/Admin/Register");
+            NavManager.NavigateTo("/Admin/Register");       // Redirect to admin register page if there is no admin. One time only.
+        }
+        if (AdminViewModel.IsLoggedIn())
+        {
+            NavManager.NavigateTo("/Admin/Info");
         }
     }
 
@@ -36,10 +39,9 @@
     {
         try
         {
-            if (await AdminViewModel.LoginAsync(new Dto.Api.Request.UserRegister { Email = email, Password = password }))
+            if (await AdminViewModel.LoginAsync(new Common.Api.Request.UserRegister { Email = email, Password = password }))
             {
-                //MenuService.NotifyChanged();
-                // Redirect to Info
+                MenuService.NotifyChanged();
                 NavManager.NavigateTo("/Admin/Info");
             }
         }

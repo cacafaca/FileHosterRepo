@@ -3,20 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Net.Http.Json;
-using ProCode.FileHosterRepo.Dto.Api.Response;
+using ProCode.FileHosterRepo.Common.Api.Response;
 
 namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel.User
 {
     public class UserViewModel : BaseViewModel, IUserViewModel
     {
-        #region Constructors
-        public UserViewModel() { }
-        public UserViewModel(System.Net.Http.IHttpClientFactory httpClientFactory) : base(httpClientFactory) { }
+        #region Fields
+        private readonly Admin.IAdminViewModel adminViewModel;
         #endregion
 
-        public async Task<bool> RegisterAsync(Dto.Api.Request.UserRegister userRegister)
+        #region Constructors
+        public UserViewModel() { }
+        public UserViewModel(System.Net.Http.IHttpClientFactory httpClientFactory, Admin.IAdminViewModel adminViewModel) : base(httpClientFactory)
         {
-            var response = await HttpClient.PostAsJsonAsync("/User/Register", userRegister);
+            this.adminViewModel = adminViewModel;
+        }
+        #endregion
+
+        public async Task<bool> RegisterAsync(Common.Api.Request.UserRegister userRegister, string confirmPassword)
+        {
+            var response = await HttpClient.PostAsJsonAsync(Common.Routes.User.Register, userRegister);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 SetToken(await response.Content.ReadAsStringAsync());
@@ -26,21 +33,44 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel.User
                 return false;
         }
 
-        public async Task<bool> LoginAsync(Dto.Api.Request.UserRegister userRegister)
+        public async Task<bool> LoginAsync(Common.Api.Request.User user)
         {
-            var response = await HttpClient.PostAsJsonAsync("/User/Login", userRegister);
+            var response = await HttpClient.PostAsJsonAsync(Common.Routes.User.Login, user);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                SetToken(await response.Content.ReadAsStringAsync());
+                var token = await response.Content.ReadAsStringAsync();
+                SetToken(token);
+                if (await IsUserAdminAsync())
+                    adminViewModel.SetToken(token);
                 return true;
             }
             else
                 return false;
         }
 
-        public async Task<Dto.Api.Response.User> GetInfoAsync()
+        public async Task<string> LogoutAsync()
         {
-            return await HttpClient.GetFromJsonAsync<Dto.Api.Response.User>("/User/Info");
+            var response = await HttpClient.GetAsync(Common.Routes.User.Logout);
+            response.EnsureSuccessStatusCode();
+            ClearToken();
+            var message = await response.Content.ReadAsStringAsync();
+            return message;
         }
+
+        public async Task<Common.Api.Response.User> GetInfoAsync()
+        {
+            return await HttpClient.GetFromJsonAsync<Common.Api.Response.User>(Common.Routes.User.Info);
+        }
+
+        public async Task<bool> IsAdminRegistredAsync()
+        {
+            return await adminViewModel.IsRegisteredAsync();
+        }
+
+        public async Task<bool> IsUserAdminAsync()
+        {
+            return (await GetInfoAsync()).Role == Common.User.UserRole.Admin;
+        }
+
     }
 }

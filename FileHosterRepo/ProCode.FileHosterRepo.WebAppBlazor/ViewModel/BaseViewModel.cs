@@ -2,7 +2,7 @@
 
 namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel
 {
-    public class BaseViewModel : IIsLogged
+    public class BaseViewModel : IIsLogged, IToken
     {
         #region Fields
         public const string HttpClientName = "WebAPI";
@@ -36,6 +36,10 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel
             SetToken();
         }
 
+        /// <summary>
+        /// Potentially dangerous! Consider otherwise.
+        /// </summary>
+        /// <returns></returns>
         public bool IsLoggedIn()
         {
             return httpClient.DefaultRequestHeaders.Contains(authorizationHeaderName);

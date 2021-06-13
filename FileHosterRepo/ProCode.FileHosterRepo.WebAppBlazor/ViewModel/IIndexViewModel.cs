@@ -7,6 +7,6 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel
 {
     public interface IIndexViewModel
     {
-        public Task<IList<Dto.Api.Response.MediaHeader>> GetLast10Async();
+        public Task<IList<Common.Api.Response.MediaHeader>> GetLast10Async();
     }
 }

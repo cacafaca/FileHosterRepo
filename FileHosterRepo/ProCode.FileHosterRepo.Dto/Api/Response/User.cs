@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ProCode.FileHosterRepo.Dto.Api.Response
+namespace ProCode.FileHosterRepo.Common.Api.Response
 {
     public class User
     {
@@ -13,7 +13,7 @@ namespace ProCode.FileHosterRepo.Dto.Api.Response
         //public string Email { get; set; }
         public string Nickname { get; set; }
         public DateTime? Created { get; set; }
-        public Common.UserRole Role { get; set; }
+        public Common.User.UserRole Role { get; set; }
         #endregion
     }
 }

@@ -18,11 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages\User\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\ProCode.FileHosterRepo.Dto\ProCode.FileHosterRepo.Dto.csproj" />
+    <ProjectReference Include="..\ProCode.FileHosterRepo.Dto\ProCode.FileHosterRepo.Common.csproj" />
   </ItemGroup>
 
 </Project>

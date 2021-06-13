@@ -33,7 +33,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Register_Single_User()
         {
             // Register user.
-            HttpResponseMessage response = await Config.Client.PostAsync("/Users/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync("/User/Register",
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -44,14 +44,14 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
             Assert.IsTrue(!string.IsNullOrWhiteSpace(token));
-            Assert.AreEqual(1, Config.DbContext.Users.Where(u => u.Role != Dto.Common.UserRole.Admin).Count());  // Expect one user.
+            Assert.AreEqual(1, Config.DbContext.Users.Where(u => u.Role != Common.User.UserRole.Admin).Count());  // Expect one user.
         }
 
         [TestMethod()]
         public async Task Login_User_Successful()
         {
             // Register user.
-            HttpResponseMessage response = await Config.Client.PostAsync("/Users/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync("/User/Register",
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -62,7 +62,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login user.
-            response = await Config.Client.PostAsync("/Users/Login",
+            response = await Config.Client.PostAsync("/User/Login",
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -78,7 +78,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Login_User_Unsuccessful_Bad_Password()
         {
             // Register user.
-            HttpResponseMessage response = await Config.Client.PostAsync("/Users/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync("/User/Register",
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -89,7 +89,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login user.
-            response = await Config.Client.PostAsync("/Users/Login",
+            response = await Config.Client.PostAsync("/User/Login",
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -103,7 +103,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Register_And_Logout()
         {
             // Register user.
-            HttpResponseMessage response = await Config.Client.PostAsync("/Users/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync("/User/Register",
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -116,11 +116,11 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 
             // Logout.
             Config.Client.SetToken(token);
-            response = await Config.Client.GetAsync("/Users/Logout");
+            response = await Config.Client.GetAsync("/User/Logout");
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Get info. Expect to fail.
-            response = await Config.Client.GetAsync("/Users/Info");
+            response = await Config.Client.GetAsync("/User/Info");
             Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
@@ -128,7 +128,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Login_And_Logout()
         {
             // Register user.
-            HttpResponseMessage response = await Config.Client.PostAsync("/Users/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync("/User/Register",
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -139,7 +139,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login user.
-            response = await Config.Client.PostAsync("/Users/Login",
+            response = await Config.Client.PostAsync("/User/Login",
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -151,11 +151,11 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 
             // Logout.
             Config.Client.SetToken(token);
-            response = await Config.Client.GetAsync("/Users/Logout");
+            response = await Config.Client.GetAsync("/User/Logout");
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Get info. Expect to fail.
-            response = await Config.Client.GetAsync("/Users/Info");
+            response = await Config.Client.GetAsync("/User/Info");
             Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
@@ -163,7 +163,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Update_Nickname_And_Password()
         {
             // Register user.
-            HttpResponseMessage response = await Config.Client.PostAsync("/Users/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync("/User/Register",
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -177,9 +177,9 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             // Update user's nickname and password.
             var userBefore = (await Config.DbContext.Users.SingleOrDefaultAsync(
                 u => u.Email == "user@user.com" &&
-                u.Role != Dto.Common.UserRole.Admin));
+                u.Role != Common.User.UserRole.Admin));
             Config.Client.SetToken(token);
-            response = await Config.Client.PatchAsync("/Users/Update",
+            response = await Config.Client.PatchAsync("/User/Update",
                 new StringContent(
                     @"{ 
                         ""Password"": ""new_password"",
@@ -190,7 +190,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             var userAfter = (await Config.DbContext.Users.AsNoTracking()
                 .SingleOrDefaultAsync(u =>
                     u.Email == "user@user.com" &&
-                    u.Role != Dto.Common.UserRole.Admin));
+                    u.Role != Common.User.UserRole.Admin));
             Assert.AreNotEqual(userBefore.Nickname, userAfter.Nickname);
             Assert.AreNotEqual(userBefore.Password, userAfter.Password);
         }
@@ -199,7 +199,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Get_User_Info()
         {
             // Register user.
-            HttpResponseMessage response = await Config.Client.PostAsync("/Users/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync("/User/Register",
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -210,7 +210,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login user.
-            response = await Config.Client.PostAsync("/Users/Login",
+            response = await Config.Client.PostAsync("/User/Login",
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -219,13 +219,13 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 Encoding.UTF8, Config.HttpMediaTypeJson));
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var token = await response.Content.ReadAsStringAsync();
+            Config.Client.SetToken(token);
 
             // Get info.
-            Config.Client.SetToken(token);
-            response = await Config.Client.GetAsync("/Users/Info");
+            response = await Config.Client.GetAsync("/User/Info");
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var userInfoJson = await response.Content.ReadAsStringAsync();
-            var userInfo = JsonSerializer.Deserialize<Dto.Api.Response.User>(userInfoJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var userInfo = JsonSerializer.Deserialize<Common.Api.Response.User>(userInfoJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             Assert.IsNotNull(userInfo);
             Assert.AreEqual("User", userInfo.Nickname);
         }
@@ -233,7 +233,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Delete_User()
         {
             // Register user.
-            HttpResponseMessage response = await Config.Client.PostAsync("/Users/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync("/User/Register",
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -246,11 +246,64 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 
             // Delete user.
             Config.Client.SetToken(token);
-            response = await Config.Client.DeleteAsync("/Users/Delete");
+            response = await Config.Client.DeleteAsync("/User/Delete");
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             Assert.IsNull(await Config.DbContext.Users.SingleOrDefaultAsync(
                 u => u.Email == "user@user.com"));
         }
+
+        [TestMethod()]
+        public async Task Login_With_Role_User_And_Get_Idmin_Info()
+        {
+            // Register user.
+            HttpResponseMessage response = await Config.Client.PostAsync("/User/Register",
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""user@user.com"",
+                        ""Password"": ""user"",
+                        ""Nickname"": ""User""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+
+            // Login user.
+            response = await Config.Client.PostAsync("/User/Login",
+                new StringContent(
+                    @"{ 
+                        ""Email"": ""user@user.com"",
+                        ""Password"": ""user""
+                    }",
+                Encoding.UTF8, Config.HttpMediaTypeJson));
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            var token = await response.Content.ReadAsStringAsync();
+            Config.Client.SetToken(token);
+
+
+            // Get Admin info.
+            response = await Config.Client.GetAsync("/Admin/Info");
+            Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [TestMethod()]
+        public async Task Login_With_Role_Admin_And_Get_Idmin_Info()
+        {
+            // Login admin, from user controller.
+            HttpResponseMessage response = await Config.Client.PostAsync("/User/Login",
+                new StringContent(JsonSerializer.Serialize(new Common.Api.Request.User
+                {
+                    Email = "admin@admin.com",
+                    Password = "admin"
+                }), Encoding.UTF8, Config.HttpMediaTypeJson));
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            var token = await response.Content.ReadAsStringAsync();
+            Config.Client.SetToken(token);
+
+
+            // Get Admin info.
+            response = await Config.Client.GetAsync("/Admin/Info");
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        }
+
     }
 }

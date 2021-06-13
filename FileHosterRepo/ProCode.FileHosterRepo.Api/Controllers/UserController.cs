@@ -12,22 +12,22 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("[controller]")] // "[controller]" adds "/Users" to link. Instead "/Login" we get "/Users/Login".
-    public class UsersController : BaseController
+    [Route(Common.Routes.User.ControlerName)] 
+    public class UserController : BaseController
     {
         #region Constructor
-        public UsersController(Dal.DataAccess.FileHosterRepoContext context, IJwtAuthenticationManager authenticationManager)
+        public UserController(Dal.DataAccess.FileHosterRepoContext context, IJwtAuthenticationManager authenticationManager)
             : base(context, authenticationManager) { }
         #endregion
 
         #region Actions
         [AllowAnonymous]
         [HttpPost]
-        [Route("/[controller]/[action]")]
-        public async Task<ActionResult<string>> Register(Dto.Api.Request.UserRegister newUser)
+        [Route(Common.Routes.User.Register)]
+        public async Task<ActionResult<string>> Register(Common.Api.Request.UserRegister newUser)
         {
             // Check if there is an administrator first. Can't allow user to register before Administrator.
-            var adminUser = await context.Users.Where(u => u.Role == Dto.Common.UserRole.Admin).ToListAsync();
+            var adminUser = await context.Users.Where(u => u.Role == Common.User.UserRole.Admin).ToListAsync();
             if (adminUser.Count == 0)
                 return Conflict("There is no administrator. System needs administrator in order to work.");
 
@@ -42,12 +42,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                     Password = EncryptPassword(newUser.Password),
                     Nickname = newUser.Nickname,
                     Created = DateTime.Now,
-                    Role = Dto.Common.UserRole.User,
+                    Role = Common.User.UserRole.User,
                     Logged = true
                 };
                 context.Users.Add(newUserDb);
                 await context.SaveChangesAsync();
-                return Ok(token.Generate(newUserDb.UserId, newUserDb.Email, Dto.Common.UserRole.User));
+                return Ok(token.Generate(newUserDb.UserId, newUserDb.Email, Common.User.UserRole.User));
             }
             else
             {
@@ -56,10 +56,11 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("Login")]
-        public async Task<ActionResult<string>> Login(Dto.Api.Request.User loginUser)
+        [HttpPost]
+        [Route(Common.Routes.User.Login)]
+        public async Task<ActionResult<string>> Login(Common.Api.Request.User loginUser)
         {
-            var usersFound = await context.Users.Where(u => u.Email == loginUser.Email && u.Role != Dto.Common.UserRole.Admin).ToListAsync();
+            var usersFound = await context.Users.Where(u => u.Email == loginUser.Email).ToListAsync();
             switch (usersFound.Count)
             {
                 case 0:
@@ -76,12 +77,13 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                         return Unauthorized();
                     }
                 default:
-                    var admin = await context.Users.SingleOrDefaultAsync(u => u.Role == Dto.Common.UserRole.Admin);
+                    var admin = await context.Users.SingleOrDefaultAsync(u => u.Role == Common.User.UserRole.Admin);
                     return Conflict($"Multiple accounts error for email {loginUser.Email}. Please report this to {admin?.Email}.");
             }
         }
 
-        [HttpGet("Logout")]
+        [HttpGet]
+        [Route(Common.Routes.User.Logout)]
         public async Task<ActionResult<string>> Logout()
         {
             var loggedUser = await context.Users.SingleOrDefaultAsync(u => u.UserId == User.GetUserId());
@@ -97,8 +99,9 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             }
         }
 
-        [HttpGet("Info")]
-        public async Task<ActionResult<Dto.Api.Response.User>> Info(int? userId)
+        [HttpGet]
+        [Route(Common.Routes.User.Info)]
+        public async Task<ActionResult<Common.Api.Response.User>> Info(int? userId)
         {
             // Always check at beginning!
             var loggedUser = await GetLoggedUserAsync();
@@ -107,7 +110,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 var user = userId == null ? loggedUser : await context.Users.SingleOrDefaultAsync(u => u.UserId == (int)userId);
                 if (user != null)
                 {
-                    return new Dto.Api.Response.User()
+                    return new Common.Api.Response.User()
                     {
                         UserId = user.UserId,
                         Nickname = user.Nickname,
@@ -126,8 +129,9 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             }
         }
 
-        [HttpPatch("Update")]
-        public async Task<ActionResult<bool>> Update(Dto.Api.Request.UserRegister updateUser)
+        [HttpPatch]
+        [Route(Common.Routes.User.Update)]
+        public async Task<ActionResult<bool>> Update(Common.Api.Request.UserRegister updateUser)
         {
             // Always check at beginning!
             var loggedUser = await GetLoggedUserAsync();
@@ -159,7 +163,8 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             }
         }
 
-        [HttpDelete("Delete")]
+        [HttpDelete()]
+        [Route(Common.Routes.User.Delete)]
         public async Task<ActionResult> Delete()
         {
             // Always check at beginning!

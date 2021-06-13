@@ -37,6 +37,15 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 );
         }
 
+        protected async Task<Dal.Model.User>GetLoggedAdminAsync()
+        {
+            var admin = await GetLoggedUserAsync();
+            if (admin != null && admin.Role == Common.User.UserRole.Admin)
+                return admin;
+            else
+                return null;
+        }
+
         protected ActionResult GetUnauthorizedLoginResponse()
         {
             return Unauthorized($"{User.GetRole()} {User.GetEmail()} not logged in.");

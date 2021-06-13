@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ProCode.FileHosterRepo.Api\ProCode.FileHosterRepo.Api.csproj" />
-    <ProjectReference Include="..\ProCode.FileHosterRepo.Dto\ProCode.FileHosterRepo.Dto.csproj" />
+    <ProjectReference Include="..\ProCode.FileHosterRepo.Dto\ProCode.FileHosterRepo.Common.csproj" />
   </ItemGroup>
 
 </Project>

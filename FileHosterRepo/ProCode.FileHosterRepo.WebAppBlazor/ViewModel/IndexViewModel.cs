@@ -13,9 +13,9 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel
 
         public IndexViewModel(IHttpClientFactory httpClientFactory) : base(httpClientFactory) { }
 
-        public async Task<IList<Dto.Api.Response.MediaHeader>> GetLast10Async()
+        public async Task<IList<Common.Api.Response.MediaHeader>> GetLast10Async()
         {
-            return await HttpClient.GetFromJsonAsync<IList<Dto.Api.Response.MediaHeader>>("Media/List10");
+            return await HttpClient.GetFromJsonAsync<IList<Common.Api.Response.MediaHeader>>("Media/Last10");
         }
     }
 }

@@ -1,65 +1,54 @@
-﻿@page "/Admin/Register"
+﻿@page "/admin/register"
 @using WebAppBlazor.ViewModel.Admin
 @inject IAdminViewModel adminViewModel
 @inject NavigationManager NavManager
+@inject IMenuService MenuService
 
 <h1>Administrator register</h1>
 
 <p>Welcome to the register page for Administrator. Only one administrator can be registered on this system.</p>
 
-<p>Email:<input @bind="email" placeholder="enter email" /></p>
-<p>Password:<input @bind="password" type="password" /></p>
-<p>Confirm Password:<input @bind="confirmPassword" type="password" /></p>
-<button @onclick="@RegisterAdminAsync">Register</button>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-4">Email:</div>
+        <div class="col-sm-8"><input @bind="userRegister.Email" placeholder="enter email" /></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">Password:</div>
+        <div class="col-sm-8"><input @bind="userRegister.Password" type="password" /></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">Confirm Password:</div>
+        <div class="col-sm-8"><input @bind="confirmPassword" type="password" /></div>
+    </div>
+    <div class="row">
+        <button @onclick="@RegisterAdminAsync">Register</button>
+    </div>
+</div>
 
 @if (errorMessage != null)
 {
-    <p>Error: @errorMessage</p>
-    <p>@DateTime.Now</p>
+<p>Error: @errorMessage</p>
 }
 
 @code {
-    private string email;
-    private string password;
+    private Common.Api.Request.UserRegister userRegister = new Common.Api.Request.UserRegister();
     private string confirmPassword;
     private string errorMessage;
-    private const int passwordMinimumLength = 6;
 
     private async Task RegisterAdminAsync()
     {
-        // Validations
-        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(confirmPassword))
-        {
-            errorMessage = "Please fill all fields.";
-            return;
-        }
-        if (password.Length < passwordMinimumLength)
-        {
-            errorMessage = $"Password must be at least {passwordMinimumLength} characters.";
-            return;
-        }
-        if(password!=confirmPassword)
-        {
-            errorMessage = "Silly, you must retype same password in Confirm password field. :)";
-            return;
-        }
-
         try
         {
-            var registerSuccessful = await adminViewModel.RegisterAsync(new Dto.Api.Request.UserRegister
+            if (await adminViewModel.RegisterAsync(userRegister, confirmPassword))
             {
-                Email = email,
-                Password = password,
-            });
-            if (registerSuccessful)
-            {
-                // Redirect to Info
+                MenuService.NotifyChanged();
                 NavManager.NavigateTo("/Admin/Info");
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Exception: {ex.GetType().Name}, Message: {ex.Message}";
+            errorMessage = ex.Message;
         }
     }
 }

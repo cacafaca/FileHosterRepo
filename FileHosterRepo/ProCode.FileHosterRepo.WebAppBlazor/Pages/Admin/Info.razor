@@ -1,8 +1,29 @@
-﻿@page "/Admin/Info"
+﻿@page "/admin/info"
 @using WebAppBlazor.ViewModel.Admin
 @inject IAdminViewModel adminViewModel
 
-<h3>Administrator info</h3>
+@if (adminInfo != null)
+{
+    <h3>Administrator info</h3>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-4">Nickname:</div>
+            <div class="col-sm-8"><b>@adminInfo.Nickname</b></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">Role:</div>
+            <div class="col-sm-8">@adminInfo.Role</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">Created:</div>
+            <div class="col-sm-8">@adminInfo.Created</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">Id:</div>
+            <div class="col-sm-8">@adminInfo.UserId</div>
+        </div>
+    </div>
+}
 
 @if (error != null)
 {
@@ -10,17 +31,9 @@
 
 }
 
-@if (adminInfo != null)
-{
-    <p>Nickname: @adminInfo.Nickname</p>
-    <p>Role: @adminInfo.Role</p>
-    <p>Created: @adminInfo.Created</p>
-    <p>Id: @adminInfo.UserId</p>
-}
-
 @code {
     private string error;
-    private Dto.Api.Response.User adminInfo;
+    private Common.Api.Response.User adminInfo;
 
     protected override async Task OnInitializedAsync()
     {

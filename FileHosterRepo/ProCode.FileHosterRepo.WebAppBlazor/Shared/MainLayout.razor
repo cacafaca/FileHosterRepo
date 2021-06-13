@@ -1,24 +1,37 @@
 ﻿@inherits LayoutComponentBase
-@implements IDisposable
-@inject IMenuService menuService
+@using ViewModel.User
+@inject IUserViewModel UserViewModel
 
 <div class="sidebar">
     <NavMenu></NavMenu>
 </div>
 
 <div class="main">
-    <div class="top-row px-4">
-        <div>
-            <NavLink class="nav-link" href="User/Login">
-                <span class="oi oi-account-login" aria-hidden="true"></span> Login
-            </NavLink>
-        </div>&nbsp;|&nbsp;
-        <div>
-            <NavLink class="nav-link" href="User/Register">
-                <span class="oi oi-pencil" aria-hidden="true"></span> Register
-            </NavLink>
+    @if (!UserViewModel.IsLoggedIn())
+    {
+        <div class="top-row px-4">
+            <div>
+                <NavLink class="nav-link" href="User/Login">
+                    <span class="oi oi-account-login" aria-hidden="true"></span> Login
+                </NavLink>
+            </div>&nbsp;|&nbsp;
+            <div>
+                <NavLink class="nav-link" href="User/Register">
+                    <span class="oi oi-pencil" aria-hidden="true"></span> Register
+                </NavLink>
+            </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="top-row px-4">
+            <div>
+                <NavLink class="nav-link" href="User/Logout">
+                    <span class="oi oi-account-logout" aria-hidden="true"></span> Logout @user?.Nickname
+                </NavLink>
+            </div>
+        </div>
+    }
 
     <div class="content px-4">
         @Body
@@ -27,18 +40,11 @@
 
 @code
 {
-    protected override void OnInitialized()
-    {
-        menuService.OnChanged += MenuChanged;
-    }
+    private Common.Api.Response.User user;
 
-    void IDisposable.Dispose()
+    protected override async Task OnInitializedAsync()
     {
-        menuService.OnChanged -= MenuChanged;
-    }
-
-    private void MenuChanged(object sender, EventArgs e)
-    {
-        InvokeAsync(StateHasChanged);
+        if (UserViewModel.IsLoggedIn())
+            user = await UserViewModel.GetInfoAsync();
     }
 }

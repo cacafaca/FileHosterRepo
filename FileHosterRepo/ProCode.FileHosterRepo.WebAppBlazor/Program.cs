@@ -38,6 +38,7 @@ namespace ProCode.FileHosterRepo.WebAppBlazor
         {
             builder.Services.AddScoped<IIndexViewModel>(sp => new IndexViewModel(sp.GetService<IHttpClientFactory>()));
             builder.Services.AddSingleton<ViewModel.Admin.IAdminViewModel>(sp => new ViewModel.Admin.AdminViewModel(sp.GetService<IHttpClientFactory>()));
+            builder.Services.AddSingleton<ViewModel.User.IUserViewModel>(sp => new ViewModel.User.UserViewModel(sp.GetService<IHttpClientFactory>(), sp.GetService<ViewModel.Admin.IAdminViewModel>()));
         }
     }
 }

@@ -1,5 +1,9 @@
 ﻿@using WebAppBlazor.ViewModel.Admin
+@using WebAppBlazor.ViewModel.User
 @inject IAdminViewModel adminViewModel
+@inject IUserViewModel userViewModel
+@implements IDisposable
+@inject IMenuService MenuService
 
 <div class="top-row pl-4 navbar navbar-dark">
     <a class="navbar-brand" href="">File Hoster Repository</a>
@@ -15,30 +19,36 @@
                 <span class="oi oi-home" aria-hidden="true"></span> Home
             </NavLink>
         </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
-            </NavLink>
-        </li>
-    </ul>
-    <div style="position:absolute; bottom:0;">
-        <NavLink class="nav-link" href="Admin">
-            <span class="oi oi-account-login" aria-hidden="true"></span> Admin
-        </NavLink>
+        @if (userViewModel.IsLoggedIn())
+        {
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="Media/Add">
+                    <span class="oi oi-plus" aria-hidden="true" title="Add media"></span> Add
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="fetchdata">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
+                </NavLink>
+            </li>
+        }
         @if (adminViewModel.IsLoggedIn())
         {
-            <NavLink class="nav-link" href="Admin/Logout">
-                <span class="oi oi-account-logout" aria-hidden="true"></span> Logout
-            </NavLink>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="Admin/Info">
+                    <span class="oi oi-account-login" aria-hidden="true"></span> Admin
+                </NavLink>
+                <ul>
+                    <li>
+                        <NavLink class="nav-link" href="Admin/Logout">
+                            <span class="oi oi-account-logout" aria-hidden="true"></span> Logout
+                        </NavLink>
+                    </li>
+                </ul>
+            </li>
         }
-    </div>
+    </ul>
 </div>
-
 
 @code {
     private bool collapseNavMenu = true;
@@ -48,5 +58,20 @@
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    protected override void OnInitialized()
+    {
+        MenuService.OnChanged += MenuChanged;
+    }
+
+    void IDisposable.Dispose()
+    {
+        MenuService.OnChanged -= MenuChanged;
+    }
+
+    private async void MenuChanged(object sender, EventArgs e)
+    {
+        await InvokeAsync(StateHasChanged);
     }
 }

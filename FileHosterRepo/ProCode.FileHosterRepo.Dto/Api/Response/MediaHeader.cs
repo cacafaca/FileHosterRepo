@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ProCode.FileHosterRepo.Dto.Api.Response
+namespace ProCode.FileHosterRepo.Common.Api.Response
 {
     public class MediaHeader
     {

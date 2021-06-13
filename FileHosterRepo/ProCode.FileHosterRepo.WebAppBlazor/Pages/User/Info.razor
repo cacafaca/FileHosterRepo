@@ -1,0 +1,49 @@
+﻿@page "/user/info"
+@using WebAppBlazor.ViewModel.User
+@inject IUserViewModel UserViewModel
+
+@if (userInfo != null)
+{
+    <h3>User info</h3>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-4">Nickname:</div>
+            <div class="col-sm-8"><b>@userInfo.Nickname</b></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">Role:</div>
+            <div class="col-sm-8">@userInfo.Role</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">Created:</div>
+            <div class="col-sm-8">@userInfo.Created</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">Id:</div>
+            <div class="col-sm-8">@userInfo.UserId</div>
+        </div>
+    </div>
+}
+
+@if (errorMessage != null)
+{
+    <p><b>Error:&nbsp;</b>@errorMessage</p>
+
+}
+
+@code {
+    private string errorMessage;
+    private Common.Api.Response.User userInfo;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            userInfo = await UserViewModel.GetInfoAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+}

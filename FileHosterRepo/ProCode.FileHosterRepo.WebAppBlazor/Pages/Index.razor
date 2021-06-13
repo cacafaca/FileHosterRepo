@@ -3,37 +3,53 @@
 @using System.Security.Claims
 @inject IIndexViewModel indexViewModel
 
-@if (headers != null)
+@if (isLoaded)
 {
-    <h1>Last 10 medias</h1>
+    @if (headers != null)
+    {
+        @if (headers.Count != 0)
+        {
+            <h1>Last 10 medias</h1>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Description</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var header in headers)
-            {
-                <tr>
-                    <td>@header.Name</td>
-                    <td><p>@header.Description</p><p>@header.User.Nickname</p></td>
-                </tr>
-            }
-        </tbody>
-    </table>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var header in headers)
+                    {
+                        <tr>
+                            <td>@header.Name</td>
+                            <td><p>@header.Description</p><p>@header.User.Nickname</p></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <h2>There are no media links yet!</h2>
+            <h3>Be the first to add some!</h3>
+        }
+    }
+    else if (error != null)
+    {
+        <h1>Error</h1>
+        <h3>@error</h3>
+    }
 }
-else if (error != null)
+else
 {
-    <h1>Error</h1>
-    <h3>@error</h3>
+    <div>Loading last media links ...</div>
 }
 
 @code {
-    private IList<Dto.Api.Response.MediaHeader> headers;
+    private IList<Common.Api.Response.MediaHeader> headers;
     private string error = null;
+    private bool isLoaded = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -44,11 +60,16 @@ else if (error != null)
 
         try
         {
+            isLoaded = false;
             headers = await indexViewModel.GetLast10Async();
         }
         catch (Exception ex)
         {
             error = ex.Message;
+        }
+        finally
+        {
+            isLoaded = true;
         }
     }
 }

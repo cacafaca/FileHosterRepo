@@ -11,7 +11,7 @@ namespace ProCode.FileHosterRepo.WebAppBlazor
 
         public void NotifyChanged()
         {
-            //throw new NotImplementedException();
+            OnChanged?.Invoke(this, new EventArgs());
         }
     }
 }

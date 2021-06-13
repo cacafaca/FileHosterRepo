@@ -25,7 +25,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 
             // Register administrator. In order to register user, an administrator needs to be registered.
             HttpResponseMessage response = Config.Client.PostAsync("/Admin/Register",
-                new StringContent(JsonSerializer.Serialize(new Dto.Api.Request.UserRegister
+                new StringContent(JsonSerializer.Serialize(new Common.Api.Request.UserRegister
                 {
                     Email = "admin@admin.com",
                     Password = "admin"
@@ -35,8 +35,8 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Config.Client.GetAsync("/Admin/Logout").Wait();
 
             // Register user.
-            response = Config.Client.PostAsync("/Users/Register",
-                new StringContent(JsonSerializer.Serialize(new Dto.Api.Request.UserRegister
+            response = Config.Client.PostAsync("/User/Register",
+                new StringContent(JsonSerializer.Serialize(new Common.Api.Request.UserRegister
                 {
                     Email = "user@user.com",
                     Password = "user",
@@ -59,7 +59,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 new StringContent(JsonSerializer.Serialize(requestMedia),Encoding.UTF8, Config.HttpMediaTypeJson));
             var responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
-            Dto.Api.Response.MediaHeader responseMedia = JsonSerializer.Deserialize<Dto.Api.Response.MediaHeader>(responseMessage);
+            Common.Api.Response.MediaHeader responseMedia = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseMedia);
 
             CompareRequestAndResponse(requestMedia, responseMedia);
@@ -76,7 +76,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     Encoding.UTF8, Config.HttpMediaTypeJson));
             var responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
-            Dto.Api.Response.MediaHeader responseMedia = JsonSerializer.Deserialize<Dto.Api.Response.MediaHeader>(responseMessage);
+            Common.Api.Response.MediaHeader responseMedia = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseMedia);
             CompareRequestAndResponse(requestMedia, responseMedia);
 
@@ -88,7 +88,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     Encoding.UTF8, Config.HttpMediaTypeJson));
             responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
-            responseMedia = JsonSerializer.Deserialize<Dto.Api.Response.MediaHeader>(responseMessage);
+            responseMedia = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseMedia);
             CompareRequestAndResponse(requestMedia, responseMedia);
         }
@@ -103,7 +103,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     Encoding.UTF8, Config.HttpMediaTypeJson));
             var responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
-            Dto.Api.Response.MediaHeader responseMedia = JsonSerializer.Deserialize<Dto.Api.Response.MediaHeader>(responseMessage);
+            Common.Api.Response.MediaHeader responseMedia = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseMedia);
 
             // Add "American Beauty" movie.
@@ -113,7 +113,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     Encoding.UTF8, Config.HttpMediaTypeJson));
             responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
-            responseMedia = JsonSerializer.Deserialize<Dto.Api.Response.MediaHeader>(responseMessage);
+            responseMedia = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseMedia);
         }
 
@@ -128,14 +128,14 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     Encoding.UTF8, Config.HttpMediaTypeJson));
             var responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
-            Dto.Api.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Dto.Api.Response.MediaHeader>(responseMessage);
+            Common.Api.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseHeader);
 
             // Get by id.
             response = await Config.Client.GetAsync($"/Media/Get/{responseHeader.MediaHeaderId}");
             responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
-            responseHeader = JsonSerializer.Deserialize<Dto.Api.Response.MediaHeader>(responseMessage);
+            responseHeader = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseHeader);
 
             CompareRequestAndResponse(requestHeader, responseHeader);
@@ -161,11 +161,11 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     Encoding.UTF8, Config.HttpMediaTypeJson));
             var responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
-            Dto.Api.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Dto.Api.Response.MediaHeader>(responseMessage);
+            Common.Api.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseHeader);
 
             // Change request data, with correct values.
-            Dto.Api.Request.MediaHeader correctedRequestHeader = ResponseToRequest(responseHeader);
+            Common.Api.Request.MediaHeader correctedRequestHeader = ResponseToRequest(responseHeader);
             correctedRequestHeader.Name = "Breaking Bad (2008)";
             correctedRequestHeader.Parts.ToArray()[0].Name = "Pilot";
 
@@ -176,7 +176,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     Encoding.UTF8, Config.HttpMediaTypeJson));
             responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
-            responseHeader = JsonSerializer.Deserialize<Dto.Api.Response.MediaHeader>(responseMessage);
+            responseHeader = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseHeader);
 
 
@@ -210,12 +210,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     Encoding.UTF8, Config.HttpMediaTypeJson));
             var responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
-            Dto.Api.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Dto.Api.Response.MediaHeader>(responseMessage);
+            Common.Api.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseHeader);
 
             // Delete one tag from first part.
-            Dto.Api.Request.MediaHeader updatedRequest = ResponseToRequest(responseHeader);
-            var ver1Tags = (List<Dto.Api.Request.MediaTag>)((List<Dto.Api.Request.MediaPart>)updatedRequest.Parts).First().Version.Tags;
+            Common.Api.Request.MediaHeader updatedRequest = ResponseToRequest(responseHeader);
+            var ver1Tags = (List<Common.Api.Request.MediaTag>)((List<Common.Api.Request.MediaPart>)updatedRequest.Parts).First().Version.Tags;
             var oldVersionTagCount = ver1Tags.Count;
             ver1Tags.Remove(ver1Tags.LastOrDefault());
 
@@ -226,10 +226,10 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     Encoding.UTF8, Config.HttpMediaTypeJson));
             responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
-            responseHeader = JsonSerializer.Deserialize<Dto.Api.Response.MediaHeader>(responseMessage);
+            responseHeader = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseHeader);
 
-            Assert.AreEqual(--oldVersionTagCount, ((IList<Dto.Api.Response.MediaTag>)((IList<Dto.Api.Response.MediaVersion>)((IList<Dto.Api.Response.MediaPart>)responseHeader.Parts).First().Versions).First().Tags).Count());
+            Assert.AreEqual(--oldVersionTagCount, ((IList<Common.Api.Response.MediaTag>)((IList<Common.Api.Response.MediaVersion>)((IList<Common.Api.Response.MediaPart>)responseHeader.Parts).First().Versions).First().Tags).Count());
         }
 
         [TestMethod]
@@ -244,13 +244,13 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     Encoding.UTF8, Config.HttpMediaTypeJson));
             var responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
-            Dto.Api.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Dto.Api.Response.MediaHeader>(responseMessage);
+            Common.Api.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseHeader);
 
             // Delete one tag from header.
-            Dto.Api.Request.MediaHeader updatedRequest = ResponseToRequest(responseHeader);
+            Common.Api.Request.MediaHeader updatedRequest = ResponseToRequest(responseHeader);
             var oldHeaderTagsCount = updatedRequest.Tags.Count();
-            ((IList<Dto.Api.Request.MediaTag>)updatedRequest.Tags).RemoveAt(updatedRequest.Tags.Count() - 1);
+            ((IList<Common.Api.Request.MediaTag>)updatedRequest.Tags).RemoveAt(updatedRequest.Tags.Count() - 1);
 
             // Update. Structures must have id's.
             response = await Config.Client.PostAsync("/Media/Update",
@@ -259,7 +259,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                      Encoding.UTF8, Config.HttpMediaTypeJson));
             responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
-            responseHeader = JsonSerializer.Deserialize<Dto.Api.Response.MediaHeader>(responseMessage);
+            responseHeader = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseHeader);
 
             Assert.AreEqual(--oldHeaderTagsCount, responseHeader.Tags.Count());
@@ -277,12 +277,12 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     Encoding.UTF8, Config.HttpMediaTypeJson));
             var responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
-            Dto.Api.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Dto.Api.Response.MediaHeader>(responseMessage);
+            Common.Api.Response.MediaHeader responseHeader = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseHeader);
 
             // Delete one tag from first part.
-            Dto.Api.Request.MediaHeader updatedRequest = ResponseToRequest(responseHeader);
-            var part1Tags = ((List<Dto.Api.Request.MediaTag>)((List<Dto.Api.Request.MediaPart>)updatedRequest.Parts).First().Tags);
+            Common.Api.Request.MediaHeader updatedRequest = ResponseToRequest(responseHeader);
+            var part1Tags = ((List<Common.Api.Request.MediaTag>)((List<Common.Api.Request.MediaPart>)updatedRequest.Parts).First().Tags);
             var oldPart1TagCount = part1Tags.Count;
             part1Tags.Remove(part1Tags.LastOrDefault());
 
@@ -293,10 +293,10 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     Encoding.UTF8, Config.HttpMediaTypeJson));
             responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
-            responseHeader = JsonSerializer.Deserialize<Dto.Api.Response.MediaHeader>(responseMessage);
+            responseHeader = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
             Assert.IsNotNull(responseHeader);
 
-            Assert.AreEqual(--oldPart1TagCount, ((IList<Dto.Api.Response.MediaTag>)((IList<Dto.Api.Response.MediaPart>)responseHeader.Parts).First().Tags).Count());
+            Assert.AreEqual(--oldPart1TagCount, ((IList<Common.Api.Response.MediaTag>)((IList<Common.Api.Response.MediaPart>)responseHeader.Parts).First().Tags).Count());
         }
         [TestMethod()]
 
@@ -321,90 +321,91 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             response = await Config.Client.GetAsync("/Media/List");
             var responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
-            var responseHeaderList = JsonSerializer.Deserialize<IEnumerable<Dto.Api.Response.MediaHeader>>(responseMessage);
+            var responseHeaderList = JsonSerializer.Deserialize<IEnumerable<Common.Api.Response.MediaHeader>>(responseMessage);
             Assert.IsNotNull(responseHeaderList);
             Assert.AreEqual(10, responseHeaderList.GroupBy(h=>h.MediaHeaderId).Count());    // Expect 10 unique header ids.
         }
         #endregion
 
-        private static Dto.Api.Request.MediaHeader ExampleRequest_BreakingBad()
+        #region Methods
+        private static Common.Api.Request.MediaHeader ExampleRequest_BreakingBad()
         {
-            return new Dto.Api.Request.MediaHeader
+            return new Common.Api.Request.MediaHeader
             {
                 Name = "Breaking Bad (2008)",
                 Description = "A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine in order to secure his family's future.",
                 ReferenceLink = "https://www.imdb.com/title/tt0903747/",
-                Tags = new List<Dto.Api.Request.MediaTag>
+                Tags = new List<Common.Api.Request.MediaTag>
                 {
-                    new Dto.Api.Request.MediaTag { Name = "TV Series" },
-                    new Dto.Api.Request.MediaTag { Name = "Crime" },
-                    new Dto.Api.Request.MediaTag { Name = "Drama" },
-                    new Dto.Api.Request.MediaTag { Name = "Thriller" }
+                    new Common.Api.Request.MediaTag { Name = "TV Series" },
+                    new Common.Api.Request.MediaTag { Name = "Crime" },
+                    new Common.Api.Request.MediaTag { Name = "Drama" },
+                    new Common.Api.Request.MediaTag { Name = "Thriller" }
                 },
-                Parts = new List<Dto.Api.Request.MediaPart>
+                Parts = new List<Common.Api.Request.MediaPart>
                 {
-                    new Dto.Api.Request.MediaPart
+                    new Common.Api.Request.MediaPart
                     {
                         Season = 1,
                         Episode = 1,
                         Name = "Pilot",
                         Description = "Diagnosed with terminal lung cancer, chemistry teacher Walter White teams up with former student Jesse Pinkman to cook and sell crystal meth.",
                         ReferenceLink = "https://www.imdb.com/title/tt0959621/?ref_=ttep_ep1",
-                        Version = new Dto.Api.Request.MediaVersion
+                        Version = new Common.Api.Request.MediaVersion
                         {
                             VersionComment = "Has English title in package.",
-                            Links = new List<Dto.Api.Request.MediaLink>
+                            Links = new List<Common.Api.Request.MediaLink>
                             {
-                                new Dto.Api.Request.MediaLink
+                                new Common.Api.Request.MediaLink
                                 {
                                     LinkOrderId = 1,
                                     Link = "https://www.imdb.com/title/tt0959621/?ref_=ttep_ep1"
                                 },
-                                new Dto.Api.Request.MediaLink
+                                new Common.Api.Request.MediaLink
                                 {
                                     LinkOrderId = 2,
                                     Link = "https://m.media-amazon.com/images/M/MV5BNTZlMGY1OWItZWJiMy00MTZlLThhMGItNDQ2ODM3YzNkOWU5XkEyXkFqcGdeQXVyNzgyOTQ4MDc@._V1_UY268_CR147,0,182,268_AL_.jpg"
                                 }
                             },
-                            Tags = new List<Dto.Api.Request.MediaTag>
+                            Tags = new List<Common.Api.Request.MediaTag>
                             {
-                                new Dto.Api.Request.MediaTag { Name = "DVDRip" },
-                                new Dto.Api.Request.MediaTag { Name = "YIFY" },
-                                new Dto.Api.Request.MediaTag { Name = "x264" }
+                                new Common.Api.Request.MediaTag { Name = "DVDRip" },
+                                new Common.Api.Request.MediaTag { Name = "YIFY" },
+                                new Common.Api.Request.MediaTag { Name = "x264" }
                             }
                         },
-                        Tags = new List<Dto.Api.Request.MediaTag>
+                        Tags = new List<Common.Api.Request.MediaTag>
                         {
-                            new Dto.Api.Request.MediaTag { Name = "Recommend" },
+                            new Common.Api.Request.MediaTag { Name = "Recommend" },
                         }
                     },
-                    new Dto.Api.Request.MediaPart
+                    new Common.Api.Request.MediaPart
                     {
                         Season = 1,
                         Episode = 2,
                         Name = "Cat's in the Bag...",
                         Description = "After their first drug deal goes terribly wrong, Walt and Jesse are forced to deal with a corpse and a prisoner. Meanwhile, Skyler grows suspicious of Walt's activities.",
                         ReferenceLink = "https://www.imdb.com/title/tt1054724/?ref_=ttep_ep2",
-                        Version = new Dto.Api.Request.MediaVersion
+                        Version = new Common.Api.Request.MediaVersion
                         {
                             VersionComment = "High audio quality 5.1.",
-                            Links = new List<Dto.Api.Request.MediaLink>
+                            Links = new List<Common.Api.Request.MediaLink>
                             {
-                                new Dto.Api.Request.MediaLink
+                                new Common.Api.Request.MediaLink
                                 {
                                     LinkOrderId = 1,
                                     Link = "https://www.imdb.com/title/tt1054724/?ref_=ttep_ep2"
                                 },
-                                new Dto.Api.Request.MediaLink
+                                new Common.Api.Request.MediaLink
                                 {
                                     LinkOrderId = 2,
                                     Link = "https://m.media-amazon.com/images/M/MV5BNmI5MTU3OTAtYTczMC00MDE5LTg3YjMtMjA3NWEyMmYyZWQwXkEyXkFqcGdeQXVyNjk1MzkzMzM@._V1_UY268_CR87,0,182,268_AL_.jpg"
                                 }
                             },
-                            Tags = new List<Dto.Api.Request.MediaTag>
+                            Tags = new List<Common.Api.Request.MediaTag>
                             {
-                                new Dto.Api.Request.MediaTag { Name = "DVDRip" },
-                                new Dto.Api.Request.MediaTag { Name = "x264" }
+                                new Common.Api.Request.MediaTag { Name = "DVDRip" },
+                                new Common.Api.Request.MediaTag { Name = "x264" }
                             }
                         }
                     }
@@ -412,59 +413,59 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             };
         }
 
-        private static Dto.Api.Request.MediaHeader ExampleRequest_AmericanBeauty()
+        private static Common.Api.Request.MediaHeader ExampleRequest_AmericanBeauty()
         {
-            return new Dto.Api.Request.MediaHeader
+            return new Common.Api.Request.MediaHeader
             {
                 Name = "American Beauty (1999)",
                 Description = "A sexually frustrated suburban father has a mid-life crisis after becoming infatuated with his daughter's best friend.",
                 ReferenceLink = "https://www.imdb.com/title/tt0169547",
-                Tags = new List<Dto.Api.Request.MediaTag>
+                Tags = new List<Common.Api.Request.MediaTag>
                 {
-                    new Dto.Api.Request.MediaTag { Name = "Drama" }
+                    new Common.Api.Request.MediaTag { Name = "Drama" }
                 },
-                Parts = new List<Dto.Api.Request.MediaPart>
+                Parts = new List<Common.Api.Request.MediaPart>
                 {
-                    new Dto.Api.Request.MediaPart
+                    new Common.Api.Request.MediaPart
                     {
                         Season = 0,
                         Episode = 0,
                         Name = null,
                         Description = null,
                         ReferenceLink = null,
-                        Version = new Dto.Api.Request.MediaVersion
+                        Version = new Common.Api.Request.MediaVersion
                         {
                             VersionComment = "Re-upload upon requests.",
-                            Links = new List<Dto.Api.Request.MediaLink>
+                            Links = new List<Common.Api.Request.MediaLink>
                             {
-                                new Dto.Api.Request.MediaLink
+                                new Common.Api.Request.MediaLink
                                 {
                                     LinkOrderId = 1,
                                     Link = "https://m.media-amazon.com/images/M/MV5BMTY1NzMyODc3Nl5BMl5BanBnXkFtZTgwNzE2MzA1NDM@._V1_UY44_CR11,0,32,44_AL_.jpg"
                                 },
-                                new Dto.Api.Request.MediaLink
+                                new Common.Api.Request.MediaLink
                                 {
                                     LinkOrderId = 2,
                                     Link = "https://m.media-amazon.com/images/M/MV5BMTc4ODQ1ODM5Ml5BMl5BanBnXkFtZTcwOTU2NDk3OQ@@._V1_UX32_CR0,0,32,44_AL_.jpg"
                                 }
                             },
-                            Tags = new List<Dto.Api.Request.MediaTag>
+                            Tags = new List<Common.Api.Request.MediaTag>
                             {
-                                new Dto.Api.Request.MediaTag { Name = "BRRip" },
-                                new Dto.Api.Request.MediaTag { Name = "YIFY" },
-                                new Dto.Api.Request.MediaTag { Name = "x264" }
+                                new Common.Api.Request.MediaTag { Name = "BRRip" },
+                                new Common.Api.Request.MediaTag { Name = "YIFY" },
+                                new Common.Api.Request.MediaTag { Name = "x264" }
                             }
                         },
-                        Tags = new List<Dto.Api.Request.MediaTag>
+                        Tags = new List<Common.Api.Request.MediaTag>
                         {
-                            new Dto.Api.Request.MediaTag { Name = "Awesome" },
+                            new Common.Api.Request.MediaTag { Name = "Awesome" },
                         }
                     }
                 }
             };
         }
 
-        private static Dto.Api.Request.MediaHeader ResponseToRequest(Dto.Api.Response.MediaHeader responseHeader)
+        private static Common.Api.Request.MediaHeader ResponseToRequest(Common.Api.Response.MediaHeader responseHeader)
         {
             return new()
             {
@@ -472,7 +473,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 Name = responseHeader.Name,
                 Description = responseHeader.Description,
                 ReferenceLink = responseHeader.ReferenceLink,
-                Parts = responseHeader.Parts.Select(p => new Dto.Api.Request.MediaPart
+                Parts = responseHeader.Parts.Select(p => new Common.Api.Request.MediaPart
                 {
                     MediaPartId = p.MediaPartId,
                     Season = p.Season,
@@ -480,34 +481,34 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     Name = p.Name,
                     Description = p.Description,
                     ReferenceLink = p.ReferenceLink,
-                    Version = new Dto.Api.Request.MediaVersion
+                    Version = new Common.Api.Request.MediaVersion
                     {
                         MediaVersionId = p.Versions.FirstOrDefault().MediaVersionId,
                         VersionComment = p.Versions.FirstOrDefault().VersionComment,
-                        Links = p.Versions.FirstOrDefault().Links.Select(l => new Dto.Api.Request.MediaLink
+                        Links = p.Versions.FirstOrDefault().Links.Select(l => new Common.Api.Request.MediaLink
                         {
                             MediaLinkId = l.MediaLinkId,
                             LinkOrderId = l.LinkOrderId,
                             Link = l.Link
                         }).ToList(),
-                        Tags = p.Versions.FirstOrDefault().Tags.Select(t => new Dto.Api.Request.MediaTag
+                        Tags = p.Versions.FirstOrDefault().Tags.Select(t => new Common.Api.Request.MediaTag
                         {
                             Name = t.Name
                         }).ToList()
                     },
-                    Tags = p.Tags.Select(t => new Dto.Api.Request.MediaTag
+                    Tags = p.Tags.Select(t => new Common.Api.Request.MediaTag
                     {
                         Name = t.Name
                     }).ToList()
                 }).ToList(),
-                Tags = responseHeader.Tags.Select(t => new Dto.Api.Request.MediaTag
+                Tags = responseHeader.Tags.Select(t => new Common.Api.Request.MediaTag
                 {
                     Name = t.Name
                 }).ToList()
             };
         }
 
-        private static void CompareRequestAndResponse(Dto.Api.Request.MediaHeader requestMedia, Dto.Api.Response.MediaHeader responseMedia)
+        private static void CompareRequestAndResponse(Common.Api.Request.MediaHeader requestMedia, Common.Api.Response.MediaHeader responseMedia)
         {
             // Header
             Assert.AreEqual(requestMedia.Name, responseMedia.Name);
@@ -517,7 +518,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             {
                 Assert.AreEqual(requestMedia.Tags.Count(), responseMedia.Tags.Count());
                 foreach (var requestTag in requestMedia.Tags)
-                    Assert.IsTrue((responseMedia.Tags as IList<Dto.Api.Response.MediaTag>).Any(responseTag => responseTag.Name == requestTag.Name));
+                    Assert.IsTrue((responseMedia.Tags as IList<Common.Api.Response.MediaTag>).Any(responseTag => responseTag.Name == requestTag.Name));
             }
 
             // Parts
@@ -541,7 +542,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     {
                         Assert.AreEqual(requestPart.Tags.Count(), responsePart.Tags.Count());
                         foreach (var requestTag in requestPart.Tags)
-                            Assert.IsTrue((responsePart.Tags as IList<Dto.Api.Response.MediaTag>).Any(responseTag => responseTag.Name == requestTag.Name));
+                            Assert.IsTrue((responsePart.Tags as IList<Common.Api.Response.MediaTag>).Any(responseTag => responseTag.Name == requestTag.Name));
                     }
 
                     // Version
@@ -552,7 +553,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                     {
                         Assert.AreEqual(requestPart.Version.Tags.Count(), responsePart.Versions.FirstOrDefault().Tags.Count());
                         foreach (var requestTag in requestPart.Version.Tags)
-                            Assert.IsTrue((responsePart.Versions.FirstOrDefault().Tags as IList<Dto.Api.Response.MediaTag>).Any(responseTag => responseTag.Name == requestTag.Name));
+                            Assert.IsTrue((responsePart.Versions.FirstOrDefault().Tags as IList<Common.Api.Response.MediaTag>).Any(responseTag => responseTag.Name == requestTag.Name));
                     }
 
                     // Links
@@ -566,6 +567,6 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 }
             }
         }
-
+        #endregion
     }
 }

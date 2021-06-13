@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ProCode.FileHosterRepo.Dto.Api.Request
+namespace ProCode.FileHosterRepo.Common.Api.Request
 {
     public interface IMediaTags
     {
