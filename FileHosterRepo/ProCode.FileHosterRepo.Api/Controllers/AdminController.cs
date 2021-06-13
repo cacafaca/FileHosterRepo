@@ -25,7 +25,8 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         #region Actions
         [AllowAnonymous]
-        [HttpPost("Register")]
+        [HttpPost]
+        [Route(Common.Routes.Admin.Register)]
         public async Task<ActionResult<string>> Register(Common.Api.Request.UserRegister newUser)
         {
             //Validate new user data.
@@ -86,7 +87,8 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             }
         }
 
-        [HttpGet("Logout")]
+        [HttpGet]
+        [Route(Common.Routes.Admin.Logout)]
         public async Task<ActionResult<string>> Logout()
         {
             // Always check at beginning!
@@ -103,7 +105,8 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             }
         }
 
-        [HttpGet("Info")]
+        [HttpGet]
+        [Route(Common.Routes.Admin.Info)]
         public async Task<ActionResult<Common.Api.Response.User>> Info()
         {
             // Always check at beginning!
@@ -124,7 +127,8 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             }
         }
 
-        [HttpPatch("Update")]
+        [HttpPatch]
+        [Route(Common.Routes.Admin.Update)]
         public async Task<ActionResult<bool>> Update(Common.Api.Request.UserRegister updateUser)
         {
             // Validate password.
@@ -154,7 +158,8 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("IsRegistered")]
+        [HttpGet]
+        [Route(Common.Routes.Admin.IsRegistered)]
         public async Task<ActionResult<bool>> IsRegistered()
         {
             return Ok(await context.Users.CountAsync(u => u.Role == Common.User.UserRole.Admin) > 0);

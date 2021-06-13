@@ -25,17 +25,9 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         [TestMethod()]
         public async Task Register_Admin_On_A_Cleen_Database()
         {
-            // Register administrator.
-            HttpResponseMessage response = await Config.Client.PostAsync("/Admin/Register",
-                new StringContent(
-                    @"{ 
-                        ""Email"": ""admin@admin.com"",
-                        ""Password"": ""admin""
-                    }", 
-                Encoding.UTF8, Config.HttpMediaTypeJson));
-            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-            var responseToken = await response.Content.ReadAsStringAsync();
-            Assert.IsTrue(!string.IsNullOrWhiteSpace(responseToken));
+            // Register administrator.            
+            var token = await RegisterAdminAsync();
+            Assert.IsTrue(!string.IsNullOrWhiteSpace(token));
             Assert.AreEqual(1, Config.DbContext.Users.Count());  // Expect one user.
             Assert.AreEqual(1, Config.DbContext.Users.Where(u => u.Role == Common.User.UserRole.Admin).Count()); // Expect one administrator.
         }
@@ -44,7 +36,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Register_Two_Admins_And_Fail()
         {
             // Register first administrator.
-            HttpResponseMessage response = await Config.Client.PostAsync("/Admin/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.Admin.Register,
                 new StringContent(
                     @"{ 
                         ""Email"": ""admin1@admin.com"",
@@ -54,7 +46,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Register second administrator.
-            response = await Config.Client.PostAsync("/Admin/Register",
+            response = await Config.Client.PostAsync(Common.Routes.Admin.Register,
                 new StringContent(
                     @"{ 
                         ""Email"": ""admin2@admin.com"",
@@ -70,17 +62,10 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Login_Successful()
         {
             // Register administrator.
-            HttpResponseMessage response = await Config.Client.PostAsync("/Admin/Register",
-                new StringContent(
-                    @"{ 
-                        ""Email"": ""admin@admin.com"",
-                        ""Password"": ""admin""
-                    }",
-                Encoding.UTF8, Config.HttpMediaTypeJson));
-            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            await RegisterAdminAsync();
 
             // Login administrator.
-            response = await Config.Client.PostAsync("/Admin/Login",
+            var response = await Config.Client.PostAsync(Common.Routes.Admin.Login,
                 new StringContent(
                     @"{ 
                         ""Email"": ""admin@admin.com"",
@@ -96,7 +81,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Login_Unsuccessfull_Bad_Password()
         {
             // Register administrator.
-            HttpResponseMessage response = await Config.Client.PostAsync("/Admin/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.Admin.Register,
                 new StringContent(
                     @"{ 
                         ""Email"": ""admin@admin.com"",
@@ -106,7 +91,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login administrator with wrong password.
-            response = await Config.Client.PostAsync("/Admin/Login",
+            response = await Config.Client.PostAsync(Common.Routes.Admin.Login,
                 new StringContent(
                     @"{ 
                         ""Email"": ""admin@admin.com"",
@@ -120,7 +105,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Register_And_Logout()
         {
             // Register administrator.
-            HttpResponseMessage response = await Config.Client.PostAsync("/Admin/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.Admin.Register,
                 new StringContent(
                     @"{ 
                         ""Email"": ""admin@admin.com"",
@@ -132,11 +117,11 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 
             // Logout administrator.
             Config.Client.SetToken(token);
-            response = await Config.Client.GetAsync("/Admin/Logout");
+            response = await Config.Client.GetAsync(Common.Routes.Admin.Logout);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Try to get Administrator info. Expect to fail.
-            response = await Config.Client.GetAsync("/Admin/Info");
+            response = await Config.Client.GetAsync(Common.Routes.Admin.Info);
             Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
             var errorMsg = await response.Content.ReadAsStringAsync();
             System.Diagnostics.Trace.WriteLine(errorMsg);
@@ -146,7 +131,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Login_And_Logout()
         {
             // Register administrator.
-            HttpResponseMessage response = await Config.Client.PostAsync("/Admin/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.Admin.Register,
                 new StringContent(
                     @"{ 
                         ""Email"": ""admin@admin.com"",
@@ -156,7 +141,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login administrator.
-            response = await Config.Client.PostAsync("/Admin/Login",
+            response = await Config.Client.PostAsync(Common.Routes.Admin.Login,
                 new StringContent(
                     @"{ 
                         ""Email"": ""admin@admin.com"",
@@ -168,11 +153,11 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 
             // Logout administrator.
             Config.Client.SetToken(token);
-            response = await Config.Client.GetAsync("/Admin/Logout");
+            response = await Config.Client.GetAsync(Common.Routes.Admin.Logout);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Try to get Administrator info. Expect to fail.
-            response = await Config.Client.GetAsync("/Admin/Info");
+            response = await Config.Client.GetAsync(Common.Routes.Admin.Info);
             Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
             var errorMsg = await response.Content.ReadAsStringAsync();
             System.Diagnostics.Trace.WriteLine(errorMsg);
@@ -182,7 +167,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Update_Password()
         {
             // Register administrator.
-            HttpResponseMessage response = await Config.Client.PostAsync("/Admin/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.Admin.Register,
                 new StringContent(
                     @"{ 
                         ""Email"": ""admin@admin.com"",
@@ -196,7 +181,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             var passwordBefore = (await Config.DbContext.Users.
                 SingleOrDefaultAsync(u => u.Role == Common.User.UserRole.Admin)).Password;
             Config.Client.SetToken(token);
-            response = await Config.Client.PatchAsync("/Admin/Update",
+            response = await Config.Client.PatchAsync(Common.Routes.Admin.Update,
                 new StringContent(
                     @"{ 
                         ""Password"": ""updated_admin_password""
@@ -212,7 +197,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Get_Admin_Info()
         {
             // Register administrator.
-            HttpResponseMessage response = await Config.Client.PostAsync("/Admin/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.Admin.Register,
                 new StringContent(
                     @"{ 
                         ""Email"": ""admin@admin.com"",
@@ -224,7 +209,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 
             // Read Administration info.
             Config.Client.SetToken(token);
-            response = await Config.Client.GetAsync("/Admin/Info");
+            response = await Config.Client.GetAsync(Common.Routes.Admin.Info);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var responseInfoStr = await response.Content.ReadAsStringAsync();
             Common.Api.Response.User responseUser = JsonSerializer.Deserialize<Common.Api.Response.User>(responseInfoStr, new JsonSerializerOptions
@@ -235,5 +220,16 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.AreEqual(Common.User.UserRole.Admin, responseUser.Role);
             Assert.AreEqual(1, responseUser.UserId);
         }
+
+        #region Methods
+        private async Task<string> RegisterAdminAsync()
+        {
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.Admin.Register,
+                new StringContent(JsonSerializer.Serialize(new Common.Api.Request.User { Email= "admin@admin.com", Password= "admin" }),
+                    Encoding.UTF8, Config.HttpMediaTypeJson));
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            return await response.Content.ReadAsStringAsync();
+        }
+        #endregion
     }
 }

@@ -19,7 +19,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Config.RecreateDatabaseAsync().Wait();  // Need empty database at beginning of each test method.
 
             // Register administrator. In order to register user administrator needs to be registered.
-            Config.Client.PostAsync("/Admin/Register",
+            Config.Client.PostAsync(Common.Routes.Admin.Register,
                 new StringContent(
                     @"{ 
                         ""Email"": ""admin@admin.com"",
@@ -33,7 +33,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Register_Single_User()
         {
             // Register user.
-            HttpResponseMessage response = await Config.Client.PostAsync("/User/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.User.Register,
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -51,7 +51,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Login_User_Successful()
         {
             // Register user.
-            HttpResponseMessage response = await Config.Client.PostAsync("/User/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.User.Register,
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -62,7 +62,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login user.
-            response = await Config.Client.PostAsync("/User/Login",
+            response = await Config.Client.PostAsync(Common.Routes.User.Login,
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -78,7 +78,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Login_User_Unsuccessful_Bad_Password()
         {
             // Register user.
-            HttpResponseMessage response = await Config.Client.PostAsync("/User/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.User.Register,
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -89,7 +89,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login user.
-            response = await Config.Client.PostAsync("/User/Login",
+            response = await Config.Client.PostAsync(Common.Routes.User.Login,
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -103,7 +103,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Register_And_Logout()
         {
             // Register user.
-            HttpResponseMessage response = await Config.Client.PostAsync("/User/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.User.Register,
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -116,11 +116,11 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 
             // Logout.
             Config.Client.SetToken(token);
-            response = await Config.Client.GetAsync("/User/Logout");
+            response = await Config.Client.GetAsync(Common.Routes.User.Logout);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Get info. Expect to fail.
-            response = await Config.Client.GetAsync("/User/Info");
+            response = await Config.Client.GetAsync(Common.Routes.User.Info);
             Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
@@ -128,7 +128,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Login_And_Logout()
         {
             // Register user.
-            HttpResponseMessage response = await Config.Client.PostAsync("/User/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.User.Register,
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -139,7 +139,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login user.
-            response = await Config.Client.PostAsync("/User/Login",
+            response = await Config.Client.PostAsync(Common.Routes.User.Login,
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -151,11 +151,11 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 
             // Logout.
             Config.Client.SetToken(token);
-            response = await Config.Client.GetAsync("/User/Logout");
+            response = await Config.Client.GetAsync(Common.Routes.User.Logout);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Get info. Expect to fail.
-            response = await Config.Client.GetAsync("/User/Info");
+            response = await Config.Client.GetAsync(Common.Routes.User.Info);
             Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
@@ -163,7 +163,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Update_Nickname_And_Password()
         {
             // Register user.
-            HttpResponseMessage response = await Config.Client.PostAsync("/User/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.User.Register,
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -179,7 +179,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 u => u.Email == "user@user.com" &&
                 u.Role != Common.User.UserRole.Admin));
             Config.Client.SetToken(token);
-            response = await Config.Client.PatchAsync("/User/Update",
+            response = await Config.Client.PatchAsync(Common.Routes.User.Update,
                 new StringContent(
                     @"{ 
                         ""Password"": ""new_password"",
@@ -199,7 +199,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Get_User_Info()
         {
             // Register user.
-            HttpResponseMessage response = await Config.Client.PostAsync("/User/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.User.Register,
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -210,7 +210,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login user.
-            response = await Config.Client.PostAsync("/User/Login",
+            response = await Config.Client.PostAsync(Common.Routes.User.Login,
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -222,7 +222,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Config.Client.SetToken(token);
 
             // Get info.
-            response = await Config.Client.GetAsync("/User/Info");
+            response = await Config.Client.GetAsync(Common.Routes.User.Info);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             var userInfoJson = await response.Content.ReadAsStringAsync();
             var userInfo = JsonSerializer.Deserialize<Common.Api.Response.User>(userInfoJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
@@ -233,7 +233,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Delete_User()
         {
             // Register user.
-            HttpResponseMessage response = await Config.Client.PostAsync("/User/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.User.Register,
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -246,7 +246,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 
             // Delete user.
             Config.Client.SetToken(token);
-            response = await Config.Client.DeleteAsync("/User/Delete");
+            response = await Config.Client.DeleteAsync(Common.Routes.User.Delete);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             Assert.IsNull(await Config.DbContext.Users.SingleOrDefaultAsync(
@@ -257,7 +257,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Login_With_Role_User_And_Get_Idmin_Info()
         {
             // Register user.
-            HttpResponseMessage response = await Config.Client.PostAsync("/User/Register",
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.User.Register,
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -268,7 +268,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
             // Login user.
-            response = await Config.Client.PostAsync("/User/Login",
+            response = await Config.Client.PostAsync(Common.Routes.User.Login,
                 new StringContent(
                     @"{ 
                         ""Email"": ""user@user.com"",
@@ -281,7 +281,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 
 
             // Get Admin info.
-            response = await Config.Client.GetAsync("/Admin/Info");
+            response = await Config.Client.GetAsync(Common.Routes.Admin.Info);
             Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
@@ -289,7 +289,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Login_With_Role_Admin_And_Get_Idmin_Info()
         {
             // Login admin, from user controller.
-            HttpResponseMessage response = await Config.Client.PostAsync("/User/Login",
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.User.Login,
                 new StringContent(JsonSerializer.Serialize(new Common.Api.Request.User
                 {
                     Email = "admin@admin.com",
@@ -301,7 +301,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 
 
             // Get Admin info.
-            response = await Config.Client.GetAsync("/Admin/Info");
+            response = await Config.Client.GetAsync(Common.Routes.Admin.Info);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         }
 

@@ -35,10 +35,9 @@
             <h3>Be the first to add some!</h3>
         }
     }
-    else if (error != null)
+    else if (errorMessage != null)
     {
-        <h1>Error</h1>
-        <h3>@error</h3>
+        <h3>Error: @errorMessage</h3>
     }
 }
 else
@@ -48,24 +47,19 @@ else
 
 @code {
     private IList<Common.Api.Response.MediaHeader> headers;
-    private string error = null;
+    private string errorMessage = null;
     private bool isLoaded = false;
 
     protected override async Task OnInitializedAsync()
     {
-
-#if DEBUG
-        //await Task.Delay(5000);
-#endif
-
         try
         {
             isLoaded = false;
-            headers = await indexViewModel.GetLast10Async();
+            headers = await indexViewModel.GetLast10AnonymousAsync();
         }
         catch (Exception ex)
         {
-            error = ex.Message;
+            errorMessage = ex.Message;
         }
         finally
         {

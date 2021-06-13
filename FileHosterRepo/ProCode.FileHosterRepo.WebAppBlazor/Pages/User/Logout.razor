@@ -25,6 +25,7 @@
             if (UserViewModel.IsLoggedIn())
             {
                 logoutMsg = await UserViewModel.LogoutAsync();
+                MenuService.NotifyChanged();
             }
             else if (!UserViewModel.IsLoggedIn())
             {

@@ -10,7 +10,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("[controller]")] 
+    [Route(Common.Routes.Media.ControlerName)] 
     public class MediaController : BaseController
     {
         #region Constructor
@@ -19,7 +19,8 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         #endregion
 
         #region Actions
-        [HttpPost("Add")]
+        [HttpPost]
+        [Route(Common.Routes.Media.Add)]
         public async Task<ActionResult<Common.Api.Response.MediaHeader>> Add(Common.Api.Request.MediaHeader requestedHeader)
         {
             // Always check at beginning!
@@ -42,8 +43,9 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             }
         }
 
-        [HttpGet("Get/{mediaHeaderId}")]
-        public async Task<ActionResult<ProCode.FileHosterRepo.Common.Api.Response.MediaHeader>> Get(int mediaHeaderId)
+        [HttpGet]
+        [Route(Common.Routes.Media.Get)]
+        public async Task<ActionResult<Common.Api.Response.MediaHeader>> Get(int mediaHeaderId)
         {
             // Always check at beginning!
             var loggedUser = await GetLoggedUserAsync();
@@ -64,7 +66,8 @@ namespace ProCode.FileHosterRepo.Api.Controllers
             }
         }
 
-        [HttpPost("Update")]
+        [HttpPost]
+        [Route(Common.Routes.Media.Update)]
         public async Task<ActionResult<Common.Api.Response.MediaHeader>> Update(Common.Api.Request.MediaHeader requestedHeader)
         {
             // Always check at beginning!
@@ -91,40 +94,15 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         /// Returns last 10 medias.
         /// </summary>
         /// <returns></returns>
-        [HttpGet("List")]
-        public async Task<ActionResult<IEnumerable<Common.Api.Response.MediaHeader>>> List()
+        [HttpGet]
+        [Route(Common.Routes.Media.Last10)]
+        public async Task<ActionResult<IEnumerable<Common.Api.Response.MediaHeader>>> Last10()
         {
             // Always check at beginning!
             var loggedUser = await GetLoggedUserAsync();
             if (loggedUser != null)
             {
-                try
-                {
-                    // This probably needs optimization! :)
-                    var lastHeaderIds = context.MediaHeaders.Join(context.MediaParts,
-                        h => h.MediaHeaderId,
-                        p => p.MediaHeaderId,
-                        (h, p) => new { h.MediaHeaderId, p.MediaPartId })
-                        .Join(context.MediaVersions,
-                            hp => hp.MediaPartId,
-                            v => v.MediaPartId,
-                            (hp, v) => new { hp.MediaHeaderId, VersionCreated = v.Created })
-                        .OrderByDescending(x => x.VersionCreated)
-                        .AsEnumerable()
-                        .GroupBy(id => id.MediaHeaderId)
-                        .Select(h => h.Key)
-                        .Take(10)
-                        .ToList();
-                    var lastHeaders = new List<Common.Api.Response.MediaHeader>();
-                    foreach (var id in lastHeaderIds)
-                        lastHeaders.Add(await BuildResponseHeaderAsync(id));
-
-                    return Ok(lastHeaders);
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest(ex.Message);
-                }
+                return await GetLast10();
             }
             else
             {
@@ -134,39 +112,10 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        [Route("/[controller]/[action]")]
-        public async Task<ActionResult<IEnumerable<Common.Api.Response.MediaHeader>>> Last10()
+        [Route(Common.Routes.Media.Last10Anonymous)]
+        public async Task<ActionResult<IEnumerable<Common.Api.Response.MediaHeader>>> Last10Anonymous()
         {
-            try
-            {
-                // This probably needs optimization! :)
-                var lastHeaderIds = context.MediaHeaders.Join(context.MediaParts,
-                    h => h.MediaHeaderId,
-                    p => p.MediaHeaderId,
-                    (h, p) => new { h.MediaHeaderId, p.MediaPartId })
-                    .Join(context.MediaVersions,
-                        hp => hp.MediaPartId,
-                        v => v.MediaPartId,
-                        (hp, v) => new { hp.MediaHeaderId, VersionCreated = v.Created })
-                    .OrderByDescending(x => x.VersionCreated)
-                    .AsEnumerable()
-                    .GroupBy(id => id.MediaHeaderId)
-                    .Select(h => h.Key)
-                    .Take(10)
-                    .ToList();
-                var lastHeaders = new List<Common.Api.Response.MediaHeader>();
-                foreach (var id in lastHeaderIds)
-                    lastHeaders.Add(await BuildResponseHeaderAsync(id));
-
-                if (lastHeaders == null)
-                    lastHeaders = new List<Common.Api.Response.MediaHeader>();
-
-                return Ok(lastHeaders);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return await GetLast10();
         }
         #endregion
 
@@ -232,7 +181,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         private async Task AddPartsAsync(Common.Api.Request.MediaHeader requestedHeader,
-        Dal.Model.MediaHeader addedHeader, Dal.Model.User loggedUser)
+            Dal.Model.MediaHeader addedHeader, Dal.Model.User loggedUser)
         {
             if (requestedHeader.Parts != null)
                 foreach (var requestedPart in requestedHeader.Parts)
@@ -440,6 +389,40 @@ namespace ProCode.FileHosterRepo.Api.Controllers
                 }
             }
             return responseHeader;
+        }
+
+        private async Task<ActionResult<IEnumerable<Common.Api.Response.MediaHeader>>> GetLast10()
+        {
+            try
+            {
+                // This probably needs optimization! :)
+                var lastHeaderIds = context.MediaHeaders.Join(context.MediaParts,
+                    h => h.MediaHeaderId,
+                    p => p.MediaHeaderId,
+                    (h, p) => new { h.MediaHeaderId, p.MediaPartId })
+                    .Join(context.MediaVersions,
+                        hp => hp.MediaPartId,
+                        v => v.MediaPartId,
+                        (hp, v) => new { hp.MediaHeaderId, VersionCreated = v.Created })
+                    .OrderByDescending(x => x.VersionCreated)
+                    .AsEnumerable()
+                    .GroupBy(id => id.MediaHeaderId)
+                    .Select(h => h.Key)
+                    .Take(10)
+                    .ToList();
+                var lastHeaders = new List<Common.Api.Response.MediaHeader>();
+                foreach (var id in lastHeaderIds)
+                    lastHeaders.Add(await BuildResponseHeaderAsync(id));
+
+                if (lastHeaders == null)
+                    lastHeaders = new List<Common.Api.Response.MediaHeader>();
+
+                return Ok(lastHeaders);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
         #endregion
     }
