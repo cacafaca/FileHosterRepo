@@ -16,7 +16,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "ProCode.FileHosterRepo.Api.Development": {
+    "Api.Development": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",
@@ -26,7 +26,7 @@
       "dotnetRunMessages": "true",
       "applicationUrl": "https://localhost:5001;http://localhost:5000"
     },
-    "ProCode.FileHosterRepo.Api.Staging": {
+    "Api.Staging": {
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
@@ -36,7 +36,7 @@
       },
       "dotnetRunMessages": "true"
     },
-    "ProCode.FileHosterRepo.Api.Production": {
+    "Api.Production": {
       "commandName": "Project",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Production"
