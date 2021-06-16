@@ -1,0 +1,3 @@
+{
+  "ConnectionString": "server=serverstaging;user id=filehosterrepo_app;password=staging;persistsecurityinfo=True;database=filehosterrepo"
+}

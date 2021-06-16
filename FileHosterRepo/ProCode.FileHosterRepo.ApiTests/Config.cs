@@ -65,8 +65,7 @@ namespace ProCode.FileHosterRepo.ApiTests
                     env.EnvironmentName = "Development"; // Check how this value can be set, outside of code.
 
                     configuration
-                        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true);
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
                     configurationRoot = configuration.Build();
                 });

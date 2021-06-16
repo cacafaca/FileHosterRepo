@@ -1,26 +1,36 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using System.IO;
 
 namespace ProCode.FileHosterRepo.Dal.DataAccess
 {
     public class FileHosterRepoContextFactory : IDesignTimeDbContextFactory<FileHosterRepoContext>
     {
-#if DEBUG
-        const string connectionStringDevelopmentJsonFile = "DataAccess\\ConnectionStringDevelopment.json";
-#else
-        const string connectionStringProductionJsonFile = "DataAccess\\ConnectionStringProduction.json";
-#endif
+        #region Fields
+        private static IConfigurationRoot configurationRoot;
+        #endregion
 
-        private static string GetConnectionStringJsonFile()
+        #region Constructors
+        public FileHosterRepoContextFactory()
         {
-#if DEBUG
-            return connectionStringDevelopmentJsonFile;
-#else
-            return connectionStringProductionJsonFile;
-#endif
+            using IHost host = CreateHostBuilder(null).Build();
         }
+        #endregion
+
+        private static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, configuration) =>
+                {
+                    configuration.Sources.Clear();
+                    IHostEnvironment env = hostingContext.HostingEnvironment;
+                    //throw new System.Exception(env.EnvironmentName);
+                    //configuration.AddJsonFile($"ConnectionString.{env.EnvironmentName}.json", true, true);
+                    configuration.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                    configurationRoot = configuration.Build();
+                });
+
         public FileHosterRepoContext CreateDbContext(string[] args)
         {
             return CreateMySqlDbContext();
@@ -28,22 +38,9 @@ namespace ProCode.FileHosterRepo.Dal.DataAccess
 
         private static FileHosterRepoContext CreateMySqlDbContext()
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile(GetConnectionStringJsonFile(), optional: true, reloadOnChange: true);
-            var connectionString = builder.Build().GetSection("ConnectionString").Value;
+            var connectionString = configurationRoot.GetConnectionString("FileHosterRepoConnectionString");
             var optionsBuilder = new DbContextOptionsBuilder<FileHosterRepoContext>();
             optionsBuilder.UseMySQL(connectionString);
-            return new FileHosterRepoContext(optionsBuilder.Options);
-        }
-        private static FileHosterRepoContext CreateMsSqlDbContext()
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile(GetConnectionStringJsonFile(), optional: true, reloadOnChange: true);
-            var connectionString = builder.Build().GetSection("ConnectionString").Value;
-            var optionsBuilder = new DbContextOptionsBuilder<FileHosterRepoContext>();
-            //optionsBuilder.UseSqlServer(connectionString);
             return new FileHosterRepoContext(optionsBuilder.Options);
         }
     }

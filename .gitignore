@@ -9,3 +9,7 @@ packages
 .vs
 /FileHosterRepo/ProCode.FileHosterRepo.Dal/DataAccess/ConnectionStringDevelopment.json
 /FileHosterRepo/ProCode.FileHosterRepo.Dal/DataAccess/ConnectionStringProduction.json
+/FileHosterRepo/ProCode.FileHosterRepo.Dal/DataAccess/ConnectionStringStaging.json
+/FileHosterRepo/ProCode.FileHosterRepo.Dal/DataAccess/ConnectionString.Staging.json
+/FileHosterRepo/ProCode.FileHosterRepo.Dal/DataAccess/ConnectionString.Production.json
+/FileHosterRepo/ProCode.FileHosterRepo.Dal/DataAccess/ConnectionString.Development.json
