@@ -5,7 +5,9 @@ namespace ProCode.FileHosterRepo.Dal.DataAccess
     public class FileHosterRepoContext : DbContext
     {
         #region Constructors
-        public FileHosterRepoContext(DbContextOptions options) : base(options) { }
+        public FileHosterRepoContext(DbContextOptions options) : base(options) 
+        {
+        }
         #endregion
 
         #region Properties

@@ -27,25 +27,4 @@
     <ProjectReference Include="..\ProCode.FileHosterRepo.Dto\ProCode.FileHosterRepo.Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="DataAccess\ConnectionString.Development.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="DataAccess\ConnectionString.DevelopmentTemplate.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="DataAccess\ConnectionString.StagingTemplate.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="DataAccess\ConnectionString.Staging.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="DataAccess\ConnectionString.Production.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="DataAccess\ConnectionString.ProductionTemplate.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
