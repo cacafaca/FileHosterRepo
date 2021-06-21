@@ -5,7 +5,7 @@
     "iisExpress": {
       "applicationUrl": "http://localhost:44303",
       "sslPort": 44302
-    }    
+    }
   },
   "profiles": {
     "IIS Express": {
@@ -22,20 +22,20 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "https://localhost:5003;http://localhost:5002",
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}"
     },
     "WebAppBlazor.Staging": {
-      "commandName": "IISExpress",
+      "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Staging",
+        "ASPNETCORE_SHUTDOWNTIMEOUTSECONDS": "3",
         "ASPNETCORE_DETAILEDERRORS": "1",
-        "ASPNETCORE_SHUTDOWNTIMEOUTSECONDS": "3"
-      }
+        "ASPNETCORE_ENVIRONMENT": "Staging"
+      },
+      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}"
     },
     "WebAppBlazor.Production": {
-      "commandName": "IISExpress",
+      "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Production"

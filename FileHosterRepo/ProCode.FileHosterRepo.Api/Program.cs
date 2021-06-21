@@ -26,9 +26,8 @@ namespace ProCode.FileHosterRepo.Api
                     {
                         configuration.Sources.Clear();
                         IHostEnvironment env = hostingContext.HostingEnvironment;
-                        System.Diagnostics.Debug.WriteLine("Environment: " + env.EnvironmentName);
-                        configuration
-                            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                        Common.Util.Trace("Environment in Api.Program.CreateHostBuilder: " + env.EnvironmentName);
+                        configuration.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                     });
                 });
     }

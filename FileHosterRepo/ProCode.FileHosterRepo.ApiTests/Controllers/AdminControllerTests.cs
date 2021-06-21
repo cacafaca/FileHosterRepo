@@ -124,7 +124,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             response = await Config.Client.GetAsync(Common.Routes.Admin.Info);
             Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
             var errorMsg = await response.Content.ReadAsStringAsync();
-            System.Diagnostics.Trace.WriteLine(errorMsg);
+            Common.Util.Trace(errorMsg);
         }
 
         [TestMethod]
@@ -160,7 +160,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             response = await Config.Client.GetAsync(Common.Routes.Admin.Info);
             Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
             var errorMsg = await response.Content.ReadAsStringAsync();
-            System.Diagnostics.Trace.WriteLine(errorMsg);
+            Common.Util.Trace(errorMsg);
         }
 
         [TestMethod]

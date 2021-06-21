@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_PublishTargetUrl>C:\inetpub\FileHosterRepo\Api</_PublishTargetUrl>
+    <History>True|2021-06-18T08:23:46.6323752Z;True|2021-06-18T10:14:39.6946146+02:00;False|2021-06-18T10:14:10.8776106+02:00;True|2021-06-18T09:04:38.4859528+02:00;False|2021-06-18T09:01:58.3617205+02:00;True|2021-06-17T18:50:14.9796550+02:00;False|2021-06-17T18:47:55.2684086+02:00;</History>
+  </PropertyGroup>
+</Project>

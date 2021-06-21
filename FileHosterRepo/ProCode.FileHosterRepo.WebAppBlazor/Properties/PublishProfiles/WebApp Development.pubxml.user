@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_PublishTargetUrl>C:\inetpub\FileHosterRepo\App</_PublishTargetUrl>
+    <History>True|2021-06-20T21:15:12.2116527Z;True|2021-06-20T02:42:50.7339591+02:00;False|2021-06-20T02:41:48.7820457+02:00;True|2021-06-20T02:25:09.9859468+02:00;True|2021-06-20T02:24:35.0454478+02:00;True|2021-06-20T02:15:48.7881458+02:00;True|2021-06-20T02:12:54.2697930+02:00;True|2021-06-19T02:12:21.2366503+02:00;True|2021-06-19T02:10:54.5200714+02:00;True|2021-06-19T01:59:24.3471417+02:00;True|2021-06-19T01:58:28.5389305+02:00;True|2021-06-19T01:51:35.9316496+02:00;True|2021-06-19T00:55:21.4521755+02:00;False|2021-06-19T00:53:46.7971193+02:00;False|2021-06-19T00:53:28.8668395+02:00;True|2021-06-18T11:41:25.5288267+02:00;</History>
+  </PropertyGroup>
+</Project>

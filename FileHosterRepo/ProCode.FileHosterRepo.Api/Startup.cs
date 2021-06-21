@@ -59,7 +59,6 @@ namespace ProCode.FileHosterRepo.Api
                 );
             });
 
-            System.Diagnostics.Debug.WriteLine($"{_connectionStringName}: {Configuration.GetConnectionString(_connectionStringName)}");
             services.AddDbContext<Dal.DataAccess.FileHosterRepoContext>(options =>
                 options.UseMySQL(Configuration.GetConnectionString(_connectionStringName))
             );
@@ -94,6 +93,8 @@ namespace ProCode.FileHosterRepo.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            Common.Util.Trace("Environment in Api.Startup.Configure(): " + env.EnvironmentName);
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

@@ -5,6 +5,6 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <_PublishTargetUrl>\\SERVERSTAGING\FileHosterRepo\App</_PublishTargetUrl>
-    <History>True|2021-06-16T01:56:11.6353863Z;</History>
+    <History>True|2021-06-20T23:44:23.9713152Z;False|2021-06-21T01:32:40.4183675+02:00;True|2021-06-16T03:56:11.6353863+02:00;</History>
   </PropertyGroup>
 </Project>
