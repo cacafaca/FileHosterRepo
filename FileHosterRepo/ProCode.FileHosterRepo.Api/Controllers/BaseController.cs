@@ -20,7 +20,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         {
             this.context = context;
             this.authenticationManager = authenticationManager;
-            this.token = new Token(authenticationManager);
+            token = new Token(authenticationManager);
         }
         #endregion
 

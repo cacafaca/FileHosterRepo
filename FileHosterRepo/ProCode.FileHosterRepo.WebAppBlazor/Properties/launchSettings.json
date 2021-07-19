@@ -2,6 +2,10 @@
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
+    "iis": {
+      "applicationUrl": "https://www.filehosterrepo.staging/",
+      "sslPort": 0
+    },
     "iisExpress": {
       "applicationUrl": "http://localhost:44303",
       "sslPort": 44302
@@ -16,22 +20,22 @@
       },
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}"
     },
-    "WebAppBlazor.Development": {
-      "commandName": "Project",
+    "WebAppBlazor.StagingIIS": {
+      "commandName": "IIS",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}"
-    },
-    "WebAppBlazor.Staging": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_SHUTDOWNTIMEOUTSECONDS": "3",
-        "ASPNETCORE_DETAILEDERRORS": "1",
         "ASPNETCORE_ENVIRONMENT": "Staging"
       },
+      "applicationUrl": "https://www.filehosterrepo.staging;http://www.filehosterrepo.staging",
+      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}"
+    },
+    "WebAppBlazor.StagingProject": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Staging"
+      },
+      "applicationUrl": "https://www.filehosterrepo.staging;http://www.filehosterrepo.staging",
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}"
     },
     "WebAppBlazor.Production": {
@@ -39,7 +43,8 @@
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Production"
-      }
+      },
+      "applicationUrl": "https://www.filehosterrepo.in.rs;http://www.filehosterrepo.in.rs"
     }
   }
 }

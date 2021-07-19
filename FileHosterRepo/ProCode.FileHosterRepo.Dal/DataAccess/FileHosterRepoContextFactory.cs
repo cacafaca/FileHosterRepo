@@ -25,8 +25,6 @@ namespace ProCode.FileHosterRepo.Dal.DataAccess
                 {
                     configuration.Sources.Clear();
                     IHostEnvironment env = hostingContext.HostingEnvironment;
-                    //throw new System.Exception(env.EnvironmentName);
-                    //configuration.AddJsonFile($"ConnectionString.{env.EnvironmentName}.json", true, true);
                     configuration.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                     configurationRoot = configuration.Build();
                 });

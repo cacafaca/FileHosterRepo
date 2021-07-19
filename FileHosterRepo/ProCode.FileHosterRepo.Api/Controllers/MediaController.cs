@@ -403,36 +403,29 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         private async Task<ActionResult<IEnumerable<Common.Api.Response.MediaHeader>>> GetLast10()
         {
-            try
-            {
-                // This probably needs optimization! :)
-                var lastHeaderIds = context.MediaHeaders.Join(context.MediaParts,
-                    h => h.MediaHeaderId,
-                    p => p.MediaHeaderId,
-                    (h, p) => new { h.MediaHeaderId, p.MediaPartId })
-                    .Join(context.MediaVersions,
-                        hp => hp.MediaPartId,
-                        v => v.MediaPartId,
-                        (hp, v) => new { hp.MediaHeaderId, VersionCreated = v.Created })
-                    .OrderByDescending(x => x.VersionCreated)
-                    .AsEnumerable()
-                    .GroupBy(id => id.MediaHeaderId)
-                    .Select(h => h.Key)
-                    .Take(10)
-                    .ToList();
-                var lastHeaders = new List<Common.Api.Response.MediaHeader>();
-                foreach (var id in lastHeaderIds)
-                    lastHeaders.Add(await BuildResponseHeaderAsync(id));
+            // This probably needs optimization! :)
+            var lastHeaderIds = context.MediaHeaders.Join(context.MediaParts,
+                h => h.MediaHeaderId,
+                p => p.MediaHeaderId,
+                (h, p) => new { h.MediaHeaderId, p.MediaPartId })
+                .Join(context.MediaVersions,
+                    hp => hp.MediaPartId,
+                    v => v.MediaPartId,
+                    (hp, v) => new { hp.MediaHeaderId, VersionCreated = v.Created })
+                .OrderByDescending(x => x.VersionCreated)
+                .AsEnumerable()
+                .GroupBy(id => id.MediaHeaderId)
+                .Select(h => h.Key)
+                .Take(10)
+                .ToList();
+            var lastHeaders = new List<Common.Api.Response.MediaHeader>();
+            foreach (var id in lastHeaderIds)
+                lastHeaders.Add(await BuildResponseHeaderAsync(id));
 
-                if (lastHeaders == null)
-                    lastHeaders = new List<Common.Api.Response.MediaHeader>();
+            if (lastHeaders == null)
+                lastHeaders = new List<Common.Api.Response.MediaHeader>();
 
-                return Ok(lastHeaders);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok(lastHeaders);
         }
 
         private static void LinksAreValid(Common.Api.Request.MediaHeader requestedHeader, out IList<Common.Api.Response.MediaLink> invalidLinks)

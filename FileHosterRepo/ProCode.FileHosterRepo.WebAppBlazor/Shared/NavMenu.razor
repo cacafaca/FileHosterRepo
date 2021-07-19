@@ -5,8 +5,16 @@
 @implements IDisposable
 @inject IMenuService MenuService
 
+@using Microsoft.AspNetCore.Components.WebAssembly.Hosting
+@inject IWebAssemblyHostEnvironment HostEnvironment
+
 <div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">File Hoster Repository</a>
+    <div>
+        <a class="navbar-brand" href="">File Hoster Repository</a>
+        <div class="position-relative text-center text-white-50 align-top">
+            @HostEnvironment.Environment
+        </div>
+    </div>
     <button class="navbar-toggler" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
     </button>

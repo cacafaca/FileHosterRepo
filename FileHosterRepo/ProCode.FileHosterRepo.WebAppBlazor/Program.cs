@@ -33,19 +33,20 @@ namespace ProCode.FileHosterRepo.WebAppBlazor
             Thread.Sleep(5000);
 
             Uri clientUri;
+            //throw new Exception("Caca3: " + Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", EnvironmentVariableTarget.Process));
             if (builder.HostEnvironment.IsDevelopment())
             {
                 clientUri = new Uri("https://api.filehosterrepo.development");
             }
             else if (builder.HostEnvironment.IsStaging())
             {
-                throw new Exception("wrong environment: " + builder.HostEnvironment.Environment);
-                clientUri = new Uri("https://api.filehosterrepo.development");
+                //throw new Exception("wrong environment: " + builder.HostEnvironment.Environment);
+                clientUri = new Uri("https://api.filehosterrepo.staging");
             }
             else if (builder.HostEnvironment.IsProduction())
             {
-                throw new Exception("wrong environment: " + builder.HostEnvironment.Environment);
-                clientUri = new Uri("https://api.filehosterrepo.development");
+                //throw new Exception("wrong environment: " + builder.HostEnvironment.Environment);
+                clientUri = new Uri("https://api.filehosterrepo.in.rs");
             }
             else
             {
@@ -59,7 +60,7 @@ namespace ProCode.FileHosterRepo.WebAppBlazor
 
             Common.Util.Trace("Run web application!");
 
-            await builder.Build().RunAsync();            
+            await builder.Build().RunAsync();
         }
 
         private static void RegisterViewModels(WebAssemblyHostBuilder builder)
