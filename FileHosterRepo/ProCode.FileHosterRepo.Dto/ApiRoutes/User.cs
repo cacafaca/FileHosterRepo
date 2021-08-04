@@ -10,11 +10,11 @@ namespace ProCode.FileHosterRepo.Common.ApiRoutes
     {
         public const string ControlerName = "User";
         
-        public const string Register = "/User/Register";
-        public const string Login = "/User/Login";
-        public const string Logout = "/User/Logout";
-        public const string Info = "/User/Info";
-        public const string Update = "/User/Update";
-        public const string Delete = "/User/Delete";
+        public const string Register = "User/Register";
+        public const string Login = "User/Login";
+        public const string Logout = "User/Logout";
+        public const string Info = "User/Info";
+        public const string Update = "User/Update";
+        public const string Delete = "User/Delete";
     }
 }

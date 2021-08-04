@@ -26,7 +26,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         #region Actions
         [AllowAnonymous]
         [HttpPost]
-        [Route(Common.ApiRoutes.Admin.Register)]
+        [Route("/" + Common.ApiRoutes.Admin.Register)]
         public async Task<ActionResult<string>> Register(Common.Api.Request.UserRegister newUser)
         {
             //Validate new user data.
@@ -63,7 +63,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         [AllowAnonymous]
         [HttpPost()]
-        [Route(Common.ApiRoutes.Admin.Login)]
+        [Route("/" + Common.ApiRoutes.Admin.Login)]
         public async Task<ActionResult<string>> Login(Common.Api.Request.User loginUser)
         {
             var usersFound = await context.Users.Where(u => u.Email == loginUser.Email && u.Role == Common.User.UserRole.Admin).ToListAsync();
@@ -88,7 +88,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpGet]
-        [Route(Common.ApiRoutes.Admin.Logout)]
+        [Route("/" + Common.ApiRoutes.Admin.Logout)]
         public async Task<ActionResult<string>> Logout()
         {
             // Always check at beginning!
@@ -106,7 +106,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpGet]
-        [Route(Common.ApiRoutes.Admin.Info)]
+        [Route("/" + Common.ApiRoutes.Admin.Info)]
         public async Task<ActionResult<Common.Api.Response.User>> Info()
         {
             // Always check at beginning!
@@ -128,7 +128,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpPatch]
-        [Route(Common.ApiRoutes.Admin.Update)]
+        [Route("/" + Common.ApiRoutes.Admin.Update)]
         public async Task<ActionResult<bool>> Update(Common.Api.Request.UserRegister updateUser)
         {
             // Validate password.
@@ -159,7 +159,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        [Route(Common.ApiRoutes.Admin.IsRegistered)]
+        [Route("/" + Common.ApiRoutes.Admin.IsRegistered)]
         public async Task<ActionResult<bool>> IsRegistered()
         {
             return Ok(await context.Users.CountAsync(u => u.Role == Common.User.UserRole.Admin) > 0);
