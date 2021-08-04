@@ -31,7 +31,7 @@
 
     @if (errorMessage != null)
     {
-        <div class="container">
+        <div class="text-left">
             <p>Error: @errorMessage</p>
         </div>
     }
@@ -69,21 +69,24 @@ else
 
     private async void RegisterUserAsync()
     {
-        if (await UserViewModel.RegisterAsync(user, confirmPassword))
+        try
         {
-            if (await UserViewModel.IsUserAdminAsync())
+            if (await UserViewModel.RegisterAsync(user, confirmPassword))
             {
-                NavManager.NavigateTo("admin/info");
+                if (await UserViewModel.IsUserAdminAsync())
+                {
+                    NavManager.NavigateTo("admin/info");
+                }
+                else
+                {
+                    NavManager.NavigateTo("user/info");
+                }
+                MenuService.NotifyChanged();
             }
-            else
-            {
-                NavManager.NavigateTo("user/info");
-            }
-            MenuService.NotifyChanged();
         }
-        else
+        catch (Exception ex)
         {
-            throw new Exception("Unsuccessful login.");
+            errorMessage = ex.Message;
         }
     }
 }

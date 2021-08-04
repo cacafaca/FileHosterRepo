@@ -23,6 +23,9 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel.User
 
         public async Task<bool> RegisterAsync(Common.Api.Request.UserRegister userRegister, string confirmPassword)
         {
+            if (userRegister.Password != confirmPassword)
+                throw new Exception("Confirmed password is not same.");
+
             var response = await HttpClient.PostAsJsonAsync(Common.ApiRoutes.User.Register, userRegister);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {

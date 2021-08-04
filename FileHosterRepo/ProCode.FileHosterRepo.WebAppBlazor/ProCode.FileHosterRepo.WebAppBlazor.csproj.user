@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RazorPage_SelectedScaffolderID>RazorPageScaffolder</RazorPage_SelectedScaffolderID>
     <RazorPage_SelectedScaffolderCategoryPath>root/Common/RazorPage</RazorPage_SelectedScaffolderCategoryPath>
-    <NameOfLastUsedPublishProfile>C:\Users\simovicn\source\repos\FileHosterRepo\FileHosterRepo\ProCode.FileHosterRepo.WebAppBlazor\Properties\PublishProfiles\WebApp Staging.pubxml</NameOfLastUsedPublishProfile>
+    <NameOfLastUsedPublishProfile>C:\Users\simovicn\source\repos\FileHosterRepo\FileHosterRepo\ProCode.FileHosterRepo.WebAppBlazor\Properties\PublishProfiles\WebApp Development.pubxml</NameOfLastUsedPublishProfile>
     <ActiveDebugProfile>IIS Express</ActiveDebugProfile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
