@@ -28,6 +28,7 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel.Admin
                 throw new Exception("Please fill all fields.");
             }
 #if RELEASE
+            // I'll only need minimum password length in release mode (for production). To increase security.
             if (userRegister.Password.Length < passwordMinimumLength)
             {
                 throw new Exception("Password must be at least {passwordMinimumLength} characters.");
@@ -38,7 +39,7 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel.Admin
                 throw new Exception("Silly, you must retype same password in Confirm password field. :)");
             }
 
-            var response = await HttpClient.PostAsJsonAsync(Common.Routes.Admin.Register, userRegister);
+            var response = await HttpClient.PostAsJsonAsync(Common.ApiRoutes.Admin.Register, userRegister);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 SetToken(await response.Content.ReadAsStringAsync());
@@ -50,7 +51,7 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel.Admin
 
         public async Task<bool> LoginAsync(Common.Api.Request.User user)
         {
-            var response = await HttpClient.PostAsJsonAsync(Common.Routes.Admin.Login, user);
+            var response = await HttpClient.PostAsJsonAsync(Common.ApiRoutes.Admin.Login, user);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 SetToken(await response.Content.ReadAsStringAsync());
@@ -62,17 +63,17 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel.Admin
 
         public async Task<Common.Api.Response.User> GetInfoAsync()
         {
-            return await HttpClient.GetFromJsonAsync<Common.Api.Response.User>(Common.Routes.Admin.Info);
+            return await HttpClient.GetFromJsonAsync<Common.Api.Response.User>(Common.ApiRoutes.Admin.Info);
         }
 
         public async Task<bool> IsRegisteredAsync()
         {
-            return await HttpClient.GetFromJsonAsync<bool>(Common.Routes.Admin.IsRegistered);
+            return await HttpClient.GetFromJsonAsync<bool>(Common.ApiRoutes.Admin.IsRegistered);
         }
 
         public async Task<string> LogoutAsync()
         {
-            var x = await HttpClient.GetAsync(Common.Routes.Admin.Logout);
+            var x = await HttpClient.GetAsync(Common.ApiRoutes.Admin.Logout);
             var m = await x.Content.ReadAsStringAsync();
             //var res = await HttpClient.GetFromJsonAsync<string>("Admin/Logout");
             ClearToken();

@@ -24,7 +24,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Config.RecreateDatabaseAsync().Wait();  // Need empty database at beginning of each test method.
 
             // Register administrator. In order to register user, an administrator needs to be registered.
-            HttpResponseMessage response = Config.Client.PostAsync(Common.Routes.Admin.Register,
+            HttpResponseMessage response = Config.Client.PostAsync(Common.ApiRoutes.Admin.Register,
                 new StringContent(JsonSerializer.Serialize(new Common.Api.Request.UserRegister
                 {
                     Email = "admin@admin.com",
@@ -32,11 +32,11 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
                 }), Encoding.UTF8, Config.HttpMediaTypeJson)).Result;
             this.token = response.Content.ReadAsStringAsync().Result;
             Config.Client.SetToken(this.token);
-            Config.Client.GetAsync(Common.Routes.Admin.Logout).Wait();
+            Config.Client.GetAsync(Common.ApiRoutes.Admin.Logout).Wait();
             Config.Client.SetToken();   // Clear token.
 
             // Register user.
-            response = Config.Client.PostAsync(Common.Routes.User.Register,
+            response = Config.Client.PostAsync(Common.ApiRoutes.User.Register,
                 new StringContent(JsonSerializer.Serialize(new Common.Api.Request.UserRegister
                 {
                     Email = "user@user.com",
@@ -56,7 +56,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             // For the sake of simplicity I'll use request object and convert it to JSON before calling API.
             var requestMedia = ExampleRequest_BreakingBad();
 
-            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.Media.Add,
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.ApiRoutes.Media.Add,
                 new StringContent(JsonSerializer.Serialize(requestMedia),Encoding.UTF8, Config.HttpMediaTypeJson));
             var responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
@@ -71,7 +71,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             // Add "Breaking Bad" Series
             var requestMedia = ExampleRequest_BreakingBad();
-            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.Media.Add,
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.ApiRoutes.Media.Add,
                 new StringContent(
                     JsonSerializer.Serialize(requestMedia),
                     Encoding.UTF8, Config.HttpMediaTypeJson));
@@ -83,7 +83,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
 
             // Add "American Beauty" movie.
             requestMedia = ExampleRequest_AmericanBeauty();
-            response = await Config.Client.PostAsync(Common.Routes.Media.Add,
+            response = await Config.Client.PostAsync(Common.ApiRoutes.Media.Add,
                 new StringContent(
                     JsonSerializer.Serialize(requestMedia),
                     Encoding.UTF8, Config.HttpMediaTypeJson));
@@ -98,7 +98,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         public async Task Add_Same_Media_Twice()
         {
             // Add "Breaking Bad" Series
-            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.Media.Add,
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.ApiRoutes.Media.Add,
                 new StringContent(
                     JsonSerializer.Serialize(ExampleRequest_BreakingBad()),
                     Encoding.UTF8, Config.HttpMediaTypeJson));
@@ -108,7 +108,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.IsNotNull(responseMedia);
 
             // Add "American Beauty" movie.
-            response = await Config.Client.PostAsync(Common.Routes.Media.Add,
+            response = await Config.Client.PostAsync(Common.ApiRoutes.Media.Add,
                 new StringContent(
                     JsonSerializer.Serialize(ExampleRequest_BreakingBad()),
                     Encoding.UTF8, Config.HttpMediaTypeJson));
@@ -123,7 +123,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
         {
             // Add something to update in second step.
             var requestHeader = ExampleRequest_BreakingBad();
-            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.Media.Add,
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.ApiRoutes.Media.Add,
                 new StringContent(
                     JsonSerializer.Serialize(requestHeader),
                     Encoding.UTF8, Config.HttpMediaTypeJson));
@@ -133,7 +133,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             Assert.IsNotNull(responseHeader);
 
             // Get by id.
-            response = await Config.Client.GetAsync(Common.Routes.Media.GetId(responseHeader.MediaHeaderId));
+            response = await Config.Client.GetAsync(Common.ApiRoutes.Media.GetId(responseHeader.MediaHeaderId));
             responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
             responseHeader = JsonSerializer.Deserialize<Common.Api.Response.MediaHeader>(responseMessage);
@@ -156,7 +156,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             wrongRequest.Parts.ToArray()[0].Name += " ~some wrong text~";
 
             // Add wrong data.
-            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.Media.Add,
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.ApiRoutes.Media.Add,
                 new StringContent(
                     JsonSerializer.Serialize(wrongRequest),
                     Encoding.UTF8, Config.HttpMediaTypeJson));
@@ -171,7 +171,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             correctedRequestHeader.Parts.ToArray()[0].Name = "Pilot";
 
             // Update. Structures must have id's.
-            response = await Config.Client.PostAsync(Common.Routes.Media.Update,
+            response = await Config.Client.PostAsync(Common.ApiRoutes.Media.Update,
                 new StringContent(
                     JsonSerializer.Serialize(correctedRequestHeader),
                     Encoding.UTF8, Config.HttpMediaTypeJson));
@@ -205,7 +205,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             // For the sake of sanity I'll use request object and convert it to JSON before calling API.
 
             // Add wrong data.
-            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.Media.Add,
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.ApiRoutes.Media.Add,
                 new StringContent(
                     JsonSerializer.Serialize(ExampleRequest_BreakingBad()),
                     Encoding.UTF8, Config.HttpMediaTypeJson));
@@ -221,7 +221,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             ver1Tags.Remove(ver1Tags.LastOrDefault());
 
             // Update. Structures must have id's.
-            response = await Config.Client.PostAsync(Common.Routes.Media.Update,
+            response = await Config.Client.PostAsync(Common.ApiRoutes.Media.Update,
                 new StringContent(
                     JsonSerializer.Serialize(updatedRequest),
                     Encoding.UTF8, Config.HttpMediaTypeJson));
@@ -239,7 +239,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             // For the sake of sanity I'll use request object and convert it to JSON before calling API.
 
             // Add wrong data.
-            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.Media.Add,
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.ApiRoutes.Media.Add,
                 new StringContent(
                     JsonSerializer.Serialize(ExampleRequest_BreakingBad()),
                     Encoding.UTF8, Config.HttpMediaTypeJson));
@@ -254,7 +254,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             ((IList<Common.Api.Request.MediaTag>)updatedRequest.Tags).RemoveAt(updatedRequest.Tags.Count - 1);
 
             // Update. Structures must have id's.
-            response = await Config.Client.PostAsync(Common.Routes.Media.Update,
+            response = await Config.Client.PostAsync(Common.ApiRoutes.Media.Update,
                  new StringContent(
                      JsonSerializer.Serialize(updatedRequest),
                      Encoding.UTF8, Config.HttpMediaTypeJson));
@@ -272,7 +272,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             // For the sake of sanity I'll use request object and convert it to JSON before calling API.
 
             // Add wrong data.
-            HttpResponseMessage response = await Config.Client.PostAsync(Common.Routes.Media.Add,
+            HttpResponseMessage response = await Config.Client.PostAsync(Common.ApiRoutes.Media.Add,
                 new StringContent(
                     JsonSerializer.Serialize(ExampleRequest_BreakingBad()),
                     Encoding.UTF8, Config.HttpMediaTypeJson));
@@ -288,7 +288,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             part1Tags.Remove(part1Tags.LastOrDefault());
 
             // Update. Structures must have id's.
-            response = await Config.Client.PostAsync(Common.Routes.Media.Update,
+            response = await Config.Client.PostAsync(Common.ApiRoutes.Media.Update,
                 new StringContent(
                     JsonSerializer.Serialize(updatedRequest),
                     Encoding.UTF8, Config.HttpMediaTypeJson));
@@ -309,7 +309,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             for (int i = 0; i < 20; i++)
             {
                 var requestHeader = i % 2 == 0 ? ExampleRequest_BreakingBad() : ExampleRequest_AmericanBeauty();
-                response = await Config.Client.PostAsync(Common.Routes.Media.Add,
+                response = await Config.Client.PostAsync(Common.ApiRoutes.Media.Add,
                     new StringContent(
                         JsonSerializer.Serialize(requestHeader),
                         Encoding.UTF8, Config.HttpMediaTypeJson));
@@ -318,12 +318,25 @@ namespace ProCode.FileHosterRepo.Api.Controllers.Tests
             }
 
             // Get last 10              
-            response = await Config.Client.GetAsync(Common.Routes.Media.Last10);
+            response = await Config.Client.GetAsync(Common.ApiRoutes.Media.Last10);
             var responseMessage = await response.Content.ReadAsStringAsync();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, responseMessage);
             var responseHeaderList = JsonSerializer.Deserialize<IEnumerable<Common.Api.Response.MediaHeader>>(responseMessage);
             Assert.IsNotNull(responseHeaderList);
             Assert.AreEqual(10, responseHeaderList.GroupBy(h=>h.MediaHeaderId).Count());    // Expect 10 unique header ids.
+        }
+
+        [TestMethod]
+        public void Test_URI()
+        {
+            System.Uri clientUri = new System.Uri("http://c55d0b32b2d7.sn.mynetname.net/Staging/FileHosterRepo/Api/");
+            HttpClient cl = new HttpClient();
+            cl.BaseAddress = clientUri;
+            Common.Util.Trace(cl.BaseAddress.ToString());
+            Common.Util.Trace(cl.BaseAddress.AbsoluteUri);
+            Common.Util.Trace(cl.BaseAddress.AbsolutePath);
+            Common.Util.Trace(cl.BaseAddress.LocalPath);
+            var resp = cl.GetAsync(Common.ApiRoutes.Media.Last10Anonymous);
         }
         #endregion
 

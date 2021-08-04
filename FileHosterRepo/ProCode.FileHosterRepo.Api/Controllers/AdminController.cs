@@ -10,7 +10,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route(Common.Routes.Admin.ControlerName)] 
+    [Route(Common.ApiRoutes.Admin.ControlerName)] 
     public class AdminController : BaseController
     {
 
@@ -26,7 +26,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         #region Actions
         [AllowAnonymous]
         [HttpPost]
-        [Route(Common.Routes.Admin.Register)]
+        [Route(Common.ApiRoutes.Admin.Register)]
         public async Task<ActionResult<string>> Register(Common.Api.Request.UserRegister newUser)
         {
             //Validate new user data.
@@ -63,7 +63,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         [AllowAnonymous]
         [HttpPost()]
-        [Route(Common.Routes.Admin.Login)]
+        [Route(Common.ApiRoutes.Admin.Login)]
         public async Task<ActionResult<string>> Login(Common.Api.Request.User loginUser)
         {
             var usersFound = await context.Users.Where(u => u.Email == loginUser.Email && u.Role == Common.User.UserRole.Admin).ToListAsync();
@@ -88,7 +88,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpGet]
-        [Route(Common.Routes.Admin.Logout)]
+        [Route(Common.ApiRoutes.Admin.Logout)]
         public async Task<ActionResult<string>> Logout()
         {
             // Always check at beginning!
@@ -106,7 +106,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpGet]
-        [Route(Common.Routes.Admin.Info)]
+        [Route(Common.ApiRoutes.Admin.Info)]
         public async Task<ActionResult<Common.Api.Response.User>> Info()
         {
             // Always check at beginning!
@@ -128,7 +128,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpPatch]
-        [Route(Common.Routes.Admin.Update)]
+        [Route(Common.ApiRoutes.Admin.Update)]
         public async Task<ActionResult<bool>> Update(Common.Api.Request.UserRegister updateUser)
         {
             // Validate password.
@@ -159,7 +159,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        [Route(Common.Routes.Admin.IsRegistered)]
+        [Route(Common.ApiRoutes.Admin.IsRegistered)]
         public async Task<ActionResult<bool>> IsRegistered()
         {
             return Ok(await context.Users.CountAsync(u => u.Role == Common.User.UserRole.Admin) > 0);

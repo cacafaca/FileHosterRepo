@@ -15,7 +15,7 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel
 
         public async Task<IList<Common.Api.Response.MediaHeader>> GetLast10AnonymousAsync()
         {
-            return await HttpClient.GetFromJsonAsync<IList<Common.Api.Response.MediaHeader>>(Common.Routes.Media.Last10Anonymous);
+            return await HttpClient.GetFromJsonAsync<IList<Common.Api.Response.MediaHeader>>(Common.ApiRoutes.Media.Last10Anonymous);
         }
     }
 }

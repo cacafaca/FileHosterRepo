@@ -14,11 +14,12 @@ namespace ProCode.FileHosterRepo.WebAppBlazor
 {
     public class Program
     {
+        #region Constants
+        private const string ApiConfigName = "FileHosterRepoApi";
+        #endregion
+
         public static async Task Main(string[] args)
         {
-            //throw new Exception("Mamu ti...");
-
-            Common.Util.Trace("Initialize web application!");
 
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
@@ -27,38 +28,25 @@ namespace ProCode.FileHosterRepo.WebAppBlazor
             builder.Services.AddAuthorizationCore();
 
             // This adds client to web application. Not WebAPI.
-            Common.Util.Trace(builder.HostEnvironment.BaseAddress);
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-            Thread.Sleep(5000);
+            /*  To set Environment in IIS put below settings in applicationHosting.config or web.config.
+                <system.webServer>
+                    …
+                    <httpProtocol>
+                        <customHeaders>
+                            <add name="blazor-environment" value="Staging" />
+                        </customHeaders>
+                    </httpProtocol>
+                </system.webServer>
+             */
 
-            Uri clientUri;
-            //throw new Exception("Caca3: " + Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", EnvironmentVariableTarget.Process));
-            if (builder.HostEnvironment.IsDevelopment())
-            {
-                clientUri = new Uri("https://api.filehosterrepo.development");
-            }
-            else if (builder.HostEnvironment.IsStaging())
-            {
-                //throw new Exception("wrong environment: " + builder.HostEnvironment.Environment);
-                clientUri = new Uri("https://api.filehosterrepo.staging");
-            }
-            else if (builder.HostEnvironment.IsProduction())
-            {
-                //throw new Exception("wrong environment: " + builder.HostEnvironment.Environment);
-                clientUri = new Uri("https://api.filehosterrepo.in.rs");
-            }
-            else
-            {
-                throw new UnknownEnvironmentException(builder.HostEnvironment.Environment);
-            }
+            Uri clientUri = new Uri(builder.Configuration[ApiConfigName]);
             builder.Services.AddHttpClient(BaseViewModel.HttpClientName, c => { c.BaseAddress = clientUri; });
 
             RegisterViewModels(builder);
 
             builder.Services.AddScoped<IMenuService, MenuService>();
-
-            Common.Util.Trace("Run web application!");
 
             await builder.Build().RunAsync();
         }

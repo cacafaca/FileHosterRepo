@@ -23,7 +23,7 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel.User
 
         public async Task<bool> RegisterAsync(Common.Api.Request.UserRegister userRegister, string confirmPassword)
         {
-            var response = await HttpClient.PostAsJsonAsync(Common.Routes.User.Register, userRegister);
+            var response = await HttpClient.PostAsJsonAsync(Common.ApiRoutes.User.Register, userRegister);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 SetToken(await response.Content.ReadAsStringAsync());
@@ -35,7 +35,7 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel.User
 
         public async Task<bool> LoginAsync(Common.Api.Request.User user)
         {
-            var response = await HttpClient.PostAsJsonAsync(Common.Routes.User.Login, user);
+            var response = await HttpClient.PostAsJsonAsync(Common.ApiRoutes.User.Login, user);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var token = await response.Content.ReadAsStringAsync();
@@ -50,7 +50,7 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel.User
 
         public async Task<string> LogoutAsync()
         {
-            var response = await HttpClient.GetAsync(Common.Routes.User.Logout);
+            var response = await HttpClient.GetAsync(Common.ApiRoutes.User.Logout);
             response.EnsureSuccessStatusCode();
             ClearToken();
             var message = await response.Content.ReadAsStringAsync();
@@ -59,7 +59,7 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel.User
 
         public async Task<Common.Api.Response.User> GetInfoAsync()
         {
-            return await HttpClient.GetFromJsonAsync<Common.Api.Response.User>(Common.Routes.User.Info);
+            return await HttpClient.GetFromJsonAsync<Common.Api.Response.User>(Common.ApiRoutes.User.Info);
         }
 
         public async Task<bool> IsAdminRegistredAsync()

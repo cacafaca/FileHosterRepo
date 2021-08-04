@@ -12,7 +12,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route(Common.Routes.User.ControlerName)] 
+    [Route(Common.ApiRoutes.User.ControlerName)] 
     public class UserController : BaseController
     {
         #region Constructor
@@ -23,7 +23,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         #region Actions
         [AllowAnonymous]
         [HttpPost]
-        [Route(Common.Routes.User.Register)]
+        [Route(Common.ApiRoutes.User.Register)]
         public async Task<ActionResult<string>> Register(Common.Api.Request.UserRegister newUser)
         {
             // Check if there is an administrator first. Can't allow user to register before Administrator.
@@ -57,7 +57,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        [Route(Common.Routes.User.Login)]
+        [Route(Common.ApiRoutes.User.Login)]
         public async Task<ActionResult<string>> Login(Common.Api.Request.User loginUser)
         {
             var usersFound = await context.Users.Where(u => u.Email == loginUser.Email).ToListAsync();
@@ -83,7 +83,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpGet]
-        [Route(Common.Routes.User.Logout)]
+        [Route(Common.ApiRoutes.User.Logout)]
         public async Task<ActionResult<string>> Logout()
         {
             var loggedUser = await context.Users.SingleOrDefaultAsync(u => u.UserId == User.GetUserId());
@@ -100,7 +100,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpGet]
-        [Route(Common.Routes.User.Info)]
+        [Route(Common.ApiRoutes.User.Info)]
         public async Task<ActionResult<Common.Api.Response.User>> Info(int? userId)
         {
             // Always check at beginning!
@@ -130,7 +130,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpPatch]
-        [Route(Common.Routes.User.Update)]
+        [Route(Common.ApiRoutes.User.Update)]
         public async Task<ActionResult<bool>> Update(Common.Api.Request.UserRegister updateUser)
         {
             // Always check at beginning!
@@ -164,7 +164,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpDelete()]
-        [Route(Common.Routes.User.Delete)]
+        [Route(Common.ApiRoutes.User.Delete)]
         public async Task<ActionResult> Delete()
         {
             // Always check at beginning!

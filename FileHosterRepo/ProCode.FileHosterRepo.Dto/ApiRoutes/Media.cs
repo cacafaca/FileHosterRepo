@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProCode.FileHosterRepo.Common.Routes
+namespace ProCode.FileHosterRepo.Common.ApiRoutes
 {
     public static class Media
     {
         public const string ControlerName = "Media";
+        
         public const string Add = "/Media/Add";
         public const string Get = "/Media/Get/{mediaHeaderId}";
         public const string Update = "/Media/Update";

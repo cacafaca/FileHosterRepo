@@ -10,7 +10,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route(Common.Routes.Media.ControlerName)]
+    [Route(Common.ApiRoutes.Media.ControlerName)]
     public class MediaController : BaseController
     {
         #region Constructor
@@ -20,7 +20,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         #region Actions
         [HttpPost]
-        [Route(Common.Routes.Media.Add)]
+        [Route(Common.ApiRoutes.Media.Add)]
         public async Task<ActionResult<Common.Api.Response.MediaHeader>> Add(Common.Api.Request.MediaHeader requestedHeader)
         {
             // Always check at beginning!
@@ -53,7 +53,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpGet]
-        [Route(Common.Routes.Media.Get)]
+        [Route(Common.ApiRoutes.Media.Get)]
         public async Task<ActionResult<Common.Api.Response.MediaHeader>> Get(int mediaHeaderId)
         {
             // Always check at beginning!
@@ -76,7 +76,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         }
 
         [HttpPost]
-        [Route(Common.Routes.Media.Update)]
+        [Route(Common.ApiRoutes.Media.Update)]
         public async Task<ActionResult<Common.Api.Response.MediaHeader>> Update(Common.Api.Request.MediaHeader requestedHeader)
         {
             // Always check at beginning!
@@ -104,7 +104,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Route(Common.Routes.Media.Last10)]
+        [Route(Common.ApiRoutes.Media.Last10)]
         public async Task<ActionResult<IEnumerable<Common.Api.Response.MediaHeader>>> Last10()
         {
             // Always check at beginning!
@@ -121,7 +121,7 @@ namespace ProCode.FileHosterRepo.Api.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        [Route(Common.Routes.Media.Last10Anonymous)]
+        [Route(Common.ApiRoutes.Media.Last10Anonymous)]
         public async Task<ActionResult<IEnumerable<Common.Api.Response.MediaHeader>>> Last10Anonymous()
         {
             return await GetLast10();

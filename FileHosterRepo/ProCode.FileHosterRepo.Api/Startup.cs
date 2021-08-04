@@ -56,6 +56,7 @@ namespace ProCode.FileHosterRepo.Api
                     .AllowAnyOrigin()
                     .AllowAnyHeader()
                     .AllowAnyMethod()
+                    //.AllowCredentials()
                 );
             });
 
@@ -95,18 +96,18 @@ namespace ProCode.FileHosterRepo.Api
         {
             Common.Util.Trace("Environment in Api.Startup.Configure(): " + env.EnvironmentName);
 
-            if (env.IsDevelopment())
+            if (env.IsDevelopment() || env.IsStaging())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProCode.FileHosterRepo.Api v1"));
+                //app.UseSwagger();
+                //app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProCode.FileHosterRepo.Api v1"));
             }
 
-            app.UseHttpsRedirection();
+            app.UseHttpsRedirection();  // Redirect from HTTP to HTTPS (307)
 
             app.UseRouting();
 
-            // Cors has to be after UseRouting, and before UseAuthorization.
+            // CORS has to be after UseRouting, and before UseAuthorization.
             app.UseCors();
 
             app.UseAuthentication();

@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProCode.FileHosterRepo.Common.Routes
+namespace ProCode.FileHosterRepo.Common.ApiRoutes
 {
     public static class Admin
     {
         public const string ControlerName = "Admin";
+        
         public const string Register = "/Admin/Register";
         public const string Login = "/Admin/Login";
         public const string Logout = "/Admin/Logout";

@@ -25,7 +25,7 @@ namespace ProCode.FileHosterRepo.WebAppBlazor.ViewModel.Media
         public async Task<Response.MediaHeader> AddAsync(Request.MediaHeader mediaHeader)
         {
             UpdateToken();
-            var response = await HttpClient.PostAsJsonAsync(Common.Routes.Media.Add, mediaHeader);
+            var response = await HttpClient.PostAsJsonAsync(Common.ApiRoutes.Media.Add, mediaHeader);
             //response.EnsureSuccessStatusCode();
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {

@@ -25,14 +25,15 @@
       "dotnetRunMessages": "true"
     },
     "Api.Staging": {
-      "commandName": "Project",
+      "commandName": "IIS",
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Staging",
         "ASPNETCORE_DETAILEDERRORS": "1",
         "ASPNETCORE_SHUTDOWNTIMEOUTSECONDS": "3"
       },
-      "dotnetRunMessages": "true"
+      "dotnetRunMessages": "true",
+      "applicationUrl": "https://www.filehosterrepo.staging;http://www.filehosterrepo.staging"
     },
     "Api.Production": {
       "commandName": "Project",
